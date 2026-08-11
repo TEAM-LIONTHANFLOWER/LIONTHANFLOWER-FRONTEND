@@ -1,0 +1,57 @@
+name: Deploy to Cloudflare Pages
+
+# main/develop push 시 Cloudflare Pages 로 배포.
+# 시크릿(CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)이 설정돼 있을 때만 동작한다.
+# 시크릿 추가 전에는 guard 잡이 deploy 를 skip 하므로 레포가 빨간불이 되지 않는다.
+#
+# 설정 방법:
+#  1. Cloudflare 대시보드 → Pages 에서 프로젝트 생성 (이름: likelion-usw-cms-fe)
+#  2. GitHub repo → Settings → Secrets and variables → Actions 에 등록:
+#     - CLOUDFLARE_API_TOKEN  (Pages 편집 권한 토큰)
+#     - CLOUDFLARE_ACCOUNT_ID
+#     - VITE_API_BASE_URL     (백엔드 API URL, 빌드 타임 주입)
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  guard:
+    name: Check secrets
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        run: echo "ready=${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Build & Deploy
+    needs: guard
+    if: needs.guard.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=mcm-orbit --branch=${{ github.ref_name }}
