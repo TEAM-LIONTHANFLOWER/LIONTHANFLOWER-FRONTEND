@@ -1,0 +1,21 @@
+# 저장소에서 사용하는 라벨 목록.
+# 최초 1회 아래 명령으로 생성합니다.
+#   gh label create "Feature" --color 0E8A16 --description "기능 개발"
+- name: Feature
+  color: '0E8A16'
+  description: 기능 개발
+- name: Refactor
+  color: 'FBCA04'
+  description: 코드 리팩토링
+- name: API
+  color: '1D76DB'
+  description: 서버 API 연동
+- name: Bug
+  color: 'D73A4A'
+  description: 버그
+- name: Docs
+  color: '0075CA'
+  description: 문서 작성 및 수정
+- name: Style
+  color: 'C5DEF5'
+  description: UI 구현 및 수정
