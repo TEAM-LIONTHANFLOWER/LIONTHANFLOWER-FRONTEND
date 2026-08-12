@@ -1,0 +1,228 @@
+# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
+#
+# CodeRabbit 리뷰 설정. 팀 규칙(AGENTS.md)을 리뷰어가 알고 있도록 옮겨 둔 파일입니다.
+# 옵션 문서: https://docs.coderabbit.ai/reference/configuration
+
+language: ko-KR
+
+tone_instructions: >-
+  한국어 존댓말로 리뷰합니다. 무엇이 잘못됐는지만 말하지 말고 왜 문제인지와 고친 예시를 함께 적어주세요.
+  취향 차이나 사소한 제안은 nitpick 으로 표시해 병합을 막지 않습니다.
+
+reviews:
+  # chill — 확실한 문제만 지적하고 잔소리를 줄입니다.
+  profile: chill
+  # 리뷰가 남았다고 PR 을 막지 않습니다. 승인은 사람이 합니다.
+  request_changes_workflow: false
+
+  high_level_summary: true
+  changed_files_summary: true
+  sequence_diagrams: true
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  collapse_walkthrough: true
+  poem: false
+
+  # 라벨은 .github/labels.yml 에 정의된 6개만 씁니다.
+  suggested_labels: true
+  auto_apply_labels: true
+  labeling_instructions:
+    - label: Feature
+      instructions: 새 화면·컴포넌트·훅 등 사용자가 쓸 수 있는 기능이 추가될 때 붙입니다.
+    - label: Refactor
+      instructions: 동작은 그대로 두고 구조·이름·파일 위치만 바꾸는 변경에 붙입니다.
+    - label: API
+      instructions: >-
+        src/services/ 의 API 클라이언트, 쿼리·뮤테이션 훅, 서버 응답 타입 등
+        서버 연동과 관련된 변경에 붙입니다.
+    - label: Bug
+      instructions: 기존에 동작하던 기능이 깨진 것을 고치는 변경에 붙입니다.
+    - label: Docs
+      instructions: README, AGENTS.md, PR·이슈 템플릿 등 문서만 바뀔 때 붙입니다.
+    - label: Style
+      instructions: >-
+        StyleSheet, 테마 토큰, 레이아웃 등 화면에 보이는 모양만 바뀔 때 붙입니다.
+        코드 포매팅(prettier)만 바뀐 경우에는 붙이지 않습니다.
+
+  suggested_reviewers: true
+  auto_assign_reviewers: false
+
+  auto_review:
+    enabled: true
+    # PR 기본 base 는 develop 입니다. main 은 기본 브랜치라 따로 적지 않아도 리뷰됩니다.
+    base_branches:
+      - develop
+    # 새 커밋을 push 하면 바뀐 부분만 다시 리뷰합니다.
+    auto_incremental_review: true
+    # 작업 중인 draft PR 은 리뷰하지 않습니다.
+    drafts: false
+    ignore_title_keywords:
+      - wip
+      - '[wip]'
+      - do not review
+
+  # 리뷰에서 제외할 경로. 생성물·잠금 파일·바이너리는 볼 필요가 없습니다.
+  path_filters:
+    - '!node_modules/**'
+    - '!dist/**'
+    - '!web-build/**'
+    - '!.expo/**'
+    - '!ios/**'
+    - '!android/**'
+    - '!package-lock.json'
+    - '!expo-env.d.ts'
+    - '!assets/**'
+    - '!docs/**'
+
+  path_instructions:
+    - path: src/**/*.{ts,tsx}
+      instructions: >-
+        AGENTS.md 의 코드 컨벤션을 기준으로 봅니다.
+
+        - 상대경로 import(`../`) 는 금지입니다. `@components/*`, `@hooks/*`, `@services/*`,
+          `@constants/*`, `@stores/*`, `@app/*`, `@/*` alias 를 씁니다.
+          타입만 예외적으로 `@/types/...` 로 가져옵니다(`@types/*` alias 는 만들 수 없습니다).
+        - import 순서는 외부 패키지 → 내부 alias 이고 사이에 빈 줄을 둡니다.
+        - `any` 를 쓰지 않습니다. 모르는 값은 `unknown` 으로 받아 좁혀서 씁니다.
+        - 파일명은 kebab-case, 컴포넌트·타입은 PascalCase, 함수·변수는 camelCase,
+          상수는 UPPER_SNAKE_CASE, 훅은 `use` 로 시작합니다.
+        - 코드는 영어로, UI 라벨과 주석은 한국어로 씁니다.
+        - 도메인 타입은 `src/types/` 에 정의하고 import 해서 씁니다.
+          컴포넌트 Props 타입만 쓰는 파일 안에 둡니다.
+        - `eslint-disable` 로 규칙을 끄거나 TypeScript strict 를 우회하는 코드는 지적해주세요.
+
+    - path: src/app/**
+      instructions: >-
+        expo-router 라우트 파일입니다.
+
+        - 라우트 파일은 `export default` 가 필수입니다.
+        - 화면과 레이아웃 외의 코드를 이 폴더에 두면 안 됩니다. expo-router 가 라우트로 인식합니다.
+          공용 로직은 `src/components/`, `src/hooks/`, `src/services/` 로 옮기라고 알려주세요.
+        - 경로 문자열에 라우트 그룹 `(customer)` 를 넣으면 안 됩니다.
+          고객 화면은 `/login`, 직원 화면은 `/staff/login` 입니다.
+        - 화면 최상위는 `ScreenContainer` 로 감쌉니다.
+        - 이미 있는 `ErrorBoundary` named export 와 fallback 컴포넌트를 지우면 안 됩니다.
+
+    - path: src/components/**
+      instructions: >-
+        - 정적 스타일을 인라인 객체로 쓰지 않습니다. 파일 맨 아래 `StyleSheet.create` 로 모으고,
+          테마 색상처럼 런타임에 정해지는 값만 배열로 합성합니다.
+        - 간격·색상은 `@constants/theme` 토큰을 씁니다. `padding: 13` 같은 매직 넘버는 지적해주세요.
+        - 색상은 `useThemeColors()` 로 가져옵니다. 하드코딩된 색상 문자열은 다크 모드에서 깨집니다.
+        - 파일 안 순서는 import → Props 타입 → 컴포넌트(훅 → 핸들러 → 렌더) → StyleSheet 입니다.
+        - 누를 수 있는 요소에는 `accessibilityRole` 과 `accessibilityLabel` 이 있어야 합니다.
+          아이콘만 있는 버튼은 특히 `accessibilityLabel` 이 필수이고,
+          터치 영역이 44x44 보다 작으면 `hitSlop` 을 씁니다.
+        - 새 컴포넌트가 `components/common/` 에 이미 있는 것과 겹치지 않는지 봐주세요.
+        - 라우트 파일이 아니므로 named export 를 씁니다.
+
+    - path: src/hooks/**
+      instructions: >-
+        - 서버 데이터는 `useState` + `useEffect` 로 직접 관리하지 않고 React Query 를 씁니다.
+        - queryKey 는 문자열 배열을 직접 쓰지 말고 key 팩토리(`customerKeys` 형태)로 만듭니다.
+        - `queryFn` 안에서는 `@services/api` 만 부릅니다. `fetch` 를 직접 쓰면 안 됩니다.
+        - 재시도와 `staleTime` 기본값은 `@services/query-client` 에 있습니다.
+          훅마다 다시 정하고 있으면 이유를 물어봐주세요.
+        - 뮤테이션은 재시도하지 않는 것이 기본입니다(중복 결제·중복 생성 방지).
+          성공 시 관련 쿼리를 `invalidateQueries` 로 무효화했는지 확인해주세요.
+        - 쿼리 훅은 화면 단위가 아니라 리소스 단위로 만듭니다.
+
+    - path: src/stores/**
+      instructions: >-
+        - Zustand 에는 서버가 모르는 클라이언트 상태만 둡니다.
+          API 응답을 스토어에 복사해 두면 캐시가 두 벌이 되므로 지적해주세요.
+        - 파생값은 상태로 저장하지 않고 셀렉터로 계산합니다.
+        - 사용하는 쪽에서 스토어 전체를 구조분해로 구독하면 불필요한 리렌더링이 납니다.
+          `useAuthStore((state) => state.user)` 처럼 셀렉터를 쓰라고 알려주세요.
+        - 로그아웃 시 `queryClient.clear()` 로 서버 캐시도 함께 비우는지 확인해주세요.
+
+    - path: src/services/api.ts
+      instructions: >-
+        요청·에러 처리 구조(타임아웃, 토큰 주입, `ApiError`)는 팀 논의 없이 바꾸지 않기로 했습니다.
+        엔드포인트 함수 추가는 자유지만, 공통 로직을 손대는 변경이면 PR 본문에 이유가 있는지 확인해주세요.
+
+    - path: src/**/*.tsx
+      instructions: >-
+        데이터를 기다리는 화면에는 로딩·에러·성공 세 상태가 모두 있어야 합니다.
+        `isPending` / `isError` 처리와 재시도 수단(`refetch`)이 빠졌으면 지적해주세요.
+        네트워크 요청은 화면에서 `fetch` 를 직접 부르지 않고 `@services/api` 를 거칩니다.
+        `.then()` 체이닝 대신 `async` / `await` 를 씁니다.
+
+    - path: '{package.json,app.json,tsconfig.json,eslint.config.js,.prettierrc}'
+      instructions: >-
+        설정 파일 변경은 팀 합의가 필요합니다.
+        의존성 추가·변경·삭제, `app.json` 의 plugins·experiments·아이콘/스플래시 경로 변경,
+        TypeScript strict 완화, ESLint 규칙 비활성화가 있으면 PR 본문에 이유가 적혀 있는지 확인해주세요.
+
+    - path: .github/**
+      instructions: >-
+        이슈·PR 템플릿과 워크플로는 임의로 수정하지 않기로 했습니다.
+        변경이 있으면 의도가 PR 본문에 설명돼 있는지 확인해주세요.
+        워크플로에서 시크릿이 로그로 새거나 권한이 필요 이상으로 넓지 않은지도 봐주세요.
+
+  finishing_touches:
+    # 주석 컨벤션이 한국어 설명문이라 자동 docstring 은 끕니다.
+    docstrings:
+      enabled: false
+    # 테스트 프레임워크가 아직 없습니다(AGENTS.md "아직 정하지 않은 것" 참고).
+    unit_tests:
+      enabled: false
+    autofix:
+      enabled: true
+
+  pre_merge_checks:
+    # 문서화 비율은 강제하지 않습니다.
+    docstrings:
+      mode: 'off'
+    title:
+      mode: warning
+      requirements: >-
+        squash merge 시 PR 제목이 그대로 커밋 메시지가 됩니다.
+        `{이슈번호} {타입}: 한국어 설명` 형식이어야 하고,
+        타입은 feat, fix, refactor, style, chore, docs 중 하나입니다.
+        예) `12 feat: 고객 로그인 화면 폼 구현`
+    description:
+      mode: warning
+    issue_assessment:
+      mode: warning
+
+  tools:
+    # ESLint / Prettier 를 쓰므로 다른 린터와 겹치지 않게 둡니다.
+    eslint:
+      enabled: true
+    # CI(typecheck / lint / format:check) 결과를 리뷰에 함께 반영합니다.
+    github-checks:
+      enabled: true
+      timeout_ms: 180000
+    gitleaks:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: true
+    semgrep:
+      enabled: true
+    # 한국어 문서·주석에서 오탐이 많아 끕니다.
+    languagetool:
+      enabled: false
+
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - AGENTS.md
+      - CLAUDE.md
+  learnings:
+    scope: local
+  issues:
+    scope: local
+  pull_requests:
+    scope: local
