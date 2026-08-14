@@ -5,11 +5,12 @@ name: Deploy to Cloudflare Pages
 # 시크릿 추가 전에는 guard 잡이 deploy 를 skip 하므로 레포가 빨간불이 되지 않는다.
 #
 # 설정 방법:
-#  1. Cloudflare 대시보드 → Pages 에서 프로젝트 생성 (이름: likelion-usw-cms-fe)
+#  1. Cloudflare 대시보드 → Pages 에서 프로젝트 생성 (이름: mcm-orbit).
+#     아래 deploy 스텝의 --project-name 값과 반드시 같아야 한다.
 #  2. GitHub repo → Settings → Secrets and variables → Actions 에 등록:
-#     - CLOUDFLARE_API_TOKEN  (Pages 편집 권한 토큰)
+#     - CLOUDFLARE_API_TOKEN        (Pages 편집 권한 토큰)
 #     - CLOUDFLARE_ACCOUNT_ID
-#     - VITE_API_BASE_URL     (백엔드 API URL, 빌드 타임 주입)
+#     - EXPO_PUBLIC_API_BASE_URL    (백엔드 API URL, 빌드 타임에 번들로 인라인됨)
 
 on:
   push:
@@ -45,9 +46,9 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: npm run build:web
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
