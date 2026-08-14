@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { ExploreButton } from '@components/common/explore-button';
 import { ScreenContainer } from '@components/common/screen-container';
 import { VerticalScrim } from '@components/common/vertical-scrim';
-import { BrandColors, FontFamily, Radius, Spacing } from '@constants/theme';
+import { BrandColors, FontFamily, Spacing } from '@constants/theme';
 import arrowNext from '@assets/images/onboarding/arrow-next.svg';
 import arrowPrevious from '@assets/images/onboarding/arrow-prev.svg';
 import type { OnboardingSlide } from '@/types/onboarding';
@@ -73,14 +74,7 @@ export function OnboardingSlideView({
           </View>
           <Text style={styles.description}>{slide.description.join('\n')}</Text>
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="둘러보기"
-            onPress={onExplore}
-            style={styles.exploreButton}
-          >
-            <Text style={styles.exploreLabel}>Explore</Text>
-          </Pressable>
+          <ExploreButton onPress={onExplore} style={styles.exploreButton} />
 
           <View style={styles.footer}>
             {onPrevious ? (
@@ -156,21 +150,9 @@ const styles = StyleSheet.create({
     maxWidth: 280,
     marginTop: Spacing.two,
   },
+  // 크기와 모양은 버튼이 직접 들고 있습니다. 여기서는 배치만 정합니다.
   exploreButton: {
-    width: 126,
-    height: 58,
-    borderRadius: Radius.pill,
-    borderWidth: 1,
-    borderColor: BrandColors.outlineOnDark,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: Spacing.five,
-  },
-  exploreLabel: {
-    fontFamily: FontFamily.displaySemiBold,
-    fontSize: 20,
-    lineHeight: 26,
-    color: BrandColors.onDark,
   },
   footer: {
     width: '100%',

@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 
+import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
 import { BrandColors, Spacing } from '@constants/theme';
-import mcmOrbitLogo from '@assets/images/splash/mcm-orbit-logo.png';
 import mcmSymbol from '@assets/images/splash/mcm-symbol.png';
 
 /** 로고가 서서히 나타나는 시간 (ms) */
@@ -61,12 +61,7 @@ export function BrandSplash({ onFinish }: BrandSplashProps) {
     <ScreenContainer edgeToEdge backgroundColor={BrandColors.splashBackground} style={styles.stage}>
       <Animated.View style={[styles.fade, { opacity }]}>
         <View style={styles.logoSlot}>
-          <Image
-            source={mcmOrbitLogo}
-            style={styles.logo}
-            contentFit="contain"
-            accessibilityLabel="MCM Orbit"
-          />
+          <OrbitLogo />
         </View>
         <View style={styles.symbolSlot}>
           <Image source={mcmSymbol} style={styles.symbol} contentFit="contain" accessible={false} />
@@ -88,10 +83,6 @@ const styles = StyleSheet.create({
     flex: LOGO_SLOT_FLEX,
     alignItems: 'center',
     justifyContent: 'flex-end',
-  },
-  logo: {
-    width: 109.25,
-    height: 64.5,
   },
   symbolSlot: {
     flex: SYMBOL_SLOT_FLEX,

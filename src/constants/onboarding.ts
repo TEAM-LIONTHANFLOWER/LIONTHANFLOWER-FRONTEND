@@ -6,7 +6,11 @@
 import aboutBackground from '@assets/images/onboarding/about.jpg';
 import magazineBackground from '@assets/images/onboarding/magazine.jpg';
 import newOnesBackground from '@assets/images/onboarding/new-ones.jpg';
-import type { OnboardingSlide } from '@/types/onboarding';
+import type {
+  OnboardingSlide,
+  ServiceLanguageOption,
+  ServiceStyleOption,
+} from '@/types/onboarding';
 
 export const ONBOARDING_SLIDES: readonly OnboardingSlide[] = [
   {
@@ -32,4 +36,26 @@ export const ONBOARDING_SLIDES: readonly OnboardingSlide[] = [
     ],
     titleLetterSpacing: 1.28,
   },
+] as const;
+
+/**
+ * 정보 입력 화면의 Language 칩.
+ *
+ * 시안에는 칩이 6 개인데 뒤쪽 셋이 모두 `Japanese` 로 그려져 있어(자리 채우기),
+ * 줄바꿈 모양은 그대로 두고 실제 언어로 채웠습니다.
+ */
+export const SERVICE_LANGUAGES: readonly ServiceLanguageOption[] = [
+  { code: 'ko', label: 'Korean', nativeLabel: '한국어' },
+  { code: 'en', label: 'English', nativeLabel: 'English' },
+  { code: 'zh', label: 'Chinese', nativeLabel: '中文' },
+  { code: 'ja', label: 'Japanese', nativeLabel: '日本語' },
+  { code: 'fr', label: 'French', nativeLabel: 'Français' },
+  { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
+] as const;
+
+/** 정보 입력 화면의 Service Style 선택지. 첫 항목이 시안의 기본값입니다. */
+export const SERVICE_STYLES: readonly ServiceStyleOption[] = [
+  { code: 'recommendation', label: '직원의 추천을 받고싶어요' },
+  { code: 'self-guided', label: '혼자 편하게 둘러볼게요' },
+  { code: 'on-request', label: '필요할 때만 도와주세요' },
 ] as const;

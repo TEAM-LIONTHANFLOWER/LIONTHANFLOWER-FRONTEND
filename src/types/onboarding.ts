@@ -20,3 +20,22 @@ export interface OnboardingSlide {
   /** 시안에서 자간이 따로 지정된 슬라이드만 씁니다. */
   titleLetterSpacing?: number;
 }
+
+/** 접객에 쓰는 언어. 온보딩 마지막 정보 입력 화면의 Language 칩 선택지입니다. */
+export type ServiceLanguageCode = 'ko' | 'en' | 'zh' | 'ja' | 'fr' | 'de';
+
+export interface ServiceLanguageOption {
+  code: ServiceLanguageCode;
+  /** 영문 이름. 직원 화면에서 씁니다. */
+  label: string;
+  /** 해당 언어로 쓴 이름. 고객 화면에서 씁니다. */
+  nativeLabel: string;
+}
+
+/** 고객이 원하는 접객 방식. 정보 입력 화면의 Service Style 선택지입니다. */
+export type ServiceStyleCode = 'recommendation' | 'self-guided' | 'on-request';
+
+export interface ServiceStyleOption {
+  code: ServiceStyleCode;
+  label: string;
+}
