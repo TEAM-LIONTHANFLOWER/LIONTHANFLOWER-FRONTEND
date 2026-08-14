@@ -99,16 +99,13 @@ export const Spacing = {
 export const Radius = {
   /** 양 끝이 완전히 둥근 알약 모양 */
   pill: 999,
-  /** 웹 모바일 프레임의 모서리 */
-  frame: 44,
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
 
 /**
- * 웹에서 앱을 가두는 모바일 프레임 크기.
- * 시안이 그려진 iPhone 14 Pro(393×852)와 같은 값이라, 데스크톱에서도 시안과 같은 배치가 나옵니다.
+ * 웹에서 앱을 가두는 모바일 프레임 폭. 시안이 그려진 iPhone 14 Pro 와 같은 값입니다.
+ * 높이는 제한하지 않고 브라우저를 꽉 채웁니다.
  */
 export const MobileFrameWidth = 393;
-export const MobileFrameHeight = 852;

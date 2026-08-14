@@ -6,17 +6,20 @@ import {
   type EdgeInsets,
 } from 'react-native-safe-area-context';
 
-import { BrandColors, MobileFrameHeight, MobileFrameWidth, Radius } from '@constants/theme';
+import { BrandColors, MobileFrameWidth } from '@constants/theme';
 
 /**
  * 데스크톱 브라우저에는 노치도 홈 인디케이터도 없어 안전 영역이 0 으로 잡힙니다.
- * 프레임 크기가 시안과 같은 iPhone 14 Pro 기준이라, 같은 여백을 흉내 내야
- * 상단 인디케이터와 하단 버튼이 시안 위치에 놓입니다.
+ * 그대로 두면 상단 인디케이터가 화면 맨 위에 붙고 하단 버튼도 끝에 닿아, 시안보다 훨씬
+ * 답답해 보입니다. 시안이 그려진 iPhone 14 Pro 의 여백을 넣어 같은 가장자리 간격을 만듭니다.
  */
 const DEVICE_INSETS: EdgeInsets = { top: 59, bottom: 34, left: 0, right: 0 };
 
 /**
- * 웹에서 앱을 모바일 크기 프레임 안에 가둡니다.
+ * 웹에서 앱을 모바일 너비 안에 가둡니다.
+ *
+ * 높이는 제한하지 않고 브라우저를 꽉 채웁니다. 폭만 시안 기준(393)으로 묶어
+ * 화면 가운데 세우고, 나머지 공간은 배경색으로 둡니다.
  *
  * 창이 프레임보다 넓을 때만 가두고, 모바일 브라우저처럼 화면이 이미 좁으면
  * 프레임이 화면을 그대로 꽉 채웁니다. 이때 안전 영역도 브라우저가 알려주는 실제 값을 씁니다.
@@ -52,11 +55,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  // 위아래가 뷰포트 끝에 닿으므로 모서리는 둥글리지 않습니다.
+  // 그림자는 좌우로만 보이며 컬럼을 배경에서 떼어놓는 역할을 합니다.
   framed: {
     maxWidth: MobileFrameWidth,
-    maxHeight: MobileFrameHeight,
-    borderRadius: Radius.frame,
     overflow: 'hidden',
-    boxShadow: '0 24px 64px rgba(0, 0, 0, 0.45)',
+    boxShadow: '0 0 64px rgba(0, 0, 0, 0.45)',
   },
 });
