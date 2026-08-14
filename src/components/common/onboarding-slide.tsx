@@ -8,10 +8,23 @@ import arrowNext from '@assets/images/onboarding/arrow-next.svg';
 import arrowPrevious from '@assets/images/onboarding/arrow-prev.svg';
 import type { OnboardingSlide } from '@/types/onboarding';
 
-/** 시안 기준 화면 너비. 타이틀이 이 너비를 거의 꽉 채우도록 그려져 있습니다. */
+/** 시안 기준 화면 너비. 타이틀이 이 너비를 꽉 채우다 못해 살짝 넘치도록 그려져 있습니다. */
 const DESIGN_WIDTH = 393;
 const TITLE_FONT_SIZE = 64;
 const TITLE_LINE_HEIGHT_RATIO = 1.3;
+
+/**
+ * 타이틀을 담는 상자를 화면 폭의 몇 배로 잡을지.
+ *
+ * 시안의 타이틀은 한 줄로 두고 좌우로 흘러넘칩니다 — 64px 로 재보면 `MAGAZINE` 415px,
+ * `NEW ONES` 413px, `MCM Orbit` 407px 라 393px 폭을 모두 넘깁니다. 글자를 화면 폭과 같은
+ * 상자에 넣으면 공백이 있는 줄은 거기서 접히고(`NEW ONES`), 공백이 없는 줄은 웹에서
+ * `word-wrap: break-word` 때문에 단어 중간이 쪼개집니다(`MAGAZINE`).
+ *
+ * 그래서 글자가 필요로 하는 것보다 넉넉한 상자를 줘서 줄바꿈 판단 자체가 일어나지 않게 하고,
+ * 넘친 부분은 슬라이드 경계에서 잘리게 둡니다. 시안과 같은 모양입니다.
+ */
+const TITLE_BOX_WIDTH_RATIO = 1.5;
 
 interface OnboardingSlideViewProps {
   slide: OnboardingSlide;
@@ -33,8 +46,10 @@ export function OnboardingSlideView({
   onNext,
   onPrevious,
 }: OnboardingSlideViewProps) {
-  // 좁은 화면에서 타이틀이 잘리지 않도록 시안 너비 기준으로 줄입니다. 넓어져도 커지지는 않습니다.
-  const scale = width > 0 ? Math.min(width, DESIGN_WIDTH) / DESIGN_WIDTH : 1;
+  // 좁은 화면에서도 시안과 같은 비율로 넘치도록 화면 폭에 맞춰 줄입니다. 넓어져도 커지지는 않습니다.
+  const baseWidth = width > 0 ? Math.min(width, DESIGN_WIDTH) : DESIGN_WIDTH;
+  const scale = baseWidth / DESIGN_WIDTH;
+  const titleBoxStyle = { width: baseWidth * TITLE_BOX_WIDTH_RATIO };
   const titleStyle = {
     fontSize: TITLE_FONT_SIZE * scale,
     lineHeight: TITLE_FONT_SIZE * TITLE_LINE_HEIGHT_RATIO * scale,
@@ -53,7 +68,9 @@ export function OnboardingSlideView({
 
       <ScreenContainer backgroundColor="transparent" style={styles.stage}>
         <View style={styles.content}>
-          <Text style={[styles.title, titleStyle]}>{slide.title.join('\n')}</Text>
+          <View style={titleBoxStyle}>
+            <Text style={[styles.title, titleStyle]}>{slide.title.join('\n')}</Text>
+          </View>
           <Text style={styles.description}>{slide.description.join('\n')}</Text>
 
           <Pressable
@@ -100,6 +117,9 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: BrandColors.splashBackground,
+    // 화면 밖으로 넘긴 타이틀을 슬라이드 경계에서 자릅니다.
+    // 이게 없으면 웹에서 가로 스크롤이 생깁니다.
+    overflow: 'hidden',
   },
   // 시안의 스크림은 852 높이 중 240 지점에서 시작합니다.
   scrim: {
@@ -109,7 +129,10 @@ const styles = StyleSheet.create({
     top: '28%',
     bottom: 0,
   },
+  // 타이틀이 화면 폭을 꽉 쓰고 좌우로 넘쳐야 해서 가로 여백을 없앱니다.
+  // 여백이 필요한 요소(설명·버튼)는 각자 폭이나 패딩을 들고 있습니다.
   stage: {
+    paddingHorizontal: 0,
     paddingVertical: 0,
     gap: 0,
   },
@@ -155,6 +178,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: Spacing.six,
+    paddingLeft: Spacing.three,
+    paddingRight: Spacing.five,
   },
   previousButton: {
     width: 62,
