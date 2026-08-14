@@ -8,9 +8,9 @@
  * 이 파일의 값을 임의로 덮어쓰지 않습니다. 필요하면 새 토큰을 추가합니다.
  */
 
-import '@/global.css';
-
 import { Platform, type TextStyle } from 'react-native';
+
+import '@/global.css';
 
 /**
  * 브랜드 원색 팔레트.
