@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 
 import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
@@ -18,12 +20,28 @@ const SYMBOL_SLOT_FLEX = 408;
 const SYMBOL_BOTTOM = 50;
 
 /**
+ * 데모용 매칭 대기 시간.
+ * 배정 API 가 붙으면 이 타이머를 지우고 실제 배정 결과를 기다립니다.
+ */
+const DEMO_MATCHING_DELAY_MS = 3000;
+
+/**
  * 고객 매칭 대기 화면 — `/matching`
  *
  * 정보 입력을 끝낸 고객이 직원이 배정되기를 기다리는 화면입니다.
- * 배정 결과를 받아올 API 가 아직 없어 지금은 대기 화면에 머뭅니다.
+ * 배정 결과를 받아올 API 가 아직 없어, 데모에서는 3 초 뒤 홈으로 넘어갑니다.
  */
 export default function CustomerMatchingScreen() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace('/home');
+    }, DEMO_MATCHING_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [router]);
+
   return (
     <View style={styles.root}>
       <Image

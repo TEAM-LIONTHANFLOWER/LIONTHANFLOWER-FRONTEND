@@ -33,7 +33,7 @@ export interface ServiceLanguageOption {
 }
 
 /** 고객이 원하는 접객 방식. 정보 입력 화면의 Service Style 선택지입니다. */
-export type ServiceStyleCode = 'recommendation' | 'self-guided' | 'on-request';
+export type ServiceStyleCode = 'recommendation' | 'self-guided';
 
 export interface ServiceStyleOption {
   code: ServiceStyleCode;

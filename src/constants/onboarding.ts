@@ -53,9 +53,8 @@ export const SERVICE_LANGUAGES: readonly ServiceLanguageOption[] = [
   { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
 ] as const;
 
-/** 정보 입력 화면의 Service Style 선택지. 첫 항목이 시안의 기본값입니다. */
+/** 정보 입력 화면의 Service Style 선택지. 두 가지뿐이고, 첫 항목이 기본값입니다. */
 export const SERVICE_STYLES: readonly ServiceStyleOption[] = [
-  { code: 'recommendation', label: '직원의 추천을 받고싶어요' },
-  { code: 'self-guided', label: '혼자 편하게 둘러볼게요' },
-  { code: 'on-request', label: '필요할 때만 도와주세요' },
+  { code: 'recommendation', label: '직원의 추천을 받고 싶어요' },
+  { code: 'self-guided', label: '혼자 보고 싶어요' },
 ] as const;
