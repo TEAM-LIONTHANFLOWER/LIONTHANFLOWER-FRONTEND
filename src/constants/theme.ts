@@ -27,8 +27,8 @@ export const Colors = {
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 /**
- * 색상 스킴과 무관하게 항상 같은 값을 쓰는 브랜드 색상.
- * 스플래시·온보딩처럼 사진과 검정 배경 위에 고정된 화면에서만 씁니다.
+ * 색상 스킴과 무관하게 항상 같은 값을 쓰는 색상.
+ * 스플래시·온보딩처럼 사진과 검정 배경 위에 고정된 화면, 그리고 웹 모바일 프레임에 씁니다.
  * 다크 모드에 따라 뒤집히면 안 되는 값이라 `Colors` 와 분리해 둡니다.
  */
 export const BrandColors = {
@@ -42,6 +42,8 @@ export const BrandColors = {
   outlineOnDark: 'rgba(255, 255, 255, 0.6)',
   /** 선택되지 않은 페이지 인디케이터 */
   indicatorInactive: 'rgba(255, 255, 255, 0.5)',
+  /** 웹 모바일 프레임 바깥. 프레임이 떠 보이도록 콘텐츠보다 어둡게 둡니다. */
+  frameBackdrop: '#17181b',
 } as const;
 
 /**
@@ -97,7 +99,16 @@ export const Spacing = {
 export const Radius = {
   /** 양 끝이 완전히 둥근 알약 모양 */
   pill: 999,
+  /** 웹 모바일 프레임의 모서리 */
+  frame: 44,
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+/**
+ * 웹에서 앱을 가두는 모바일 프레임 크기.
+ * 시안이 그려진 iPhone 14 Pro(393×852)와 같은 값이라, 데스크톱에서도 시안과 같은 배치가 나옵니다.
+ */
+export const MobileFrameWidth = 393;
+export const MobileFrameHeight = 852;

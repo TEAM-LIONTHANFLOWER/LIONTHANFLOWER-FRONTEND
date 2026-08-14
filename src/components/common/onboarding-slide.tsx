@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
 import { ScreenContainer } from '@components/common/screen-container';
@@ -15,6 +15,8 @@ const TITLE_LINE_HEIGHT_RATIO = 1.3;
 
 interface OnboardingSlideViewProps {
   slide: OnboardingSlide;
+  /** 슬라이드가 실제로 차지하는 폭. 웹 모바일 프레임 안에서는 창 너비와 다릅니다. */
+  width: number;
   /** Explore 를 눌렀을 때. 남은 슬라이드를 건너뛰고 온보딩을 끝냅니다. */
   onExplore: () => void;
   /** 다음 슬라이드로. 마지막 슬라이드에서는 온보딩을 끝냅니다. */
@@ -26,14 +28,13 @@ interface OnboardingSlideViewProps {
 /** 온보딩 슬라이드 한 장. 배경 사진 + 스크림 위에 타이틀·설명·버튼을 올립니다. */
 export function OnboardingSlideView({
   slide,
+  width,
   onExplore,
   onNext,
   onPrevious,
 }: OnboardingSlideViewProps) {
-  const { width } = useWindowDimensions();
-
   // 좁은 화면에서 타이틀이 잘리지 않도록 시안 너비 기준으로 줄입니다. 넓어져도 커지지는 않습니다.
-  const scale = Math.min(width, DESIGN_WIDTH) / DESIGN_WIDTH;
+  const scale = width > 0 ? Math.min(width, DESIGN_WIDTH) / DESIGN_WIDTH : 1;
   const titleStyle = {
     fontSize: TITLE_FONT_SIZE * scale,
     lineHeight: TITLE_FONT_SIZE * TITLE_LINE_HEIGHT_RATIO * scale,

@@ -4,6 +4,7 @@ import {
   StyleSheet,
   View,
   useWindowDimensions,
+  type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -26,13 +27,23 @@ import type { EntryRole } from '@/types/onboarding';
 export default function OnboardingScreen() {
   const router = useRouter();
   const { role } = useLocalSearchParams<{ role?: EntryRole }>();
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const completeOnboarding = useOnboardingStore((state) => state.complete);
 
   const scrollRef = useRef<ScrollView>(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+
+  // 웹에서는 모바일 프레임에 갇혀 있어 창 너비와 페이저 너비가 다릅니다.
+  // 그래서 창이 아니라 페이저가 실제로 차지한 너비를 한 페이지 폭으로 씁니다.
+  // 첫 레이아웃 전까지만 창 너비로 버팁니다.
+  const width = measuredWidth || windowWidth;
   const lastWidth = useRef(width);
+
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    setMeasuredWidth(event.nativeEvent.layout.width);
+  }, []);
 
   // 회전하거나 웹 창 크기가 바뀌면 보고 있던 슬라이드로 다시 맞춥니다.
   // 너비가 그대로일 때는 건드리지 않습니다 — 진행 중인 스크롤 애니메이션이 끊깁니다.
@@ -82,7 +93,7 @@ export default function OnboardingScreen() {
   );
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} onLayout={handleLayout}>
       <ScrollView
         ref={scrollRef}
         horizontal
@@ -95,6 +106,7 @@ export default function OnboardingScreen() {
           <View key={slide.id} style={[styles.slide, { width }]}>
             <OnboardingSlideView
               slide={slide}
+              width={width}
               onExplore={handleFinish}
               onNext={handleNext}
               onPrevious={index > 0 ? handlePrevious : undefined}
