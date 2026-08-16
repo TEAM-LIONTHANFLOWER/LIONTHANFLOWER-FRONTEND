@@ -128,6 +128,24 @@ export const FixedColors = {
   indicatorInactive: 'rgba(255, 255, 255, 0.5)',
   /** 웹 모바일 프레임 바깥. 프레임이 떠 보이도록 콘텐츠보다 어둡게 둡니다. */
   frameBackdrop: '#17181b',
+  /** 홈 계열 화면 배경 그라데이션의 좌상단. Figma `Black` 과 같은 값입니다. */
+  brandBackdropStart: '#111111',
+  /** 홈 계열 화면 배경 그라데이션의 우하단. Figma `MCM Cognac` 과 같은 값입니다. */
+  brandBackdropEnd: '#a66a3f',
+  /** 브랜드 배경 위에서 선택된 탭·칩. Figma `포인트 옐로우` 와 같은 값입니다. */
+  highlight: '#ffda8e',
+  /** 브랜드 배경 위에 얹는 밝은 카드 면. Figma `Warm Ivory` 와 같은 값입니다. */
+  cardSurface: '#f7f3ec',
+  /** 카드 제목과 상태 배지 바탕. Figma `Dark Leather Brown` 과 같은 값입니다. */
+  cardAccent: '#6e4426',
+  /** 밝은 카드 위에 얹는 검은 알약 버튼 바탕 */
+  solidButton: '#000000',
+  /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 위쪽(투명) */
+  tabBarScrimStart: 'rgba(110, 68, 38, 0)',
+  /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 아래쪽. `cardAccent` 와 같은 갈색입니다. */
+  tabBarScrimEnd: '#6e4426',
+  /** 선택된 탭을 감싸는 유리 면 */
+  glassSelected: 'rgba(255, 255, 255, 0.2)',
 } as const;
 
 /**
