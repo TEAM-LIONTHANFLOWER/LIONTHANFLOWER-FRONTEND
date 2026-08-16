@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 
 import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
-import { BrandColors, Spacing } from '@constants/theme';
+import { FixedColors, Spacing } from '@constants/theme';
 import mcmSymbol from '@assets/images/splash/mcm-symbol.png';
 
 /** 로고가 서서히 나타나는 시간 (ms) */
@@ -58,7 +58,7 @@ export function BrandSplash({ onFinish }: BrandSplashProps) {
   }, [opacity]);
 
   return (
-    <ScreenContainer edgeToEdge backgroundColor={BrandColors.splashBackground} style={styles.stage}>
+    <ScreenContainer edgeToEdge backgroundColor={FixedColors.splashBackground} style={styles.stage}>
       <Animated.View style={[styles.fade, { opacity }]}>
         <View style={styles.logoSlot}>
           <OrbitLogo />

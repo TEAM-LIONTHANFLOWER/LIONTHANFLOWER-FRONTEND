@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { ExploreButton } from '@components/common/explore-button';
 import { ScreenContainer } from '@components/common/screen-container';
 import { VerticalScrim } from '@components/common/vertical-scrim';
-import { BrandColors, FontFamily, Spacing } from '@constants/theme';
+import { FixedColors, FontFamily, Spacing } from '@constants/theme';
 import arrowNext from '@assets/images/onboarding/arrow-next.svg';
 import arrowPrevious from '@assets/images/onboarding/arrow-prev.svg';
 import type { OnboardingSlide } from '@/types/onboarding';
@@ -110,7 +110,7 @@ export function OnboardingSlideView({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: BrandColors.splashBackground,
+    backgroundColor: FixedColors.splashBackground,
     // 화면 밖으로 넘긴 타이틀을 슬라이드 경계에서 자릅니다.
     // 이게 없으면 웹에서 가로 스크롤이 생깁니다.
     overflow: 'hidden',
@@ -137,15 +137,15 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.four,
   },
   title: {
-    fontFamily: FontFamily.displaySemiBold,
-    color: BrandColors.onDark,
+    fontFamily: FontFamily.serifSemiBold,
+    color: FixedColors.onDark,
     textAlign: 'center',
   },
   description: {
-    fontFamily: FontFamily.displayRegular,
+    fontFamily: FontFamily.serif,
     fontSize: 14,
     lineHeight: 21,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
     textAlign: 'center',
     maxWidth: 280,
     marginTop: Spacing.two,
@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   nextLabel: {
-    fontFamily: FontFamily.labelRegular,
+    fontFamily: FontFamily.label,
     fontSize: 16,
     lineHeight: 24,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   nextArrow: {
     width: 51,

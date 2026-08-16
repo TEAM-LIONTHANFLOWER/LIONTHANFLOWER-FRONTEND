@@ -2,7 +2,7 @@ import { StyleSheet, TextInput, View, type ImageRequireSource } from 'react-nati
 import { Image } from 'expo-image';
 
 import { FieldLabel } from '@components/common/field-label';
-import { BrandColors, Spacing } from '@constants/theme';
+import { FixedColors, Spacing } from '@constants/theme';
 
 interface OutlinedTextFieldProps {
   label: string;
@@ -33,7 +33,7 @@ export function OutlinedTextField({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={BrandColors.placeholderOnDark}
+          placeholderTextColor={FixedColors.placeholderOnDark}
           underlineColorAndroid="transparent"
           accessibilityLabel={label}
           style={styles.input}
@@ -58,14 +58,14 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     borderWidth: 1,
-    borderColor: BrandColors.onDark,
+    borderColor: FixedColors.onDark,
   },
   input: {
     flex: 1,
     // 안드로이드가 기본으로 넣는 여백을 없애 세 플랫폼의 높이를 맞춥니다.
     padding: 0,
     fontSize: 14,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   icon: {
     width: 24,

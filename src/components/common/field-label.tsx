@@ -1,6 +1,6 @@
 import { StyleSheet, Text } from 'react-native';
 
-import { BrandColors } from '@constants/theme';
+import { FixedColors } from '@constants/theme';
 
 interface FieldLabelProps {
   label: string;
@@ -23,9 +23,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     fontWeight: '700',
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   required: {
-    color: BrandColors.required,
+    color: FixedColors.required,
   },
 });

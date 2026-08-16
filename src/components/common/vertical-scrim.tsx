@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-/** 시안의 스크림이 가장 짙어지는 지점의 불투명도. `BrandColors.scrim` 과 같은 값입니다. */
+/** 시안의 스크림이 가장 짙어지는 지점의 불투명도. `FixedColors.scrim` 과 같은 값입니다. */
 const DEFAULT_MAX_OPACITY = 0.5;
 
 /** 위쪽 끝. 검정의 알파만 0 이라 투명해지면서 색이 뜨지 않습니다. */

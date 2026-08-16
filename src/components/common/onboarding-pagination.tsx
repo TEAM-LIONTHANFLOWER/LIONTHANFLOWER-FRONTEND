@@ -1,6 +1,6 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { BrandColors, Radius, Spacing } from '@constants/theme';
+import { FixedColors, Radius, Spacing } from '@constants/theme';
 
 interface OnboardingPaginationProps {
   /** 전체 슬라이드 수 */
@@ -43,10 +43,10 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     width: Spacing.four,
-    backgroundColor: BrandColors.onDark,
+    backgroundColor: FixedColors.onDark,
   },
   dotInactive: {
     width: Spacing.two,
-    backgroundColor: BrandColors.indicatorInactive,
+    backgroundColor: FixedColors.indicatorInactive,
   },
 });

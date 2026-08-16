@@ -3,7 +3,7 @@ import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { BrandColors, FontFamily, Radius } from '@constants/theme';
+import { FixedColors, FontFamily, Radius } from '@constants/theme';
 
 /** 시안 프레임 크기 (Figma `736:356`). */
 const BUTTON_WIDTH = 126;
@@ -30,9 +30,9 @@ const LIGHT_END = { x: 1, y: 1 } as const;
 
 /** 광원 쪽이 가장 밝고, 옆면에서 죽었다가, 반대쪽 모서리에서 되비칩니다. */
 const EDGE_COLORS = [
-  BrandColors.glassEdgeLit,
-  BrandColors.glassEdgeShade,
-  BrandColors.glassEdgeBounce,
+  FixedColors.glassEdgeLit,
+  FixedColors.glassEdgeShade,
+  FixedColors.glassEdgeBounce,
 ] as const;
 const EDGE_STOPS = [0, 0.5, 1] as const;
 
@@ -113,9 +113,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   label: {
-    fontFamily: FontFamily.displaySemiBold,
+    fontFamily: FontFamily.serifSemiBold,
     fontSize: 20,
     lineHeight: 26,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
 });

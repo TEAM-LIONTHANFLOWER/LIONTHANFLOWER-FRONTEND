@@ -8,7 +8,7 @@ import { OutlinedTextField } from '@components/common/outlined-text-field';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StartJourneyButton } from '@components/common/start-journey-button';
 import { SERVICE_LANGUAGES } from '@constants/onboarding';
-import { BrandColors, Spacing } from '@constants/theme';
+import { FixedColors, Spacing } from '@constants/theme';
 import searchIcon from '@assets/images/login/search.svg';
 import type { ServiceLanguageCode } from '@/types/onboarding';
 
@@ -40,7 +40,7 @@ export default function StaffLoginScreen() {
   }, [router]);
 
   return (
-    <ScreenContainer backgroundColor={BrandColors.splashBackground} style={styles.stage}>
+    <ScreenContainer backgroundColor={FixedColors.splashBackground} style={styles.stage}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

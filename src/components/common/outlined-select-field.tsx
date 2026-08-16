@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
 import { FieldLabel } from '@components/common/field-label';
-import { BrandColors, Spacing } from '@constants/theme';
+import { FixedColors, Spacing } from '@constants/theme';
 import chevronDown from '@assets/images/login/chevron-down.svg';
 
 /** 필드 높이가 42 라 최소 터치 영역 44 를 채우려면 위아래로 1 씩 더 필요합니다. */
@@ -103,11 +103,11 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     borderWidth: 1,
-    borderColor: BrandColors.onDark,
+    borderColor: FixedColors.onDark,
   },
   value: {
     fontSize: 14,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   chevron: {
     width: 12,
@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     marginTop: -Spacing.two,
     borderWidth: 1,
     borderTopWidth: 0,
-    borderColor: BrandColors.onDark,
-    backgroundColor: BrandColors.splashBackground,
+    borderColor: FixedColors.onDark,
+    backgroundColor: FixedColors.splashBackground,
   },
   option: {
     minHeight: 44,

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { FieldLabel } from '@components/common/field-label';
-import { BrandColors, Radius, Spacing } from '@constants/theme';
+import { FixedColors, Radius, Spacing } from '@constants/theme';
 
 /** 칩 높이가 32 라 최소 터치 영역 44 를 채우려면 위아래로 6 씩 더 필요합니다. */
 const HIT_SLOP = { top: 6, bottom: 6 } as const;
@@ -74,18 +74,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     borderRadius: Radius.pill,
     borderWidth: 1,
-    borderColor: BrandColors.onDark,
+    borderColor: FixedColors.onDark,
   },
   // 선택되면 명암이 뒤집힙니다. 테두리는 배경과 같은 색이라 보이지 않지만,
   // 남겨 두어야 선택 여부와 상관없이 칩 크기가 같습니다.
   chipSelected: {
-    backgroundColor: BrandColors.onDark,
+    backgroundColor: FixedColors.onDark,
   },
   chipLabel: {
     fontSize: 14,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   chipLabelSelected: {
-    color: BrandColors.onLight,
+    color: FixedColors.onLight,
   },
 });

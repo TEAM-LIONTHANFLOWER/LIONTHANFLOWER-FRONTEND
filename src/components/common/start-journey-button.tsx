@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 
-import { BrandColors, FontFamily } from '@constants/theme';
+import { FixedColors, FontFamily } from '@constants/theme';
 import arrowNext from '@assets/images/onboarding/arrow-next.svg';
 
 interface StartJourneyButtonProps {
@@ -43,10 +43,10 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   label: {
-    fontFamily: FontFamily.labelRegular,
+    fontFamily: FontFamily.label,
     fontSize: 16,
     lineHeight: 24,
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   arrow: {
     width: 51,

@@ -9,7 +9,7 @@ import { OutlinedTextField } from '@components/common/outlined-text-field';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StartJourneyButton } from '@components/common/start-journey-button';
 import { SERVICE_LANGUAGES, SERVICE_STYLES } from '@constants/onboarding';
-import { BrandColors, Spacing } from '@constants/theme';
+import { FixedColors, Spacing } from '@constants/theme';
 import type { ServiceLanguageCode, ServiceStyleCode } from '@/types/onboarding';
 
 /**
@@ -50,7 +50,7 @@ export default function CustomerLoginScreen() {
   }, [router]);
 
   return (
-    <ScreenContainer backgroundColor={BrandColors.splashBackground} style={styles.stage}>
+    <ScreenContainer backgroundColor={FixedColors.splashBackground} style={styles.stage}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: '500',
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
   },
   spacer: {
     flexGrow: 1,

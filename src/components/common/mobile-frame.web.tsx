@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { SafeAreaInsetsContext, type EdgeInsets } from 'react-native-safe-area-context';
 
-import { BrandColors, MobileFrameWidth } from '@constants/theme';
+import { FixedColors, MobileFrameWidth } from '@constants/theme';
 
 /**
  * 브라우저에는 노치도 홈 인디케이터도 없어 안전 영역이 0 으로 잡힙니다.
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: BrandColors.frameBackdrop,
+    backgroundColor: FixedColors.frameBackdrop,
   },
   frame: {
     width: '100%',

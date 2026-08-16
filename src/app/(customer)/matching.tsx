@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 
 import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
-import { BrandColors } from '@constants/theme';
+import { FixedColors } from '@constants/theme';
 import storeFront from '@assets/images/matching/store-front.jpg';
 import mcmSymbol from '@assets/images/splash/mcm-symbol.png';
 
@@ -74,11 +74,11 @@ export default function CustomerMatchingScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: BrandColors.splashBackground,
+    backgroundColor: FixedColors.splashBackground,
   },
   // 시안의 오버레이는 그라데이션이 아니라 화면 전체에 고르게 깔린 검정 50% 입니다.
   scrim: {
-    backgroundColor: BrandColors.scrim,
+    backgroundColor: FixedColors.scrim,
   },
   stage: {
     paddingVertical: 0,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: '500',
-    color: BrandColors.onDark,
+    color: FixedColors.onDark,
     textAlign: 'center',
   },
   symbolSlot: {

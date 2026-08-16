@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingPagination } from '@components/common/onboarding-pagination';
 import { OnboardingSlideView } from '@components/common/onboarding-slide';
 import { ONBOARDING_SLIDES } from '@constants/onboarding';
-import { BrandColors, Spacing } from '@constants/theme';
+import { FixedColors, Spacing } from '@constants/theme';
 import { useOnboardingStore } from '@stores/onboarding-store';
 import type { EntryRole } from '@/types/onboarding';
 
@@ -127,7 +127,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: BrandColors.splashBackground,
+    backgroundColor: FixedColors.splashBackground,
   },
   slide: {
     flex: 1,
