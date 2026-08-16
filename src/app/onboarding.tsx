@@ -86,7 +86,10 @@ export default function OnboardingScreen() {
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       if (width <= 0) return;
 
-      const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+      // 양 끝에서 더 밀어내면(iOS 바운스, 웹 오버스크롤) 오프셋이 음수가 되거나 마지막 장을 넘깁니다.
+      // 그대로 두면 인디케이터가 "전체 3장 중 0번째" 처럼 읽히고, 창 크기가 바뀔 때 없는 장으로 스크롤합니다.
+      const rawIndex = Math.round(event.nativeEvent.contentOffset.x / width);
+      const nextIndex = Math.min(Math.max(rawIndex, 0), ONBOARDING_SLIDES.length - 1);
       setSlideIndex((current) => (current === nextIndex ? current : nextIndex));
     },
     [width]
