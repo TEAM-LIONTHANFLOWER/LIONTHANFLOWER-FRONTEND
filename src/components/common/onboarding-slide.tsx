@@ -58,6 +58,11 @@ export function OnboardingSlideView({
   };
 
   return (
+    // 배경 사진과 스크림은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에
+    // 갇혀 사진 위아래에 배경색 띠가 생깁니다. 자세한 이유는 `screen-container.tsx` 참고.
+    //
+    // 안전 영역을 라우트가 아니라 슬라이드에서 처리하는 것도 같은 이유입니다 — 슬라이드마다
+    // 배경이 다르고 각자가 전체 화면이라, 라우트로 올리면 배경이 안전 영역에 갇힙니다.
     <View style={styles.root}>
       <Image
         source={slide.background}

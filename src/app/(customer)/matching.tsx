@@ -43,6 +43,8 @@ export default function CustomerMatchingScreen() {
   }, [router]);
 
   return (
+    // 배경 사진과 스크림은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에
+    // 갇혀 노치·홈 인디케이터 자리에 배경색 띠가 생깁니다. 자세한 이유는 `screen-container.tsx` 참고.
     <View style={styles.root}>
       <Image
         source={storeFront}
