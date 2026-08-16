@@ -79,9 +79,9 @@ export function ExploreButton({ onPress, style }: ExploreButtonProps) {
           <BlurView
             intensity={GLASS_BLUR_INTENSITY}
             tint="default"
-            // Android 는 기본값이 흐림 없음입니다. SDK 31 미만은 성능 때문에 그대로 두고,
-            // 그 이상에서만 실제 흐림을 켭니다.
-            blurMethod="dimezisBlurViewSdk31Plus"
+            // Android 는 기본값이 흐림 없음이라 명시적으로 켜야 합니다.
+            // expo-blur 15 는 SDK 31 분기 없이 Dimezis BlurView 한 가지만 제공합니다.
+            experimentalBlurMethod="dimezisBlurView"
             style={[styles.inner, styles.center]}
           >
             <Text style={styles.label}>Explore</Text>
