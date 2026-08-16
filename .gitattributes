@@ -1,0 +1,20 @@
+# 줄바꿈은 저장소·작업 복사본 모두 LF 로 통일합니다.
+#
+# 저장소에 담긴 텍스트 파일은 이미 전부 LF 입니다. 그런데 Windows 의 기본값인
+# `core.autocrlf=true` 는 체크아웃할 때 이걸 CRLF 로 바꿔놓고, Prettier 설정은
+# `endOfLine: "lf"` 라서, Windows 에서 갓 클론하면 손대지도 않은 파일까지
+# `npm run format:check` 가 전부 실패합니다. (CI 는 리눅스라 드러나지 않습니다.)
+#
+# 아래 한 줄이 그 변환을 막아 어느 OS 에서 클론해도 LF 로 떨어지게 합니다.
+* text=auto eol=lf
+
+# 이미지·폰트는 텍스트로 오인해 변환하는 일이 없도록 못 박아 둡니다.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary

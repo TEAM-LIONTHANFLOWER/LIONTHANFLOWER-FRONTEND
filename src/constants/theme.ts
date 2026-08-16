@@ -96,11 +96,48 @@ export const Colors = {
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 /**
+ * 색상 스킴과 무관하게 항상 같은 값을 쓰는 색상.
+ * 스플래시·온보딩처럼 사진과 검정 배경 위에 고정된 화면, 그리고 웹 모바일 프레임에 씁니다.
+ * 다크 모드에 따라 뒤집히면 안 되는 값이라 `Colors` 와 분리해 둡니다.
+ *
+ * 위의 `BrandColors` 는 Figma 원색 팔레트라 `Colors` 를 거쳐서만 쓰는 반면,
+ * 여기 값들은 화면에서 곧바로 씁니다. 두 목록을 섞지 않습니다.
+ */
+export const FixedColors = {
+  /** 스플래시 배경 */
+  splashBackground: '#000000',
+  /** 어두운 배경 위의 텍스트·아이콘 */
+  onDark: '#ffffff',
+  /** 흰 면 위의 텍스트·아이콘. 선택된 칩처럼 명암이 뒤집힌 요소에 씁니다. */
+  onLight: '#000000',
+  /** 어두운 배경 위 입력 필드의 플레이스홀더 */
+  placeholderOnDark: '#767676',
+  /** 필수 입력 표시(*) */
+  required: '#ff3333',
+  /** 사진 위 가독성을 확보하는 어둡기. 그라데이션의 가장 짙은 지점이자 평평한 오버레이 값입니다. */
+  scrim: 'rgba(0, 0, 0, 0.5)',
+  /** 어두운 배경 위 고스트 버튼 테두리 */
+  outlineOnDark: 'rgba(255, 255, 255, 0.6)',
+  /** 유리 가장자리 — 광원(좌상단) 쪽. 굴절로 가장 밝게 빛나는 지점입니다. */
+  glassEdgeLit: 'rgba(255, 255, 255, 0.7)',
+  /** 유리 가장자리 — 빛이 스쳐 지나가는 옆면. 여기서 가장 어둡습니다. */
+  glassEdgeShade: 'rgba(255, 255, 255, 0.15)',
+  /** 유리 가장자리 — 광원 반대쪽(우하단). 되비친 빛이 약하게 남습니다. */
+  glassEdgeBounce: 'rgba(255, 255, 255, 0.5)',
+  /** 선택되지 않은 페이지 인디케이터 */
+  indicatorInactive: 'rgba(255, 255, 255, 0.5)',
+  /** 웹 모바일 프레임 바깥. 프레임이 떠 보이도록 콘텐츠보다 어둡게 둡니다. */
+  frameBackdrop: '#17181b',
+} as const;
+
+/**
  * 글꼴 규정.
  *
  * - **한글은 Pretendard(산세리프)만** 씁니다. 한글에 세리프를 쓰지 않습니다.
  * - **영문 타이틀은 Libre Baskerville(세리프)** 입니다. 브랜드의 헤리티지 톤을 담당합니다.
  * - 영문 본문도 Libre Baskerville 을 쓰되, 한글이 섞이면 Pretendard 로 통일합니다.
+ * - **온보딩의 영문 보조 라벨만 DM Sans** 입니다. `label` 로 씁니다.
+ *   Figma 텍스트 스타일에는 없는 글꼴이라 아래 `Typography` 에도 넣지 않습니다.
  *
  * 커스텀 글꼴은 네이티브에서 `fontWeight` 로 굵기를 고르지 못합니다.
  * 굵기마다 패밀리를 따로 등록해야 해서 `*Bold` / `*SemiBold` 를 나눠 둡니다.
@@ -113,6 +150,7 @@ export const FontFamily = Platform.select({
     serif: 'var(--font-serif)',
     serifSemiBold: 'var(--font-serif)',
     serifBold: 'var(--font-serif)',
+    label: 'var(--font-label)',
     mono: 'var(--font-mono)',
   },
   default: {
@@ -121,6 +159,7 @@ export const FontFamily = Platform.select({
     serif: 'LibreBaskerville',
     serifSemiBold: 'LibreBaskerville-SemiBold',
     serifBold: 'LibreBaskerville-Bold',
+    label: 'DMSans',
     mono: 'monospace',
   },
 });
@@ -235,5 +274,17 @@ export const Spacing = {
   six: 64,
 } as const;
 
+/** 모서리 반경 토큰. */
+export const Radius = {
+  /** 양 끝이 완전히 둥근 알약 모양 */
+  pill: 999,
+} as const;
+
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+/**
+ * 웹에서 앱을 가두는 모바일 프레임 폭. 시안이 그려진 iPhone 14 Pro 와 같은 값입니다.
+ * 높이는 제한하지 않고 브라우저를 꽉 채웁니다.
+ */
+export const MobileFrameWidth = 393;

@@ -47,11 +47,24 @@
   font-display: swap;
 }
 
+/*
+ * 온보딩 보조 라벨 전용. 다른 글꼴과 달리 ttf 를 그대로 씁니다.
+ * DM Sans Regular 는 56KB 라 woff2 로 줄여 얻는 이득이 변환 단계를 들일 만큼 크지 않습니다.
+ */
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --font-sans:
     Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', 'Apple SD Gothic Neo',
     'Noto Sans KR', 'Malgun Gothic', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
   --font-serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+  --font-label: 'DM Sans', var(--font-sans);
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;

@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppProviders } from '@components/common/app-providers';
+import { MobileFrame } from '@components/common/mobile-frame';
 import { useBrandFonts } from '@hooks/use-brand-fonts';
 import { useColorScheme } from '@hooks/use-color-scheme';
 
@@ -35,7 +36,9 @@ export default function RootLayout() {
     <AppProviders>
       <SafeAreaProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }} />
+          <MobileFrame>
+            <Stack screenOptions={{ headerShown: false }} />
+          </MobileFrame>
           <StatusBar style="auto" />
         </ThemeProvider>
       </SafeAreaProvider>
