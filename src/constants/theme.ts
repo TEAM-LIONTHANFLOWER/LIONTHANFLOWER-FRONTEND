@@ -118,6 +118,13 @@ export const FixedColors = {
   scrim: 'rgba(0, 0, 0, 0.5)',
   /** 어두운 배경 위 고스트 버튼 테두리 */
   outlineOnDark: 'rgba(255, 255, 255, 0.6)',
+  /**
+   * 고른 항목의 밝은 면. 칩과 줄 목록이 선택되면 이 색으로 뒤집히고 글자는 `onLight` 가 됩니다.
+   * 완전한 흰색이 아니라 90% 인 것은 뒤에 깔린 브랜드 배경이 살짝 비쳐야 하기 때문입니다.
+   */
+  selectedSurface: 'rgba(255, 255, 255, 0.9)',
+  /** 아직 고르지 않은 줄 목록의 면. 어두운 배경에서 줄이 구분될 만큼만 밝힙니다. */
+  optionSurface: 'rgba(255, 255, 255, 0.2)',
   /** 유리 가장자리 — 광원(좌상단) 쪽. 굴절로 가장 밝게 빛나는 지점입니다. */
   glassEdgeLit: 'rgba(255, 255, 255, 0.7)',
   /** 유리 가장자리 — 빛이 스쳐 지나가는 옆면. 여기서 가장 어둡습니다. */
@@ -130,10 +137,11 @@ export const FixedColors = {
   navTabSelected: 'rgba(255, 255, 255, 0.20)',
   /** 웹 모바일 프레임 바깥. 프레임이 떠 보이도록 콘텐츠보다 어둡게 둡니다. */
   frameBackdrop: '#17181b',
-  /** 홈 계열 화면 배경 그라데이션의 좌상단. Figma `Black` 과 같은 값입니다. */
-  brandBackdropStart: '#111111',
-  /** 홈 계열 화면 배경 그라데이션의 우하단. Figma `MCM Cognac` 과 같은 값입니다. */
-  brandBackdropEnd: '#a66a3f',
+  /**
+   * 홈·Arc 계열 화면의 배경. Figma `Black` 과 같은 값입니다.
+   * 시안의 모든 브랜드 화면이 이 한 색으로 깔려 있고, 색감은 그 위에 얹는 금빛 조명이 냅니다.
+   */
+  brandBackdrop: '#111111',
   /** 브랜드 배경 위에서 선택된 탭·칩. Figma `포인트 옐로우` 와 같은 값입니다. */
   highlight: '#ffda8e',
   /** 브랜드 배경 위에 얹는 밝은 카드 면. Figma `Warm Ivory` 와 같은 값입니다. */
@@ -144,12 +152,14 @@ export const FixedColors = {
   solidButton: '#000000',
   /** Arc 봉투 겉면. Figma `MCM Cognac` 과 같은 값입니다. */
   envelopeSurface: '#a66a3f',
+  /** Arc 봉투 테두리. 가죽 결이 배경에서 끊기지 않도록 한 톤 밝은 선으로 두릅니다. */
+  envelopeEdge: '#b48460',
   /** 카드와 봉투가 배경에서 떠 보이게 하는 그림자 */
   cardShadow: '0px 4px 30px rgba(0, 0, 0, 0.25)',
   /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 위쪽(투명) */
-  tabBarScrimStart: 'rgba(110, 68, 38, 0)',
-  /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 아래쪽. `cardAccent` 와 같은 갈색입니다. */
-  tabBarScrimEnd: '#6e4426',
+  tabBarScrimStart: 'rgba(0, 0, 0, 0)',
+  /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 아래쪽. 배경보다 더 짙게 떨어뜨려 바를 띄웁니다. */
+  tabBarScrimEnd: '#000000',
 } as const;
 
 /**

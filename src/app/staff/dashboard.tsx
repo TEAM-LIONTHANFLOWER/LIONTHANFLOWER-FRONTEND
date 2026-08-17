@@ -11,6 +11,7 @@ import { DateSection } from '@components/staff/date-section';
 import { VisitCard } from '@components/staff/visit-card';
 import { Spacing } from '@constants/theme';
 import { VISIT_DAYS } from '@constants/visit';
+import type { RecordFlow } from '@/types/record-form';
 import type { MemoryPage, VisitMode } from '@/types/visit';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
@@ -33,13 +34,21 @@ export default function StaffDashboardScreen() {
    * 고객 상세는 프로필(Arc)과 방문 기록 두 면을 넘겨 보는 화면입니다.
    * 어느 면을 먼저 열지 액션마다 다르게 넘깁니다.
    *
-   * Arc 생성·Visit Memory 저장·응대 시작은 원래 서버에 쓰기 요청을 보내야 하는 동작인데
-   * 아직 API 가 없습니다. 지금은 해당 내용을 볼 수 있는 면을 열어 두고,
-   * 엔드포인트가 생기면 여기에서 `useMutation` 을 부릅니다.
+   * 응대 시작은 원래 서버에 쓰기 요청을 보내야 하는 동작인데 아직 API 가 없습니다.
+   * 지금은 해당 내용을 볼 수 있는 면을 열어 두고, 엔드포인트가 생기면
+   * 여기에서 `useMutation` 을 부릅니다.
    */
   const openDetail = useCallback(
     (page: MemoryPage) => {
       router.push({ pathname: '/staff/customer-detail', params: { page } });
+    },
+    [router]
+  );
+
+  /** 방문 하나를 기록하러 갑니다. 구매했으면 Arc, 아니면 Visit Memory 를 씁니다. */
+  const openRecordForm = useCallback(
+    (flow: RecordFlow) => {
+      router.push({ pathname: '/staff/record-form', params: { flow } });
     },
     [router]
   );
@@ -78,8 +87,8 @@ export default function StaffDashboardScreen() {
                       key={visit.id}
                       visit={visit}
                       onOpen={() => openDetail('arc')}
-                      onCreateArc={() => openDetail('arc')}
-                      onSaveMemory={() => openDetail('memory')}
+                      onCreateArc={() => openRecordForm('arc')}
+                      onSaveMemory={() => openRecordForm('memory')}
                       onStartService={() => openDetail('arc')}
                     />
                   ))}

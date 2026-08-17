@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 
 import { ActionPill } from '@components/common/action-pill';
@@ -29,7 +29,17 @@ const CLIP_OVERHANG = 44;
 
 const LABEL = 'Initial setup';
 
+/** 아이콘만 놓을 때의 크기. 시안(2-1 Arc)의 톱니 아이콘과 같은 값입니다. */
+const ICON_SIZE = 29;
+/** 아이콘이 29 라 최소 터치 영역 44 를 채우려면 사방으로 8 씩 더 필요합니다. */
+const ICON_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
+
 interface InitialSetupButtonProps {
+  /**
+   * 라벨 없이 톱니 아이콘만 놓습니다.
+   * 카드 한 장이 화면을 채우는 Arc 화면은 머리말 줄에 글자를 더 얹지 않습니다.
+   */
+  iconOnly?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -39,12 +49,35 @@ interface InitialSetupButtonProps {
  *
  * 고객 Arc 화면과 직원 고객 상세 화면이 같은 동작을 해서 버튼과 팝업을 함께 들고 있습니다.
  */
-export function InitialSetupButton({ style }: InitialSetupButtonProps) {
+export function InitialSetupButton({ iconOnly = false, style }: InitialSetupButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
-      <ActionPill label={LABEL} icon={settingsIcon} onPress={() => setIsOpen(true)} style={style} />
+      {iconOnly ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={LABEL}
+          accessibilityState={{ expanded: isOpen }}
+          hitSlop={ICON_HIT_SLOP}
+          onPress={() => setIsOpen(true)}
+          style={style}
+        >
+          <Image
+            source={settingsIcon}
+            style={styles.icon}
+            contentFit="contain"
+            accessible={false}
+          />
+        </Pressable>
+      ) : (
+        <ActionPill
+          label={LABEL}
+          icon={settingsIcon}
+          onPress={() => setIsOpen(true)}
+          style={style}
+        />
+      )}
 
       <PopupOverlay visible={isOpen} onClose={() => setIsOpen(false)} label={LABEL}>
         <View style={styles.stage}>
@@ -65,6 +98,10 @@ export function InitialSetupButton({ style }: InitialSetupButtonProps) {
 }
 
 const styles = StyleSheet.create({
+  icon: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+  },
   // 좁은 화면에서도 고정 폭이 넘치지 않도록 최대 폭을 함께 둡니다.
   stage: {
     width: CARD_WIDTH,

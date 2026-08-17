@@ -1,13 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { FixedColors } from '@constants/theme';
 import light from '@assets/images/common/light.png';
-
-/** 좌상단에서 우하단으로 흐르는 대각선 그라데이션. */
-const TOP_LEFT = { x: 0, y: 0 } as const;
-const BOTTOM_RIGHT = { x: 1, y: 1 } as const;
 
 /** 조명 그림 크기. 원본 PNG 를 확대·축소 없이 그대로 씁니다. */
 const LIGHT_SIZE = 387;
@@ -24,8 +20,19 @@ const LIGHT_CONTENT_CENTER_X = 193;
 const LIGHT_CENTER_X_OFFSET = 80;
 
 /**
- * 홈 계열 화면이 공유하는 배경.
- * 검정에서 코냑으로 흐르는 대각선 그라데이션 위에, 우상단에서 쏟아지는 금빛을 얹습니다.
+ * 화면에 들어올 때 조명이 켜지는 시간.
+ * 배경이 단색이라 빛만 천천히 밝아져도 화면이 열리는 느낌이 납니다.
+ */
+const LIGHT_FADE_DURATION_MS = 900;
+
+/** 켜지는 동안 빛줄기가 살짝 퍼집니다. */
+const LIGHT_SCALE_FROM = 1.08;
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
+
+/**
+ * 홈·Arc 계열 화면이 공유하는 배경.
+ * 시안의 모든 브랜드 화면과 같은 검정 단색 위에, 우상단에서 쏟아지는 금빛을 얹습니다.
  *
  * **`ScreenContainer` 바깥에 둡니다.** 안에 넣으면 안전 영역 안쪽에 갇혀
  * 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
@@ -37,15 +44,31 @@ const LIGHT_CENTER_X_OFFSET = 80;
  * 방법이 플랫폼마다 제각각이라, 시안의 도형과 블러를 그대로 구운 PNG 를 씁니다.
  */
 export function BrandBackdrop() {
+  // 지연 초기화로 한 번만 만들고, 이후에는 애니메이션으로만 값을 바꿉니다.
+  const [glow] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    const animation = Animated.timing(glow, {
+      toValue: 1,
+      duration: LIGHT_FADE_DURATION_MS,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    });
+
+    animation.start();
+    return () => animation.stop();
+  }, [glow]);
+
+  const scale = glow.interpolate({ inputRange: [0, 1], outputRange: [LIGHT_SCALE_FROM, 1] });
+
   return (
     <View style={[StyleSheet.absoluteFill, styles.backdrop]}>
-      <LinearGradient
-        colors={[FixedColors.brandBackdropStart, FixedColors.brandBackdropEnd]}
-        start={TOP_LEFT}
-        end={BOTTOM_RIGHT}
-        style={StyleSheet.absoluteFill}
+      <AnimatedImage
+        source={light}
+        style={[styles.light, { opacity: glow, transform: [{ scale }] }]}
+        contentFit="contain"
+        accessible={false}
       />
-      <Image source={light} style={styles.light} contentFit="contain" accessible={false} />
     </View>
   );
 }
@@ -53,6 +76,7 @@ export function BrandBackdrop() {
 const styles = StyleSheet.create({
   // 화면 전체를 덮는 배경이라, 누르기가 그대로 위의 내용까지 내려가게 둡니다.
   backdrop: {
+    backgroundColor: FixedColors.brandBackdrop,
     pointerEvents: 'none',
   },
   // 빛의 위쪽 끝이 화면 맨 위에 닿도록, 그림에서 비어 있는 위쪽 여백만큼 끌어올립니다.

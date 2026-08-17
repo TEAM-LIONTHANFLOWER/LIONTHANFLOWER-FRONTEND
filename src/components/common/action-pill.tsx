@@ -30,15 +30,30 @@ interface ActionPillProps {
   icon?: ImageRequireSource;
   /** 나란히 놓인 버튼끼리 남는 가로 공간을 똑같이 나눠 갖게 합니다. */
   fill?: boolean;
+  /**
+   * 버튼의 명암.
+   *
+   * - `dark` — 검은 바탕에 흰 글자. 밝은 카드 위에 놓입니다.
+   * - `light` — 흰 바탕에 검은 글자. 어두운 브랜드 배경 위에 놓입니다.
+   */
+  tone?: 'dark' | 'light';
   style?: StyleProp<ViewStyle>;
 }
 
 /**
- * 검은 알약 버튼. 직원 화면의 모든 액션과 홈 계열 화면의 `Initial setup` 이 이 모양입니다.
+ * 알약 버튼. 직원 화면의 모든 액션과 홈 계열 화면의 `Initial setup` 이 이 모양입니다.
  * 고객·직원이 함께 쓰기 때문에 `common` 에 둡니다.
  */
-export function ActionPill({ label, onPress, icon, fill = false, style }: ActionPillProps) {
+export function ActionPill({
+  label,
+  onPress,
+  icon,
+  fill = false,
+  tone = 'dark',
+  style,
+}: ActionPillProps) {
   const disabled = onPress === undefined;
+  const isLight = tone === 'light';
 
   return (
     <Pressable
@@ -48,12 +63,18 @@ export function ActionPill({ label, onPress, icon, fill = false, style }: Action
       disabled={disabled}
       hitSlop={HIT_SLOP}
       onPress={onPress}
-      style={[styles.pill, fill && styles.pillFill, disabled && styles.pillDisabled, style]}
+      style={[
+        styles.pill,
+        isLight && styles.pillLight,
+        fill && styles.pillFill,
+        disabled && styles.pillDisabled,
+        style,
+      ]}
     >
       {icon === undefined ? null : (
         <Image source={icon} style={styles.icon} contentFit="contain" accessible={false} />
       )}
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, isLight && styles.labelLight]}>{label}</Text>
     </Pressable>
   );
 }
@@ -68,6 +89,9 @@ const styles = StyleSheet.create({
     paddingVertical: PADDING_Y,
     borderRadius: Radius.pill,
     backgroundColor: FixedColors.solidButton,
+  },
+  pillLight: {
+    backgroundColor: FixedColors.onDark,
   },
   pillFill: {
     flex: 1,
@@ -84,5 +108,8 @@ const styles = StyleSheet.create({
     fontSize: LABEL_FONT_SIZE,
     lineHeight: LABEL_FONT_SIZE * LineHeightRatio.base,
     color: FixedColors.onDark,
+  },
+  labelLight: {
+    color: FixedColors.onLight,
   },
 });
