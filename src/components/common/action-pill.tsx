@@ -33,7 +33,10 @@ interface ActionPillProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/** 밝은 카드 위에 얹는 검은 알약 버튼. 직원 화면의 모든 액션이 이 모양입니다. */
+/**
+ * 검은 알약 버튼. 직원 화면의 모든 액션과 홈 계열 화면의 `Initial setup` 이 이 모양입니다.
+ * 고객·직원이 함께 쓰기 때문에 `common` 에 둡니다.
+ */
 export function ActionPill({ label, onPress, icon, fill = false, style }: ActionPillProps) {
   const disabled = onPress === undefined;
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { BrandWordmark } from '@components/common/brand-wordmark';
@@ -18,6 +19,11 @@ const TITLE = 'Ready for your next move?';
 interface BrandIntroHeaderProps {
   /** 타이틀 아래 한 줄 안내. 화면마다 다릅니다. */
   description: string;
+  /**
+   * 워드마크 오른쪽 끝에 나란히 놓는 요소.
+   * Arc 계열 화면의 `Visit Memory` 가 여기 들어갑니다. 홈에는 없습니다.
+   */
+  accessory?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -27,10 +33,15 @@ interface BrandIntroHeaderProps {
  *
  * 어두운 브랜드 배경(`BrandBackdrop`) 위에만 올라가므로 글자색이 흰색으로 고정입니다.
  */
-export function BrandIntroHeader({ description, style }: BrandIntroHeaderProps) {
+export function BrandIntroHeader({ description, accessory, style }: BrandIntroHeaderProps) {
   return (
     <View style={style}>
-      <BrandWordmark style={styles.wordmark} />
+      {/* 곁들임은 워드마크 아래가 아니라 위쪽 끝에 맞춰 걸립니다. */}
+      <View style={styles.wordmarkRow}>
+        <BrandWordmark />
+        {accessory}
+      </View>
+
       <Text style={styles.title}>{TITLE}</Text>
       <Text style={styles.description}>{description}</Text>
     </View>
@@ -38,7 +49,11 @@ export function BrandIntroHeader({ description, style }: BrandIntroHeaderProps) 
 }
 
 const styles = StyleSheet.create({
-  wordmark: {
+  wordmarkRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
     marginTop: WORDMARK_TOP,
   },
   title: {

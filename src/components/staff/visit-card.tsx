@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { ActionPill } from '@components/staff/action-pill';
+import { ActionPill } from '@components/common/action-pill';
 import { RecordCard } from '@components/staff/record-card';
 import type { StoreVisit } from '@/types/visit';
 

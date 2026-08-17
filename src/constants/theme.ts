@@ -142,6 +142,10 @@ export const FixedColors = {
   cardAccent: '#6e4426',
   /** 밝은 카드 위에 얹는 검은 알약 버튼 바탕 */
   solidButton: '#000000',
+  /** Arc 봉투 겉면. Figma `MCM Cognac` 과 같은 값입니다. */
+  envelopeSurface: '#a66a3f',
+  /** 카드와 봉투가 배경에서 떠 보이게 하는 그림자 */
+  cardShadow: '0px 4px 30px rgba(0, 0, 0, 0.25)',
   /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 위쪽(투명) */
   tabBarScrimStart: 'rgba(110, 68, 38, 0)',
   /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 아래쪽. `cardAccent` 와 같은 갈색입니다. */
@@ -294,6 +298,8 @@ export const Spacing = {
 
 /** 모서리 반경 토큰. */
 export const Radius = {
+  /** 봉투·편지지처럼 모서리만 살짝 다듬은 카드 */
+  card: 4,
   /** 양 끝이 완전히 둥근 알약 모양 */
   pill: 999,
 } as const;
