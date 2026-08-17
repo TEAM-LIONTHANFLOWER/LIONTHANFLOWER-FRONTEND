@@ -1,4 +1,4 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 /** 시안의 스크림이 가장 짙어지는 지점의 불투명도. `FixedColors.scrim` 과 같은 값입니다. */
@@ -28,11 +28,17 @@ interface VerticalScrimProps {
 export function VerticalScrim({ maxOpacity = DEFAULT_MAX_OPACITY, style }: VerticalScrimProps) {
   return (
     <LinearGradient
-      pointerEvents="none"
       colors={[TRANSPARENT_BLACK, `rgba(0, 0, 0, ${maxOpacity})`]}
       start={TOP}
       end={BOTTOM}
-      style={style}
+      style={[styles.scrim, style]}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  // 사진 위를 덮는 장식이라, 누르기가 그대로 아래로 내려가게 둡니다.
+  scrim: {
+    pointerEvents: 'none',
+  },
+});

@@ -54,7 +54,7 @@ export function ArcEnvelope({ entry, stacked = false, style }: ArcEnvelopeProps)
     >
       <Image source={envelopeFlap} style={styles.flap} contentFit="fill" accessible={false} />
 
-      <View style={styles.sealRow} pointerEvents="none">
+      <View style={styles.sealRow}>
         <Image source={waxSeal} style={styles.seal} contentFit="contain" accessible={false} />
       </View>
 
@@ -64,7 +64,7 @@ export function ArcEnvelope({ entry, stacked = false, style }: ArcEnvelopeProps)
         <Text style={styles.metaLine}>{entry.date}</Text>
       </View>
 
-      <View style={styles.symbolRow} pointerEvents="none">
+      <View style={styles.symbolRow}>
         <Image source={mcmWordmark} style={styles.symbol} contentFit="contain" accessible={false} />
       </View>
     </View>
@@ -91,12 +91,14 @@ const styles = StyleSheet.create({
   },
   // 실링과 심벌은 가로 가운데에 옵니다. 봉투 폭이 화면 따라 달라져서
   // 좌표 대신 폭을 꽉 채운 줄 안에서 가운데 정렬로 잡습니다.
+  // 봉투를 덮고 있는 줄이라, 누르기가 그대로 봉투까지 내려가게 둡니다.
   sealRow: {
     position: 'absolute',
     top: SEAL_TOP,
     left: 0,
     right: 0,
     alignItems: 'center',
+    pointerEvents: 'none',
   },
   // 시안에는 실링에도 그림자가 있지만 넣지 않습니다. `boxShadow` 는 그림의 투명한 부분을
   // 따라가지 못해 동그란 실링 둘레에 네모난 그림자가 생깁니다.
@@ -127,6 +129,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    pointerEvents: 'none',
   },
   symbol: {
     width: SYMBOL_WIDTH,

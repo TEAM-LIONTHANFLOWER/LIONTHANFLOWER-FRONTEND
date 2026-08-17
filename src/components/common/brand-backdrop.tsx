@@ -38,7 +38,7 @@ const LIGHT_CENTER_X_OFFSET = 80;
  */
 export function BrandBackdrop() {
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View style={[StyleSheet.absoluteFill, styles.backdrop]}>
       <LinearGradient
         colors={[FixedColors.brandBackdropStart, FixedColors.brandBackdropEnd]}
         start={TOP_LEFT}
@@ -51,6 +51,10 @@ export function BrandBackdrop() {
 }
 
 const styles = StyleSheet.create({
+  // 화면 전체를 덮는 배경이라, 누르기가 그대로 위의 내용까지 내려가게 둡니다.
+  backdrop: {
+    pointerEvents: 'none',
+  },
   // 빛의 위쪽 끝이 화면 맨 위에 닿도록, 그림에서 비어 있는 위쪽 여백만큼 끌어올립니다.
   // 안전 영역보다 위에 있어서 노치 자리까지 빛이 이어집니다.
   light: {

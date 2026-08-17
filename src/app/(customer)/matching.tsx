@@ -202,12 +202,11 @@ export default function CustomerMatchingScreen() {
         contentFit="cover"
         accessible={false}
       />
-      <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.scrim]} />
+      <View style={[StyleSheet.absoluteFill, styles.scrim]} />
 
       {/* 넘어가는 동안 홈의 배경을 미리 덮어씌웁니다. */}
       <Animated.View
-        pointerEvents="none"
-        style={[StyleSheet.absoluteFill, { opacity: backdropOpacity }]}
+        style={[StyleSheet.absoluteFill, styles.overlay, { opacity: backdropOpacity }]}
       >
         <BrandBackdrop />
       </Animated.View>
@@ -264,7 +263,6 @@ function FlyingMark({ flight, progress }: FlyingMarkProps) {
 
   return (
     <Animated.View
-      pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
       style={[
@@ -285,8 +283,13 @@ const styles = StyleSheet.create({
     backgroundColor: FixedColors.splashBackground,
   },
   // 시안의 오버레이는 그라데이션이 아니라 화면 전체에 고르게 깔린 검정 50% 입니다.
+  // 화면 전체를 덮는 층이라, 누르기가 그대로 아래로 내려가게 둡니다.
   scrim: {
     backgroundColor: FixedColors.scrim,
+    pointerEvents: 'none',
+  },
+  overlay: {
+    pointerEvents: 'none',
   },
   stage: {
     paddingVertical: 0,
@@ -328,6 +331,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 0,
     height: 0,
+    pointerEvents: 'none',
   },
   flightWordmark: {
     position: 'absolute',

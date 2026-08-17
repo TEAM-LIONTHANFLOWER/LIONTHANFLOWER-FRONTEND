@@ -17,7 +17,6 @@ export function OnboardingPagination({ count, activeIndex, style }: OnboardingPa
       accessible
       accessibilityRole="progressbar"
       accessibilityLabel={`전체 ${count}장 중 ${activeIndex + 1}번째`}
-      pointerEvents="none"
       style={[styles.row, style]}
     >
       {Array.from({ length: count }, (_, index) => (
@@ -31,11 +30,13 @@ export function OnboardingPagination({ count, activeIndex, style }: OnboardingPa
 }
 
 const styles = StyleSheet.create({
+  // 읽어 주기만 하는 표시라, 누르기가 그대로 아래로 내려가게 둡니다.
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.two,
+    pointerEvents: 'none',
   },
   dot: {
     height: Spacing.two,
