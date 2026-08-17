@@ -126,6 +126,8 @@ export const FixedColors = {
   glassEdgeBounce: 'rgba(255, 255, 255, 0.5)',
   /** 선택되지 않은 페이지 인디케이터 */
   indicatorInactive: 'rgba(255, 255, 255, 0.5)',
+  /** 하단 내비게이션에서 선택된 탭의 캡슐 배경 */
+  navTabSelected: 'rgba(255, 255, 255, 0.20)',
   /** 웹 모바일 프레임 바깥. 프레임이 떠 보이도록 콘텐츠보다 어둡게 둡니다. */
   frameBackdrop: '#17181b',
 } as const;
