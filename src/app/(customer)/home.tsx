@@ -1,25 +1,34 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { PillTabs, type PillTabOption } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
+import { BottomNavBar } from '@components/customer/bottom-nav-bar';
 import { BrandStoryBlock } from '@components/customer/brand-story-block';
-import { CustomerTabBar, TAB_BAR_HEIGHT } from '@components/customer/customer-tab-bar';
 import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
 import { BRAND_STORIES, MYSELF_PHOTOS, NOW_ON_FEATURE } from '@constants/home';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
-import tabArcIcon from '@assets/images/home/tab-arc.svg';
-import tabHomeIcon from '@assets/images/home/tab-home.svg';
-import tabStudioIcon from '@assets/images/home/tab-studio.svg';
-import type { CustomerSectionKey, CustomerTabItem } from '@/types/home';
+import type { CustomerSectionKey } from '@/types/home';
+import type { NavTabId } from '@/types/navigation';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
 const TABS_TO_FEATURE = 20;
 const FEATURE_TO_STORIES = 29;
 const STORIES_TO_GALLERY = 45;
+
+/** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. 스크롤 끝에 이만큼 여백을 둡니다. */
+const NAV_AREA_HEIGHT = 118;
+/** 스크림 위쪽 끝에서 유리 막대까지의 거리. */
+const NAV_BAR_TOP = 16;
+
+/** 위는 투명하고 아래로 갈수록 짙어지는 갈색 스크림. */
+const TOP = { x: 0.5, y: 0 } as const;
+const BOTTOM = { x: 0.5, y: 1 } as const;
 
 const DESCRIPTION = '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.';
 
@@ -29,16 +38,12 @@ const SECTION_TABS: readonly PillTabOption<CustomerSectionKey>[] = [
   { value: 'arc', label: 'Arc', disabled: true },
 ];
 
-const TAB_BAR_ITEMS: readonly CustomerTabItem[] = [
-  { key: 'home', label: 'Home', icon: tabHomeIcon, href: '/home' },
-  // Arc / Studio 화면은 아직 없습니다. 화면이 생기면 `href` 만 채우면 됩니다.
-  { key: 'arc', label: 'Arc', icon: tabArcIcon },
-  { key: 'studio', label: 'Studio', icon: tabStudioIcon },
-];
-
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
+  const insets = useSafeAreaInsets();
   const [section, setSection] = useState<CustomerSectionKey>('home');
+  // /arc, /studio 라우트가 아직 없어 지금은 화면 안에서만 선택 상태를 들고 있습니다.
+  const [activeTab, setActiveTab] = useState<NavTabId>('home');
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
@@ -76,7 +81,15 @@ export default function CustomerHomeScreen() {
         </ScrollView>
       </ScreenContainer>
 
-      <CustomerTabBar items={TAB_BAR_ITEMS} activeKey="home" />
+      {/* 유리 막대 자체는 홈 인디케이터를 피하도록 아래 안전 영역만큼 띄웁니다. */}
+      <LinearGradient
+        colors={[FixedColors.tabBarScrimStart, FixedColors.tabBarScrimEnd]}
+        start={TOP}
+        end={BOTTOM}
+        style={[styles.navScrim, { paddingBottom: insets.bottom }]}
+      >
+        <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} style={styles.navBar} />
+      </LinearGradient>
     </View>
   );
 }
@@ -91,8 +104,18 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   content: {
-    // 떠 있는 탭 바에 마지막 사진이 가리지 않도록 그만큼 비워 둡니다.
-    paddingBottom: TAB_BAR_HEIGHT,
+    // 떠 있는 내비게이션에 마지막 사진이 가리지 않도록 그만큼 비워 둡니다.
+    paddingBottom: NAV_AREA_HEIGHT,
+  },
+  navScrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: NAV_AREA_HEIGHT,
+  },
+  navBar: {
+    marginTop: NAV_BAR_TOP,
   },
   gutter: {
     paddingHorizontal: Spacing.four,

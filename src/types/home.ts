@@ -1,25 +1,9 @@
 import type { ImageRequireSource } from 'react-native';
-import type { Href } from 'expo-router';
 
 import type { TypographyToken } from '@constants/theme';
 
 /** 고객 홈 위쪽에서 화면 내용을 가르는 탭. */
 export type CustomerSectionKey = 'home' | 'arc';
-
-/** 고객 화면 아래에 떠 있는 탭 바의 항목. */
-export type CustomerTabKey = 'home' | 'arc' | 'studio';
-
-/** 떠 있는 탭 바에 걸리는 항목 하나. */
-export interface CustomerTabItem {
-  key: CustomerTabKey;
-  label: string;
-  icon: ImageRequireSource;
-  /**
-   * 탭을 눌렀을 때 갈 곳.
-   * 아직 만들지 않은 화면은 비워 둡니다. 화면이 생기면 여기에 경로만 채우면 됩니다.
-   */
-  href?: Href;
-}
 
 /** 지금 진행 중인 브랜드 경험을 소개하는 큰 사진 카드. */
 export interface NowOnFeature {

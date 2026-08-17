@@ -126,6 +126,8 @@ export const FixedColors = {
   glassEdgeBounce: 'rgba(255, 255, 255, 0.5)',
   /** 선택되지 않은 페이지 인디케이터 */
   indicatorInactive: 'rgba(255, 255, 255, 0.5)',
+  /** 하단 내비게이션에서 선택된 탭의 캡슐 배경 */
+  navTabSelected: 'rgba(255, 255, 255, 0.20)',
   /** 웹 모바일 프레임 바깥. 프레임이 떠 보이도록 콘텐츠보다 어둡게 둡니다. */
   frameBackdrop: '#17181b',
   /** 홈 계열 화면 배경 그라데이션의 좌상단. Figma `Black` 과 같은 값입니다. */
@@ -144,8 +146,6 @@ export const FixedColors = {
   tabBarScrimStart: 'rgba(110, 68, 38, 0)',
   /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 아래쪽. `cardAccent` 와 같은 갈색입니다. */
   tabBarScrimEnd: '#6e4426',
-  /** 선택된 탭을 감싸는 유리 면 */
-  glassSelected: 'rgba(255, 255, 255, 0.2)',
 } as const;
 
 /**

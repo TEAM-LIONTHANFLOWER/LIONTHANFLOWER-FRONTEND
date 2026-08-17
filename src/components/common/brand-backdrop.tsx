@@ -3,22 +3,25 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { FixedColors } from '@constants/theme';
-import spotlight from '@assets/images/home/spotlight.png';
+import light from '@assets/images/common/light.png';
 
 /** 좌상단에서 우하단으로 흐르는 대각선 그라데이션. */
 const TOP_LEFT = { x: 0, y: 0 } as const;
 const BOTTOM_RIGHT = { x: 1, y: 1 } as const;
 
+/** 조명 그림 크기. 원본 PNG 를 확대·축소 없이 그대로 씁니다. */
+const LIGHT_SIZE = 387;
+
 /**
- * 스포트라이트 그림 크기.
- * 시안의 발광체는 한 변 131.9 인 정사각형을 45도 돌린 것(대각선 186.6)이고,
- * 여기에 블러가 사방으로 50 씩 번져 288 이 됩니다.
+ * 그림 안에서 빛이 실제로 그려진 영역의 위쪽 끝과 좌우 한가운데입니다.
+ * 캔버스 가장자리는 투명하게 비어 있어, 그림을 그대로 앉히면 빛이 그만큼 아래로 밀립니다.
+ * 화면에 붙일 때는 캔버스가 아니라 이 값을 기준으로 잡습니다.
  */
-const SPOTLIGHT_SIZE = 288;
-/** 시안(393 폭)에서 발광체 중심은 화면 가운데보다 80 오른쪽에 있습니다. */
-const SPOTLIGHT_CENTER_X_OFFSET = 80;
-/** 발광체가 화면 위쪽에 반쯤 걸쳐 있어 중심이 화면 안 93 지점에 옵니다. */
-const SPOTLIGHT_CENTER_Y = 93;
+const LIGHT_CONTENT_TOP = 99;
+const LIGHT_CONTENT_CENTER_X = 193;
+
+/** 시안(393 폭)에서 빛줄기 한가운데는 화면 가운데보다 80 오른쪽에 있습니다. */
+const LIGHT_CENTER_X_OFFSET = 80;
 
 /**
  * 홈 계열 화면이 공유하는 배경.
@@ -30,7 +33,7 @@ const SPOTLIGHT_CENTER_Y = 93;
  * 색상 스킴을 따르지 않습니다. 스플래시·온보딩과 마찬가지로 배경이 고정된 화면이라
  * 색을 `FixedColors` 에서 가져옵니다.
  *
- * 스포트라이트는 블러 처리된 그림입니다. React Native 에는 도형에 블러를 먹이는
+ * 조명은 블러 처리된 그림입니다. React Native 에는 도형에 블러를 먹이는
  * 방법이 플랫폼마다 제각각이라, 시안의 도형과 블러를 그대로 구운 PNG 를 씁니다.
  */
 export function BrandBackdrop() {
@@ -42,19 +45,20 @@ export function BrandBackdrop() {
         end={BOTTOM_RIGHT}
         style={StyleSheet.absoluteFill}
       />
-      <Image source={spotlight} style={styles.spotlight} contentFit="contain" accessible={false} />
+      <Image source={light} style={styles.light} contentFit="contain" accessible={false} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // 중심 좌표를 맞춰야 해서 그림 크기의 절반씩 당겨 놓습니다.
-  spotlight: {
+  // 빛의 위쪽 끝이 화면 맨 위에 닿도록, 그림에서 비어 있는 위쪽 여백만큼 끌어올립니다.
+  // 안전 영역보다 위에 있어서 노치 자리까지 빛이 이어집니다.
+  light: {
     position: 'absolute',
-    width: SPOTLIGHT_SIZE,
-    height: SPOTLIGHT_SIZE,
-    top: SPOTLIGHT_CENTER_Y - SPOTLIGHT_SIZE / 2,
+    width: LIGHT_SIZE,
+    height: LIGHT_SIZE,
+    top: -LIGHT_CONTENT_TOP,
     left: '50%',
-    marginLeft: SPOTLIGHT_CENTER_X_OFFSET - SPOTLIGHT_SIZE / 2,
+    marginLeft: LIGHT_CENTER_X_OFFSET - LIGHT_CONTENT_CENTER_X,
   },
 });
