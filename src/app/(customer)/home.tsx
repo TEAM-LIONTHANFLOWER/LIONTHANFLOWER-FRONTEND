@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
-import { PillTabs, type PillTabOption } from '@components/common/pill-tabs';
+import { PillTabs } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
 import { BottomNavBar } from '@components/customer/bottom-nav-bar';
 import { BrandStoryBlock } from '@components/customer/brand-story-block';
 import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
 import { BRAND_STORIES, MYSELF_PHOTOS, NOW_ON_FEATURE } from '@constants/home';
+import { CUSTOMER_SECTION_TABS } from '@constants/navigation';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
 import type { CustomerSectionKey } from '@/types/home';
 import type { NavTabId } from '@/types/navigation';
@@ -32,18 +34,33 @@ const BOTTOM = { x: 0.5, y: 1 } as const;
 
 const DESCRIPTION = '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.';
 
-const SECTION_TABS: readonly PillTabOption<CustomerSectionKey>[] = [
-  { value: 'home', label: 'Home' },
-  // Arc 화면은 아직 없습니다. 화면이 생기면 `disabled` 를 지웁니다.
-  { value: 'arc', label: 'Arc', disabled: true },
-];
-
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [section, setSection] = useState<CustomerSectionKey>('home');
-  // /arc, /studio 라우트가 아직 없어 지금은 화면 안에서만 선택 상태를 들고 있습니다.
   const [activeTab, setActiveTab] = useState<NavTabId>('home');
+
+  const handleSectionChange = useCallback(
+    (section: CustomerSectionKey) => {
+      if (section === 'arc') {
+        router.navigate('/arc');
+      }
+    },
+    [router]
+  );
+
+  const handleTabChange = useCallback(
+    (tab: NavTabId) => {
+      if (tab === 'arc') {
+        router.navigate('/arc');
+        return;
+      }
+
+      // /studio 라우트가 아직 없어 지금은 화면 안에서만 선택 상태를 들고 있습니다.
+      setActiveTab(tab);
+    },
+    [router]
+  );
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
@@ -60,9 +77,9 @@ export default function CustomerHomeScreen() {
 
             <PillTabs
               label="홈에서 볼 내용"
-              options={SECTION_TABS}
-              value={section}
-              onChange={setSection}
+              options={CUSTOMER_SECTION_TABS}
+              value="home"
+              onChange={handleSectionChange}
               style={styles.tabs}
             />
 
@@ -88,7 +105,7 @@ export default function CustomerHomeScreen() {
         end={BOTTOM}
         style={[styles.navScrim, { paddingBottom: insets.bottom }]}
       >
-        <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} style={styles.navBar} />
+        <BottomNavBar activeTab={activeTab} onTabChange={handleTabChange} style={styles.navBar} />
       </LinearGradient>
     </View>
   );
