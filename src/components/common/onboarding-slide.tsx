@@ -5,8 +5,8 @@ import { ExploreButton } from '@components/common/explore-button';
 import { ScreenContainer } from '@components/common/screen-container';
 import { VerticalScrim } from '@components/common/vertical-scrim';
 import { FixedColors, FontFamily, Spacing } from '@constants/theme';
+import arrowPrevious from '@assets/images/common/back-arrow.svg';
 import arrowNext from '@assets/images/onboarding/arrow-next.svg';
-import arrowPrevious from '@assets/images/onboarding/arrow-prev.svg';
 import type { OnboardingSlide } from '@/types/onboarding';
 
 /** 시안 기준 화면 너비. 타이틀이 이 너비를 꽉 채우다 못해 살짝 넘치도록 그려져 있습니다. */

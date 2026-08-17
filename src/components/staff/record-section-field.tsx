@@ -1,0 +1,111 @@
+import { ChoiceChips } from '@components/common/choice-chips';
+import { OptionList } from '@components/common/option-list';
+import { OutlinedTextField } from '@components/common/outlined-text-field';
+import { RecordProductField } from '@components/staff/record-product-field';
+import { readChoices, readProducts, useRecordFormStore } from '@stores/record-form-store';
+import calendarIcon from '@assets/images/staff/calendar.svg';
+import searchIcon from '@assets/images/login/search.svg';
+import type { RecordFlow, RecordSection, RecordTextSection } from '@/types/record-form';
+
+/** 한 줄 입력 오른쪽에 붙는 장식 아이콘. */
+const FIELD_ICONS = {
+  calendar: calendarIcon,
+  search: searchIcon,
+} as const;
+
+interface RecordSectionFieldProps {
+  flow: RecordFlow;
+  section: RecordSection;
+}
+
+function readIcon(section: RecordTextSection) {
+  return section.icon === undefined ? undefined : FIELD_ICONS[section.icon];
+}
+
+/**
+ * 기록 작성 폼의 입력 묶음 하나를 종류에 맞는 컴포넌트로 그립니다.
+ *
+ * 값은 화면을 거치지 않고 이 컴포넌트가 스토어에서 바로 읽고 씁니다.
+ * 묶음마다 자기 값만 구독하기 때문에, 한 곳을 고쳐도 나머지 묶음은 다시 그리지 않습니다.
+ */
+export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
+  const text = useRecordFormStore((state) => state.values[flow].texts[section.id] ?? '');
+  const choices = useRecordFormStore((state) => readChoices(state.values[flow], section.id));
+  const products = useRecordFormStore((state) => readProducts(state.values[flow], section.id));
+
+  const setText = useRecordFormStore((state) => state.setText);
+  const setChoices = useRecordFormStore((state) => state.setChoices);
+  const addProduct = useRecordFormStore((state) => state.addProduct);
+  const setProductName = useRecordFormStore((state) => state.setProductName);
+  const setProductReactions = useRecordFormStore((state) => state.setProductReactions);
+
+  switch (section.kind) {
+    case 'text':
+      return (
+        <OutlinedTextField
+          label={section.label}
+          required={section.required}
+          value={text}
+          placeholder={section.placeholder}
+          icon={readIcon(section)}
+          onChangeText={(next) => setText(flow, section.id, next)}
+        />
+      );
+
+    case 'note':
+      return (
+        <OutlinedTextField
+          label={section.label}
+          description={section.description}
+          value={text}
+          placeholder={section.placeholder}
+          maxLength={section.maxLength}
+          multiline
+          onChangeText={(next) => setText(flow, section.id, next)}
+        />
+      );
+
+    case 'chips':
+      // 하나만 고르는 칩은 값 하나를 주고받습니다. 스토어는 두 경우를 배열로 통일해 담습니다.
+      return section.multiple === true ? (
+        <ChoiceChips
+          multiple
+          label={section.label}
+          options={section.options}
+          value={choices}
+          onChange={(next) => setChoices(flow, section.id, next)}
+        />
+      ) : (
+        <ChoiceChips
+          label={section.label}
+          options={section.options}
+          value={choices[0] ?? ''}
+          onChange={(next) => setChoices(flow, section.id, [next])}
+        />
+      );
+
+    case 'options':
+      return (
+        <OptionList
+          label={section.label}
+          options={section.options}
+          multiple={section.multiple}
+          value={choices}
+          onChange={(next) => setChoices(flow, section.id, next)}
+        />
+      );
+
+    case 'products':
+      return (
+        <RecordProductField
+          section={section}
+          products={products}
+          onChangeName={(productId, name) => setProductName(flow, section.id, productId, name)}
+          onChangeReactions={(productId, reactions) =>
+            setProductReactions(flow, section.id, productId, reactions)
+          }
+          onAdd={() => addProduct(flow, section.id)}
+        />
+      );
+  }
+}

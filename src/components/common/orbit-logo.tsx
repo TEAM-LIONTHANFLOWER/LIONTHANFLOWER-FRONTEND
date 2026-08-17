@@ -3,6 +3,10 @@ import { Image } from 'expo-image';
 
 import mcmOrbitLogo from '@assets/images/splash/mcm-orbit-logo.png';
 
+/** 시안이 정한 락업 크기. */
+export const ORBIT_LOGO_WIDTH = 109.25;
+export const ORBIT_LOGO_HEIGHT = 64.5;
+
 interface OrbitLogoProps {
   style?: StyleProp<ImageStyle>;
 }
@@ -24,7 +28,7 @@ export function OrbitLogo({ style }: OrbitLogoProps) {
 
 const styles = StyleSheet.create({
   logo: {
-    width: 109.25,
-    height: 64.5,
+    width: ORBIT_LOGO_WIDTH,
+    height: ORBIT_LOGO_HEIGHT,
   },
 });
