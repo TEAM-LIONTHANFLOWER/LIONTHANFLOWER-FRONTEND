@@ -160,6 +160,18 @@ export const FixedColors = {
   tabBarScrimStart: 'rgba(0, 0, 0, 0)',
   /** 떠 있는 하단 탭 바 뒤를 받치는 스크림 — 아래쪽. 배경보다 더 짙게 떨어뜨려 바를 띄웁니다. */
   tabBarScrimEnd: '#000000',
+  /** Studio 프레임 1 카드 바탕. */
+  frameSurface: '#ffffff',
+  /** Studio 프레임 1 텍스트 색. */
+  frameCaptionBrown: '#774800',
+  /** Studio 프레임 2 기록 상세 문구 색. */
+  frameCaptionMauve: '#9d6969',
+  /** Studio 프레임 4 카드 바탕. */
+  frameSurfaceBlack: '#000000',
+  /** Studio 프레임 1~4 의 사진 자리(빈칸)·프레임 2·3 카드 배경 공통 채움색. 흰색 20%. */
+  frameWindowFill: 'rgba(255, 255, 255, 0.2)',
+  /** Studio 생성 결과 화면의 삭제·공유 버튼 원 바탕. */
+  resultActionSurface: '#ffffff',
 } as const;
 
 /**
@@ -183,6 +195,7 @@ export const FontFamily = Platform.select({
     serifSemiBold: 'var(--font-serif)',
     serifBold: 'var(--font-serif)',
     label: 'var(--font-label)',
+    inter: 'var(--font-inter)',
     mono: 'var(--font-mono)',
   },
   default: {
@@ -192,6 +205,7 @@ export const FontFamily = Platform.select({
     serifSemiBold: 'LibreBaskerville-SemiBold',
     serifBold: 'LibreBaskerville-Bold',
     label: 'DMSans',
+    inter: 'Inter',
     mono: 'monospace',
   },
 });

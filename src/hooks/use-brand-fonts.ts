@@ -22,6 +22,8 @@ export function useBrandFonts(): boolean {
     'LibreBaskerville-Bold': require('@assets/fonts/LibreBaskerville-Bold.ttf'),
     // 온보딩의 영문 보조 라벨 전용. Regular 한 벌만 쓰므로 굵기 분화가 없습니다.
     DMSans: require('@assets/fonts/DMSans-Regular.ttf'),
+    // Studio 프레임 문구 전용. Regular 한 벌만 쓰므로 굵기 분화가 없습니다.
+    Inter: require('@assets/fonts/Inter_18pt-Regular.ttf'),
   });
 
   // 글꼴을 못 불러와도 화면은 띄웁니다. 시스템 대체 글꼴로 떨어질 뿐입니다.
