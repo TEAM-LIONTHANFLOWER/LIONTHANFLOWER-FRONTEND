@@ -33,30 +33,59 @@ const CARD_TO_INDICATOR = Spacing.four;
 const NAV_AREA_HEIGHT = 118;
 
 /**
- * 뒤에 비스듬히 겹쳐 보이는 봉투가 앞의 봉투에서 밀려난 거리와 각도.
- * 시안은 오른쪽 아래로만 겹쳐 두지만, 마지막 장에서는 좌우를 뒤집어 이전 봉투를 보여줍니다.
+ * 더미에 누워 있는 봉투가 가운데 봉투에서 밀려난 거리와 각도.
+ *
+ * 넘기면 오른쪽 더미의 봉투가 이 자리에서 일어나 가운데로 오고,
+ * 보고 있던 봉투는 좌우를 뒤집은 왼쪽 자리로 누우며 물러납니다.
  */
 const STACK_OFFSET_X = 148;
 const STACK_OFFSET_Y = 149;
 const STACK_ROTATION = '14.54deg';
 const STACK_ROTATION_REVERSED = '-14.54deg';
+
 /**
- * 넘기는 동안 뒤에 깔린 봉투가 앞의 봉투보다 덜 움직이는 거리.
- * 앞뒤가 같은 속도로 흐르면 한 장처럼 붙어 보여서, 뒤를 조금 붙잡아 깊이를 냅니다.
+ * 더미의 맨 앞 봉투보다 한 장 더 뒤에 놓이는 자리.
+ * 여기까지 물러나면 완전히 투명해져서, 더미에는 늘 맨 앞의 한 장만 보입니다.
+ * 넘기는 동안 그 뒤의 봉투가 이 자리에서 서서히 나타나 더미를 채웁니다.
  */
-const STACK_DRIFT_X = 28;
+const STACK_FAR_OFFSET_X = STACK_OFFSET_X + 26;
+const STACK_FAR_OFFSET_Y = STACK_OFFSET_Y + 18;
 
-/** 옆으로 넘기는 동안 이웃한 봉투가 물러나 보이는 정도. */
-const PEEK_SCALE = 0.9;
-const PEEK_OPACITY = 0.35;
-/** 물러난 봉투가 가라앉는 깊이와, 넘어가는 쪽으로 기우는 각도. */
-const PEEK_SINK_Y = 20;
-const PEEK_TILT = '4deg';
-const PEEK_TILT_REVERSED = '-4deg';
-/** 물러난 봉투가 납작하게 작아지지 않고 뒤로 밀려나 보이도록 주는 원근. */
-const PEEK_PERSPECTIVE = 900;
+/** 봉투의 자리를 재는 구간. 0 이 가운데, ±1 이 더미, ±2 가 더미 뒤입니다. */
+const POSE_STOPS = [-2, -1, 0, 1, 2] as const;
+const POSE_X: number[] = [
+  STACK_FAR_OFFSET_X,
+  STACK_OFFSET_X,
+  0,
+  -STACK_OFFSET_X,
+  -STACK_FAR_OFFSET_X,
+];
+const POSE_Y: number[] = [
+  STACK_FAR_OFFSET_Y,
+  STACK_OFFSET_Y,
+  0,
+  STACK_OFFSET_Y,
+  STACK_FAR_OFFSET_Y,
+];
+const POSE_ROTATION: string[] = [
+  STACK_ROTATION,
+  STACK_ROTATION,
+  '0deg',
+  STACK_ROTATION_REVERSED,
+  STACK_ROTATION_REVERSED,
+];
 
-/** 넘기는 동안 봉투 크기가 부드럽게 따라오도록 매 프레임 스크롤 위치를 받습니다. */
+/**
+ * 겉면이 밝은 면에서 그늘진 면으로 넘어가는 구간.
+ *
+ * 가운데를 벗어나면 그늘이 먼저 덮이고(±0.5), 더미에 닿을 즈음 밝은 면이 빠집니다(±1).
+ * 두 면을 같은 속도로 교차시키면 그 사이에 배경이 비쳐 봉투가 반투명해 보입니다.
+ */
+const FACE_STOPS = [-2, -1, -0.5, 0, 0.5, 1, 2] as const;
+const LIT_FACE_OPACITY: number[] = [0, 0, 1, 1, 1, 0, 0];
+const SHADED_FACE_OPACITY: number[] = [0, 1, 1, 0, 1, 1, 0];
+
+/** 넘기는 동안 봉투가 부드럽게 따라오도록 매 프레임 스크롤 위치를 받습니다. */
 const SCROLL_THROTTLE_MS = 16;
 
 /** 화면이 열릴 때 머리말과 봉투가 차례로 떠오르는 시간. */
@@ -128,12 +157,18 @@ export default function CustomerArcScreen() {
     setIsLetterOpen(false);
   }, []);
 
-  /** 한 장이 가운데에 있을 때를 1 로 두고, 좌우 이웃까지를 재는 구간. */
-  const pageRange = (position: number) => [
-    (position - 1) * pageWidth,
-    position * pageWidth,
-    (position + 1) * pageWidth,
-  ];
+  /** 스크롤 위치를 이 장에서 몇 장 떨어져 있는지로 읽는 구간. */
+  const rangeAt = (position: number, stops: readonly number[]) =>
+    stops.map((stop) => (position + stop) * pageWidth);
+
+  /**
+   * 그리는 차례. 가운데에서 먼 장부터 그려야 지금 보는 봉투가 맨 위에 옵니다.
+   * 넘기는 도중 가운데가 바뀌는 순간 앞뒤가 한 번 뒤집힙니다 — 겹침 순서는
+   * 애니메이션으로 이어 줄 수 없어서, 두 봉투가 가장 많이 겹쳐 있는 지점에서 바꿉니다.
+   */
+  const drawOrder = ARC_ENTRIES.map((_, position) => position).sort(
+    (a, b) => Math.abs(b - index) - Math.abs(a - index)
+  );
 
   const headerStyle = {
     opacity: enter.interpolate({ inputRange: [0, 0.6], outputRange: [0, 1], extrapolate: 'clamp' }),
@@ -189,7 +224,7 @@ export default function CustomerArcScreen() {
             />
           </Animated.View>
 
-          {/* 겹쳐 둔 봉투가 화면 가장자리까지 밀려 나가야 해서 이 줄만 좌우 여백 바깥에 둡니다. */}
+          {/* 더미에 누운 봉투가 화면 가장자리까지 밀려 나가야 해서 이 줄만 좌우 여백 바깥에 둡니다. */}
           <Animated.View style={[styles.cardStage, cardStyle]} onLayout={handleStageLayout}>
             {entry === undefined ? (
               <View style={styles.emptySlot}>
@@ -198,60 +233,101 @@ export default function CustomerArcScreen() {
             ) : (
               <>
                 {/*
-                  뒤에 깔리는 봉투는 장마다 한 벌씩 두고 스크롤에 맞춰 갈아 깝니다.
-                  한 벌만 두고 지금 보는 장에 따라 바꾸면, 절반쯤 넘긴 순간 뒷장이 툭 바뀝니다.
+                  보이는 봉투. 스크롤 위치에 따라 더미와 가운데 사이를 오갑니다.
+
+                  넘기기와 누르기는 이 위에 덮은 투명한 판이 받습니다. 봉투가 세로로 넘치는
+                  더미 자리까지 움직여야 하는데, 가로 스크롤 안에 두면 넘친 만큼이 잘립니다.
+                  스크린 리더에는 그 판의 버튼만 걸리므로 이 층은 통째로 감춥니다.
                 */}
-                {pageWidth === 0
-                  ? null
-                  : ARC_ENTRIES.map((item, position) => {
-                      // 다음 장을 뒤에 깔고, 마지막 장에서는 좌우를 뒤집어 이전 장을 깝니다.
-                      const isLast = position === ARC_ENTRIES.length - 1;
-                      const behind = ARC_ENTRIES[isLast ? position - 1 : position + 1];
+                <View
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                  style={styles.deck}
+                >
+                  {pageWidth === 0
+                    ? null
+                    : drawOrder.map((position) => {
+                        const item = ARC_ENTRIES[position];
 
-                      if (behind === undefined) {
-                        return null;
-                      }
+                        if (item === undefined) {
+                          return null;
+                        }
 
-                      const restX = isLast ? -STACK_OFFSET_X : STACK_OFFSET_X;
+                        return (
+                          <Animated.View
+                            key={item.id}
+                            style={[
+                              styles.gutter,
+                              styles.slot,
+                              isLetterOpen && position === index ? styles.slotOpened : null,
+                              {
+                                transform: [
+                                  {
+                                    translateX: scrollX.interpolate({
+                                      inputRange: rangeAt(position, POSE_STOPS),
+                                      outputRange: POSE_X,
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
+                                  {
+                                    translateY: scrollX.interpolate({
+                                      inputRange: rangeAt(position, POSE_STOPS),
+                                      outputRange: POSE_Y,
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
+                                  {
+                                    rotate: scrollX.interpolate({
+                                      inputRange: rangeAt(position, POSE_STOPS),
+                                      outputRange: POSE_ROTATION,
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
+                                ],
+                              },
+                            ]}
+                          >
+                            {/* 밝은 겉면과 그늘진 겉면을 같은 자리에 겹쳐 두고 서로 바꿔 비춥니다. */}
+                            <View style={styles.faces}>
+                              <Animated.View
+                                style={[
+                                  styles.face,
+                                  {
+                                    opacity: scrollX.interpolate({
+                                      inputRange: rangeAt(position, FACE_STOPS),
+                                      outputRange: LIT_FACE_OPACITY,
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
+                                ]}
+                              >
+                                <ArcEnvelope entry={item} />
+                              </Animated.View>
 
-                      return (
-                        <Animated.View
-                          key={item.id}
-                          style={[
-                            styles.gutter,
-                            styles.stackedSlot,
-                            {
-                              opacity: scrollX.interpolate({
-                                inputRange: pageRange(position),
-                                outputRange: [0, 1, 0],
-                                extrapolate: 'clamp',
-                              }),
-                              transform: [
-                                {
-                                  translateX: scrollX.interpolate({
-                                    inputRange: pageRange(position),
-                                    outputRange: [
-                                      restX + STACK_DRIFT_X,
-                                      restX,
-                                      restX - STACK_DRIFT_X,
-                                    ],
-                                    extrapolate: 'clamp',
-                                  }),
-                                },
-                                { translateY: STACK_OFFSET_Y },
-                                { rotate: isLast ? STACK_ROTATION_REVERSED : STACK_ROTATION },
-                              ],
-                            },
-                          ]}
-                        >
-                          <ArcEnvelope entry={behind} stacked />
-                        </Animated.View>
-                      );
-                    })}
+                              <Animated.View
+                                style={[
+                                  styles.face,
+                                  {
+                                    opacity: scrollX.interpolate({
+                                      inputRange: rangeAt(position, FACE_STOPS),
+                                      outputRange: SHADED_FACE_OPACITY,
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
+                                ]}
+                              >
+                                <ArcEnvelope entry={item} stacked />
+                              </Animated.View>
+                            </View>
+                          </Animated.View>
+                        );
+                      })}
+                </View>
 
                 {/*
-                  편지를 꺼내도 캐러셀은 그대로 두고 그 위에 편지를 덮습니다.
-                  지웠다 다시 그리면 가로 스크롤이 첫 장으로 되감겨, 덮고 있던 봉투가 바뀝니다.
+                  넘기기와 누르기를 받는 투명한 판. 봉투는 뒤의 층이 그립니다.
+                  편지를 꺼내도 이 판은 그대로 둡니다 — 지웠다 다시 그리면 가로 스크롤이
+                  첫 장으로 되감겨, 덮고 있던 봉투가 바뀝니다.
                 */}
                 <Animated.ScrollView
                   ref={carousel}
@@ -262,6 +338,7 @@ export default function CustomerArcScreen() {
                   accessibilityElementsHidden={isLetterOpen}
                   importantForAccessibility={isLetterOpen ? 'no-hide-descendants' : 'auto'}
                   scrollEventThrottle={SCROLL_THROTTLE_MS}
+                  style={styles.track}
                   onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
                     useNativeDriver: true,
                     listener: handleCarouselScroll,
@@ -269,74 +346,20 @@ export default function CustomerArcScreen() {
                 >
                   {pageWidth === 0
                     ? null
-                    : ARC_ENTRIES.map((item, position) => {
-                        // 이웃한 장은 뒤로 물러나 가라앉았다가, 가운데로 오면서 제 크기와 자리를 찾습니다.
-                        const inputRange = pageRange(position);
-
-                        return (
-                          <Animated.View
-                            key={item.id}
-                            style={[
-                              styles.page,
-                              styles.gutter,
-                              { width: pageWidth },
-                              {
-                                opacity: scrollX.interpolate({
-                                  inputRange,
-                                  outputRange: [PEEK_OPACITY, 1, PEEK_OPACITY],
-                                  extrapolate: 'clamp',
-                                }),
-                                transform: [
-                                  { perspective: PEEK_PERSPECTIVE },
-                                  {
-                                    translateY: scrollX.interpolate({
-                                      inputRange,
-                                      outputRange: [PEEK_SINK_Y, 0, PEEK_SINK_Y],
-                                      extrapolate: 'clamp',
-                                    }),
-                                  },
-                                  {
-                                    rotate: scrollX.interpolate({
-                                      inputRange,
-                                      outputRange: [PEEK_TILT, '0deg', PEEK_TILT_REVERSED],
-                                      extrapolate: 'clamp',
-                                    }),
-                                  },
-                                  {
-                                    scale: scrollX.interpolate({
-                                      inputRange,
-                                      outputRange: [PEEK_SCALE, 1, PEEK_SCALE],
-                                      extrapolate: 'clamp',
-                                    }),
-                                  },
-                                ],
-                              },
-                            ]}
-                          >
-                            {/* 넘기는 도중 옆 봉투를 눌렀다면 그 장으로 옮겨 놓고 엽니다. */}
-                            <Pressable
-                              accessibilityRole="button"
-                              accessibilityLabel={`${item.envelopeTitle} 열기`}
-                              onPress={() => {
-                                goTo(position);
-                                setIsLetterOpen(true);
-                              }}
-                            >
-                              {/*
-                                편지를 꺼내는 동안에는 이 봉투를 감춥니다. 편지를 덮은 무대가
-                                같은 자리에 제 봉투를 들고 있어서, 그냥 두면 가라앉는 봉투 뒤로
-                                멈춰 있는 봉투가 비칩니다.
-                              */}
-                              <ArcEnvelope
-                                entry={item}
-                                style={
-                                  isLetterOpen && position === index ? styles.envelopeOpened : null
-                                }
-                              />
-                            </Pressable>
-                          </Animated.View>
-                        );
-                      })}
+                    : ARC_ENTRIES.map((item, position) => (
+                        // 넘기는 도중 옆 봉투를 눌렀다면 그 장으로 옮겨 놓고 엽니다.
+                        <View key={item.id} style={[styles.gutter, { width: pageWidth }]}>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`${item.envelopeTitle} ${item.store} ${item.date} 열기`}
+                            onPress={() => {
+                              goTo(position);
+                              setIsLetterOpen(true);
+                            }}
+                            style={styles.touchTarget}
+                          />
+                        </View>
+                      ))}
                 </Animated.ScrollView>
 
                 {isLetterOpen ? (
@@ -387,19 +410,32 @@ const styles = StyleSheet.create({
     height: ENVELOPE_HEIGHT,
     marginTop: HEADER_TO_CARD,
   },
-  page: {
-    justifyContent: 'center',
+  // 봉투를 그리는 층. 누르기는 위의 판이 받으므로 그대로 통과시킵니다.
+  deck: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: 'none',
   },
-  // 겹쳐 보이는 봉투는 앞의 봉투와 같은 자리에서 시작해 비스듬히 밀려납니다.
-  stackedSlot: {
+  slot: {
     position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
   },
-  // 편지를 꺼내는 동안 자리만 지키는 봉투. 자리가 비면 캐러셀이 되감기므로 지우지 않습니다.
-  envelopeOpened: {
+  // 편지를 꺼내는 동안 자리만 지키는 봉투. 편지를 덮은 무대가 제 봉투를 들고 있습니다.
+  slotOpened: {
     opacity: 0,
+  },
+  faces: {
+    height: ENVELOPE_HEIGHT,
+  },
+  face: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  track: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  touchTarget: {
+    height: ENVELOPE_HEIGHT,
   },
   // 봉투와 같은 자리에 겹쳐 놓아, 편지를 꺼내도 카드가 제자리에서 뒤집힙니다.
   letterOverlay: {
