@@ -8,6 +8,7 @@ import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
 import { ARC_INTRO_STORY, BRAND_STORIES, MYSELF_FRAMES, NOW_ON_FEATURE } from '@constants/home';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
@@ -23,6 +24,7 @@ const NAV_AREA_HEIGHT = 118;
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
   const { t } = useTranslation();
+  useReportActiveTab('home');
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀

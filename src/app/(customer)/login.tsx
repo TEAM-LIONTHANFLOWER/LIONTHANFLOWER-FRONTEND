@@ -11,6 +11,7 @@ import { StartJourneyButton } from '@components/common/start-journey-button';
 import { SUPPORTED_LANGUAGES } from '@constants/languages';
 import { SERVICE_STYLES } from '@constants/onboarding';
 import { FixedColors, Spacing } from '@constants/theme';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 import { useLocaleStore } from '@stores/locale-store';
 import type { ServiceStyleCode } from '@/types/onboarding';
@@ -32,6 +33,7 @@ const VISITED_STORE = 'MCM HAUS';
 /** 고객 정보 입력 화면 — `/login` */
 export default function CustomerLoginScreen() {
   const router = useRouter();
+  useReportActiveTab(null);
 
   // 고른 언어는 이 화면 밖에서도 쓰이므로 전역 상태에 둡니다.
   // 칩을 누르는 순간 이 화면 문구부터 그 언어로 바뀝니다.

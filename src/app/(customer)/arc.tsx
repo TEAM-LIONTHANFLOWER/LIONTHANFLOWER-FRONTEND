@@ -22,6 +22,7 @@ import { ArcEnvelope, ENVELOPE_HEIGHT } from '@components/customer/arc-envelope'
 import { ArcLetterReveal } from '@components/customer/arc-letter-reveal';
 import { ARC_ENTRIES } from '@constants/arc';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 
 /** 머리말과 봉투 사이. 시안(393 폭)의 세로 리듬이라 Spacing 스케일에 없는 값입니다. */
@@ -100,6 +101,7 @@ const EMPTY_FONT_SIZE = 16;
 /** 고객 Arc 화면 — `/arc` */
 export default function CustomerArcScreen() {
   const { t } = useTranslation();
+  useReportActiveTab('arc');
 
   const [index, setIndex] = useState(0);
   /** 봉투를 열어 편지를 꺼냈는지. 편지를 다시 누르면 봉투로 돌아옵니다. */

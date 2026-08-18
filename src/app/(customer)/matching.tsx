@@ -10,6 +10,7 @@ import { BrandWordmark, WORDMARK_HEIGHT, WORDMARK_WIDTH } from '@components/comm
 import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
 import { FixedColors, Spacing } from '@constants/theme';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 import storeFront from '@assets/images/matching/store-front.jpg';
 import mcmSymbol from '@assets/images/splash/mcm-symbol.png';
@@ -121,6 +122,7 @@ async function measureMarkFlight(
 export default function CustomerMatchingScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  useReportActiveTab(null);
   const insets = useSafeAreaInsets();
   const rootRef = useRef<MeasurableView>(null);
   const markRef = useRef<MeasurableView>(null);
