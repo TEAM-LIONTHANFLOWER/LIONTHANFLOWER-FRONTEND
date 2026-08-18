@@ -55,6 +55,16 @@ const HAS_LIQUID_GLASS = isLiquidGlassAvailable();
  * - 그 외   : `BlurView` 로 배경을 흐리고 밝힌 다음, 굴절로 생기는 가장자리 빛을
  *             그라데이션 테두리로 대신합니다. 알약 테두리에 그라데이션을 직접 칠할 수는 없어서,
  *             그라데이션 면을 깔고 1px 안쪽에 흐림을 덮어 테두리만 남깁니다.
+ *
+ * **Android 에서는 `BlurView` 에 `experimentalBlurMethod` 를 주지 않습니다.**
+ * 그 옵션을 켜면 `expo-blur` 가 Dimezis BlurView 로 넘어가는데, 이 구현은 흐릴 배경을
+ * 만들려고 뒤에 있는 뷰 트리를 **소프트웨어 Canvas** 에 다시 그립니다. 이 버튼 뒤에는
+ * 온보딩 사진이 깔려 있어서, `expo-image` 가 그 사진을 하드웨어 비트맵으로 올린 기기에서는
+ * `Software rendering doesn't support hardware bitmaps` 로 앱이 죽습니다.
+ * 기기·안드로이드 버전·남은 메모리에 따라 갈려서 어떤 폰에서만 재현됩니다.
+ * 같은 이유로 `customer/bottom-nav-bar` 도 흐림을 끄고 있습니다.
+ *
+ * 그래서 Android 는 흐림 없이 `tint` 만 반투명 면으로 깔립니다(기본값 `none`).
  */
 export function ExploreButton({ onPress, style }: ExploreButtonProps) {
   return (
@@ -79,9 +89,7 @@ export function ExploreButton({ onPress, style }: ExploreButtonProps) {
           <BlurView
             intensity={GLASS_BLUR_INTENSITY}
             tint="default"
-            // Android 는 기본값이 흐림 없음이라 명시적으로 켜야 합니다.
-            // expo-blur 15 는 SDK 31 분기 없이 Dimezis BlurView 한 가지만 제공합니다.
-            experimentalBlurMethod="dimezisBlurView"
+            // `experimentalBlurMethod` 는 주지 않습니다. 자세한 이유는 파일 맨 위 설명을 참고하세요.
             style={[styles.inner, styles.center]}
           >
             <Text style={styles.label}>Explore</Text>

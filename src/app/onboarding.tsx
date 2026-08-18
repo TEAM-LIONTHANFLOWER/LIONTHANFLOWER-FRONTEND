@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { OnboardingPagination } from '@components/common/onboarding-pagination';
+import { PageIndicator } from '@components/common/page-indicator';
 import { OnboardingSlideView } from '@components/common/onboarding-slide';
 import { ONBOARDING_SLIDES } from '@constants/onboarding';
 import { FixedColors, Spacing } from '@constants/theme';
@@ -118,7 +118,7 @@ export default function OnboardingScreen() {
         ))}
       </ScrollView>
 
-      <OnboardingPagination
+      <PageIndicator
         count={ONBOARDING_SLIDES.length}
         activeIndex={slideIndex}
         style={[styles.pagination, { top: insets.top + Spacing.two }]}

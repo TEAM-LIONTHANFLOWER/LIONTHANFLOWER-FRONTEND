@@ -8,6 +8,17 @@
  * 무시하는 버그가 있어, 여러 군데서 그 우회 처리를 하고 있습니다. 아래쪽에 비슷하게 생긴
  * `borderRadius`/`overflow: hidden` 이 중복돼 보이는 곳이 있다면 대부분 이것 때문입니다.
  * 지우면 웹에서만 캡슐이 각진 사각형으로 보이게 됩니다.
+ *
+ * **Android 에서는 `BlurView` 에 `experimentalBlurMethod` 를 주지 않습니다.**
+ * 그 옵션을 켜면 `expo-blur` 가 Dimezis BlurView 로 넘어가는데, 이 구현은 흐릴 배경을
+ * 만들려고 뒤에 있는 뷰 트리를 **소프트웨어 Canvas** 에 다시 그립니다. 그 뒤에 `expo-image`
+ * 가 올린 하드웨어 비트맵이 하나라도 있으면
+ * `Software rendering doesn't support hardware bitmaps` 로 앱이 죽습니다.
+ * Glide 가 하드웨어 비트맵을 쓸지는 기기·안드로이드 버전·남은 메모리에 따라 갈려서,
+ * 어떤 폰에서는 멀쩡하고 어떤 폰에서는 첫 화면부터 터집니다.
+ *
+ * 그래서 Android 는 흐림 없이 `tint` 만 반투명 면으로 깔립니다(기본값 `none`).
+ * iOS 와 웹은 이 경로를 타지 않아 그대로 흐려집니다.
  */
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -111,8 +122,7 @@ function GlassSurface({ style, tintColor, withEdgeGlow, children }: GlassSurface
     <BlurView
       intensity={GLASS_BLUR_INTENSITY}
       tint="default"
-      // Android 는 기본값이 흐림 없음이라 명시적으로 켜야 합니다.
-      experimentalBlurMethod="dimezisBlurView"
+      // `experimentalBlurMethod` 는 주지 않습니다. 자세한 이유는 파일 맨 위 설명을 참고하세요.
       style={withEdgeGlow ? styles.inner : style}
     >
       {tintColor ? (
