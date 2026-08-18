@@ -19,20 +19,28 @@ export const NOW_ON_FEATURE: NowOnFeature = {
   image: nowOnMcmHaus,
 };
 
+/**
+ * 머리말 바로 아래, `Now On` 카드 위에 놓이는 Arc 소개.
+ * 시안(1-1 Home)에서 이 제목만 24 입니다.
+ */
+export const ARC_INTRO_STORY: BrandStory = {
+  id: 'what-is-arc',
+  title: 'What is Arc?',
+  titleToken: 'titleEn24',
+  body: '모든 방문은 당신의 이야기가 됩니다.\nWorldline은 MCM과 함께한 발견의 순간부터 만들어가는 추억까지, 당신만의 여정을 기록합니다.',
+  bodyToken: 'bodyKo13',
+};
+
+/** `Now On` 카드 아래로 이어지는 브랜드 소개 글. */
 export const BRAND_STORIES: readonly BrandStory[] = [
   {
     id: 'about-mcm',
     title: 'About MCM',
+    titleToken: 'titleEn20',
     body: '1976년부터 MCM은 장인정신과 혁신을 바탕으로 전통적인 럭셔리의 개념을 새롭게 정의해왔습니다. 젊음과 독립성, 그리고 쉽게 알아볼 수 있는 디자인 감각을 지닌 MCM은 오늘도 세계를 움직이는 사람들과 함께합니다.',
     bodyToken: 'bodyKo14',
     // 시안에서 세 줄까지만 보이고 나머지는 말줄임표로 접혀 있습니다.
     maxLines: 3,
-  },
-  {
-    id: 'what-is-arc',
-    title: 'What is Arc?',
-    body: '모든 방문은 당신의 이야기가 됩니다.\nWorldline은 MCM과 함께한 발견의 순간부터 만들어가는 추억까지, 당신만의 여정을 기록합니다.',
-    bodyToken: 'bodyKo13',
   },
 ] as const;
 

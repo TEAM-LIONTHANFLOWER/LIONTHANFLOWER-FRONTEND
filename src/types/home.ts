@@ -2,9 +2,6 @@ import type { ImageRequireSource } from 'react-native';
 
 import type { TypographyToken } from '@constants/theme';
 
-/** 고객 홈 위쪽에서 화면 내용을 가르는 탭. */
-export type CustomerSectionKey = 'home' | 'arc';
-
 /** 지금 진행 중인 브랜드 경험을 소개하는 큰 사진 카드. */
 export interface NowOnFeature {
   id: string;
@@ -19,6 +16,11 @@ export interface NowOnFeature {
 export interface BrandStory {
   id: string;
   title: string;
+  /**
+   * 제목에 쓸 타이포 토큰.
+   * 시안이 `What is Arc?` 만 24 로 키워 놓아서 데이터로 들고 있습니다.
+   */
+  titleToken: Extract<TypographyToken, 'titleEn20' | 'titleEn24'>;
   body: string;
   /**
    * 본문에 쓸 타이포 토큰.
