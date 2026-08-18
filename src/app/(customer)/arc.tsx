@@ -11,9 +11,6 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
 
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
@@ -22,25 +19,18 @@ import { PageIndicator } from '@components/common/page-indicator';
 import { ScreenContainer } from '@components/common/screen-container';
 import { ArcEnvelope, ENVELOPE_HEIGHT } from '@components/customer/arc-envelope';
 import { ArcLetterCard } from '@components/customer/arc-letter-card';
-import { BottomNavBar } from '@components/customer/bottom-nav-bar';
 import { ARC_ENTRIES } from '@constants/arc';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
 import { useTranslation } from '@hooks/use-translation';
-import type { NavTabId } from '@/types/navigation';
 
 /** 머리말과 봉투 사이. 시안(393 폭)의 세로 리듬이라 Spacing 스케일에 없는 값입니다. */
 const HEADER_TO_CARD = 34;
 /** 봉투와 페이지 표시 사이. 표시가 위아래로 들고 있는 터치 여백만큼 뺀 값입니다. */
 const CARD_TO_INDICATOR = Spacing.four;
 
-/** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. 스크롤 끝에 이만큼 여백을 둡니다. */
+/** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. `(customer)/_layout.tsx` 의
+ * `NAV_AREA_HEIGHT` 와 같은 값이어야 합니다 — 내비게이션은 거기서 그립니다. */
 const NAV_AREA_HEIGHT = 118;
-/** 스크림 위쪽 끝에서 유리 막대까지의 거리. */
-const NAV_BAR_TOP = 16;
-
-/** 위는 투명하고 아래로 갈수록 짙어지는 스크림. */
-const TOP = { x: 0.5, y: 0 } as const;
-const BOTTOM = { x: 0.5, y: 1 } as const;
 
 /**
  * 뒤에 비스듬히 겹쳐 보이는 봉투가 앞의 봉투에서 밀려난 거리와 각도.
@@ -68,14 +58,11 @@ const EMPTY_FONT_SIZE = 16;
 
 /** 고객 Arc 화면 — `/arc` */
 export default function CustomerArcScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
   const [index, setIndex] = useState(0);
   /** 봉투를 열어 편지를 꺼냈는지. 편지를 다시 누르면 봉투로 돌아옵니다. */
   const [isLetterOpen, setIsLetterOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<NavTabId>('arc');
 
   /** 봉투 한 장이 차지하는 폭. 재는 데 한 프레임이 걸려서 그 전에는 캐러셀을 그리지 않습니다. */
   const [pageWidth, setPageWidth] = useState(0);
@@ -128,19 +115,6 @@ export default function CustomerArcScreen() {
       carousel.current?.scrollTo({ x: next * pageWidth, animated: true });
     },
     [pageWidth]
-  );
-
-  const handleTabChange = useCallback(
-    (tab: NavTabId) => {
-      if (tab === 'home') {
-        router.navigate('/home');
-        return;
-      }
-
-      // /studio 라우트가 아직 없어 지금은 화면 안에서만 선택 상태를 들고 있습니다.
-      setActiveTab(tab);
-    },
-    [router]
   );
 
   const headerStyle = {
@@ -301,16 +275,6 @@ export default function CustomerArcScreen() {
           )}
         </ScrollView>
       </ScreenContainer>
-
-      {/* 유리 막대 자체는 홈 인디케이터를 피하도록 아래 안전 영역만큼 띄웁니다. */}
-      <LinearGradient
-        colors={[FixedColors.tabBarScrimStart, FixedColors.tabBarScrimEnd]}
-        start={TOP}
-        end={BOTTOM}
-        style={[styles.navScrim, { paddingBottom: insets.bottom }]}
-      >
-        <BottomNavBar activeTab={activeTab} onTabChange={handleTabChange} style={styles.navBar} />
-      </LinearGradient>
     </View>
   );
 }
@@ -327,16 +291,6 @@ const styles = StyleSheet.create({
   content: {
     // 떠 있는 내비게이션에 카드 아래가 가리지 않도록 그만큼 비워 둡니다.
     paddingBottom: NAV_AREA_HEIGHT,
-  },
-  navScrim: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: NAV_AREA_HEIGHT,
-  },
-  navBar: {
-    marginTop: NAV_BAR_TOP,
   },
   gutter: {
     paddingHorizontal: Spacing.four,

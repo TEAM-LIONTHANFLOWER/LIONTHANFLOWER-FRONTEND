@@ -18,10 +18,12 @@ const WORDMARK_TO_TITLE = 12;
 /** 작은 워드마크는 아래가 비어 보이지 않도록 타이틀까지 더 띄웁니다. */
 const COMPACT_WORDMARK_TO_TITLE = 38;
 
-/** 고객·직원 홈이 모두 같은 문구를 씁니다. 화면마다 다른 것은 아래 설명 한 줄뿐입니다. */
-const TITLE = 'Ready for your next move?';
+/** 고객·직원 홈이 모두 같은 문구를 씁니다. Studio 처럼 화면 이름을 타이틀로 쓰는 경우만 `title` 로 덮어씁니다. */
+const DEFAULT_TITLE = 'Ready for your next move?';
 
 interface BrandIntroHeaderProps {
+  /** 워드마크 아래 타이틀. 생략하면 홈·Arc 가 쓰는 공통 문구가 나갑니다. */
+  title?: string;
   /** 타이틀 아래 한 줄 안내. 화면마다 다릅니다. */
   description: string;
   /**
@@ -51,6 +53,7 @@ interface BrandIntroHeaderProps {
  * 어두운 브랜드 배경(`BrandBackdrop`) 위에만 올라가므로 글자색이 흰색으로 고정입니다.
  */
 export function BrandIntroHeader({
+  title = DEFAULT_TITLE,
   description,
   accessory,
   align = 'start',
@@ -67,7 +70,7 @@ export function BrandIntroHeader({
         {accessory}
       </View>
 
-      <Text style={[styles.title, compact && styles.titleCompact, centered]}>{TITLE}</Text>
+      <Text style={[styles.title, compact && styles.titleCompact, centered]}>{title}</Text>
       <Text style={[styles.description, centered]}>{description}</Text>
     </View>
   );

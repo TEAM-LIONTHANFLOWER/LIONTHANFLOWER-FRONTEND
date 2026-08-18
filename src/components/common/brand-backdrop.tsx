@@ -30,6 +30,11 @@ const LIGHT_SCALE_FROM = 1.08;
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
+interface BrandBackdropProps {
+  /** 조명 없이 검정 배경만 필요한 화면(Studio)에서 끕니다. */
+  showLight?: boolean;
+}
+
 /**
  * 홈·Arc 계열 화면이 공유하는 배경.
  * 시안의 모든 브랜드 화면과 같은 검정 단색 위에, 우상단에서 쏟아지는 금빛을 얹습니다.
@@ -43,11 +48,15 @@ const AnimatedImage = Animated.createAnimatedComponent(Image);
  * 조명은 블러 처리된 그림입니다. React Native 에는 도형에 블러를 먹이는
  * 방법이 플랫폼마다 제각각이라, 시안의 도형과 블러를 그대로 구운 PNG 를 씁니다.
  */
-export function BrandBackdrop() {
+export function BrandBackdrop({ showLight = true }: BrandBackdropProps) {
   // 지연 초기화로 한 번만 만들고, 이후에는 애니메이션으로만 값을 바꿉니다.
   const [glow] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
+    if (!showLight) {
+      return;
+    }
+
     const animation = Animated.timing(glow, {
       toValue: 1,
       duration: LIGHT_FADE_DURATION_MS,
@@ -57,18 +66,20 @@ export function BrandBackdrop() {
 
     animation.start();
     return () => animation.stop();
-  }, [glow]);
+  }, [glow, showLight]);
 
   const scale = glow.interpolate({ inputRange: [0, 1], outputRange: [LIGHT_SCALE_FROM, 1] });
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.backdrop]}>
-      <AnimatedImage
-        source={light}
-        style={[styles.light, { opacity: glow, transform: [{ scale }] }]}
-        contentFit="contain"
-        accessible={false}
-      />
+      {showLight ? (
+        <AnimatedImage
+          source={light}
+          style={[styles.light, { opacity: glow, transform: [{ scale }] }]}
+          contentFit="contain"
+          accessible={false}
+        />
+      ) : null}
     </View>
   );
 }

@@ -1,14 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { PillTabs } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
-import { BottomNavBar } from '@components/customer/bottom-nav-bar';
 import { BrandStoryBlock } from '@components/customer/brand-story-block';
 import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
@@ -17,47 +14,26 @@ import { CUSTOMER_SECTION_TABS } from '@constants/navigation';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
 import { useTranslation } from '@hooks/use-translation';
 import type { CustomerSectionKey } from '@/types/home';
-import type { NavTabId } from '@/types/navigation';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
 const TABS_TO_FEATURE = 20;
 const FEATURE_TO_STORIES = 29;
 const STORIES_TO_GALLERY = 45;
 
-/** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. 스크롤 끝에 이만큼 여백을 둡니다. */
+/** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. `(customer)/_layout.tsx` 의
+ * `NAV_AREA_HEIGHT` 와 같은 값이어야 합니다 — 내비게이션은 거기서 그립니다. */
 const NAV_AREA_HEIGHT = 118;
-/** 스크림 위쪽 끝에서 유리 막대까지의 거리. */
-const NAV_BAR_TOP = 16;
-
-/** 위는 투명하고 아래로 갈수록 짙어지는 갈색 스크림. */
-const TOP = { x: 0.5, y: 0 } as const;
-const BOTTOM = { x: 0.5, y: 1 } as const;
 
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<NavTabId>('home');
 
   const handleSectionChange = useCallback(
     (section: CustomerSectionKey) => {
       if (section === 'arc') {
         router.navigate('/arc');
       }
-    },
-    [router]
-  );
-
-  const handleTabChange = useCallback(
-    (tab: NavTabId) => {
-      if (tab === 'arc') {
-        router.navigate('/arc');
-        return;
-      }
-
-      // /studio 라우트가 아직 없어 지금은 화면 안에서만 선택 상태를 들고 있습니다.
-      setActiveTab(tab);
     },
     [router]
   );
@@ -97,16 +73,6 @@ export default function CustomerHomeScreen() {
           <MyselfGallery photos={MYSELF_PHOTOS} />
         </ScrollView>
       </ScreenContainer>
-
-      {/* 유리 막대 자체는 홈 인디케이터를 피하도록 아래 안전 영역만큼 띄웁니다. */}
-      <LinearGradient
-        colors={[FixedColors.tabBarScrimStart, FixedColors.tabBarScrimEnd]}
-        start={TOP}
-        end={BOTTOM}
-        style={[styles.navScrim, { paddingBottom: insets.bottom }]}
-      >
-        <BottomNavBar activeTab={activeTab} onTabChange={handleTabChange} style={styles.navBar} />
-      </LinearGradient>
     </View>
   );
 }
@@ -123,16 +89,6 @@ const styles = StyleSheet.create({
   content: {
     // 떠 있는 내비게이션에 마지막 사진이 가리지 않도록 그만큼 비워 둡니다.
     paddingBottom: NAV_AREA_HEIGHT,
-  },
-  navScrim: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: NAV_AREA_HEIGHT,
-  },
-  navBar: {
-    marginTop: NAV_BAR_TOP,
   },
   gutter: {
     paddingHorizontal: Spacing.four,
