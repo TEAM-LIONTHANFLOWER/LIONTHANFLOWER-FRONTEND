@@ -14,6 +14,7 @@ import frame02Logo from '@assets/images/studio/frame02_logo.svg';
 import frame03Logo from '@assets/images/studio/frame03.svg';
 import frame04Logo from '@assets/images/studio/frame04.svg';
 import { FixedColors, FontFamily, FontWeight, LineHeightRatio } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /** 프레임 1~4 가 함께 쓰는 기록 상세 문구. */
 const ARC_DETAIL_TEXT = 'Today\'s Arc\nMCM Haus\nApgujeong\n2026.08.12\n"Urban Escape"';
@@ -103,10 +104,12 @@ interface StudioFrameCardProps {
  * 프레임마다 디자인이 완전히 달라서 `frameId` 로 내용만 갈아 끼웁니다.
  */
 export function StudioFrameCard({ frameId, selected, onSelect, style }: StudioFrameCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="radio"
-      accessibilityLabel={`프레임 ${frameId.slice(-2)}`}
+      accessibilityLabel={t('a11y.frame', { number: frameId.slice(-2) })}
       accessibilityState={{ selected }}
       onPress={onSelect}
       style={[

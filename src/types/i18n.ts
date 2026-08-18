@@ -43,13 +43,22 @@ export type MessageKey =
   | 'home.sectionTabsLabel'
   | 'arc.description'
   | 'arc.empty'
+  | 'studio.description'
+  | 'studio.previewDescription'
+  | 'studio.generating'
+  | 'studio.complete'
   | 'a11y.startJourney'
   | 'a11y.openEnvelope'
   | 'a11y.backToEnvelopes'
   | 'a11y.closePopup'
   | 'a11y.goBack'
   | 'a11y.pageIndicator'
-  | 'a11y.pageNumber';
+  | 'a11y.pageNumber'
+  | 'a11y.frame'
+  | 'a11y.generatedMagazine'
+  | 'a11y.delete'
+  | 'a11y.save'
+  | 'a11y.next';
 
 /** 한 언어의 문구 묶음. */
 export type Messages = Record<MessageKey, string>;
