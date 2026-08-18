@@ -17,8 +17,9 @@ import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { InitialSetupButton } from '@components/common/initial-setup-button';
 import { PageIndicator } from '@components/common/page-indicator';
 import { ScreenContainer } from '@components/common/screen-container';
+import { VisitMemoryLink } from '@components/common/visit-memory-link';
 import { ArcEnvelope, ENVELOPE_HEIGHT } from '@components/customer/arc-envelope';
-import { ArcLetterCard } from '@components/customer/arc-letter-card';
+import { ArcLetterReveal } from '@components/customer/arc-letter-reveal';
 import { ARC_EMPTY_MESSAGE, ARC_ENTRIES } from '@constants/arc';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
 
@@ -39,10 +40,21 @@ const STACK_OFFSET_X = 148;
 const STACK_OFFSET_Y = 149;
 const STACK_ROTATION = '14.54deg';
 const STACK_ROTATION_REVERSED = '-14.54deg';
+/**
+ * 넘기는 동안 뒤에 깔린 봉투가 앞의 봉투보다 덜 움직이는 거리.
+ * 앞뒤가 같은 속도로 흐르면 한 장처럼 붙어 보여서, 뒤를 조금 붙잡아 깊이를 냅니다.
+ */
+const STACK_DRIFT_X = 28;
 
 /** 옆으로 넘기는 동안 이웃한 봉투가 물러나 보이는 정도. */
-const PEEK_SCALE = 0.92;
-const PEEK_OPACITY = 0.45;
+const PEEK_SCALE = 0.9;
+const PEEK_OPACITY = 0.35;
+/** 물러난 봉투가 가라앉는 깊이와, 넘어가는 쪽으로 기우는 각도. */
+const PEEK_SINK_Y = 20;
+const PEEK_TILT = '4deg';
+const PEEK_TILT_REVERSED = '-4deg';
+/** 물러난 봉투가 납작하게 작아지지 않고 뒤로 밀려나 보이도록 주는 원근. */
+const PEEK_PERSPECTIVE = 900;
 
 /** 넘기는 동안 봉투 크기가 부드럽게 따라오도록 매 프레임 스크롤 위치를 받습니다. */
 const SCROLL_THROTTLE_MS = 16;
@@ -72,10 +84,6 @@ export default function CustomerArcScreen() {
   const [enter] = useState(() => new Animated.Value(0));
 
   const entry = ARC_ENTRIES[index];
-  const nextEntry = ARC_ENTRIES[index + 1];
-  const previousEntry = ARC_ENTRIES[index - 1];
-  /** 뒤에 깔아 둘 봉투. 다음 것이 있으면 다음을, 없으면 이전 것을 보여줍니다. */
-  const stackedEntry = nextEntry ?? previousEntry;
 
   useEffect(() => {
     const animation = Animated.timing(enter, {
@@ -115,6 +123,17 @@ export default function CustomerArcScreen() {
     },
     [pageWidth]
   );
+
+  const handleLetterClose = useCallback(() => {
+    setIsLetterOpen(false);
+  }, []);
+
+  /** 한 장이 가운데에 있을 때를 1 로 두고, 좌우 이웃까지를 재는 구간. */
+  const pageRange = (position: number) => [
+    (position - 1) * pageWidth,
+    position * pageWidth,
+    (position + 1) * pageWidth,
+  ];
 
   const headerStyle = {
     opacity: enter.interpolate({ inputRange: [0, 0.6], outputRange: [0, 1], extrapolate: 'clamp' }),
@@ -160,7 +179,13 @@ export default function CustomerArcScreen() {
               description={DESCRIPTION}
               align="center"
               compact
-              accessory={<InitialSetupButton iconOnly />}
+              accessory={
+                // 시안(2-1 Arc)은 워드마크 오른쪽에 `Visit Memory` 와 톱니를 나란히 겁니다.
+                <View style={styles.headerActions}>
+                  <VisitMemoryLink variant="pill" />
+                  <InitialSetupButton iconOnly />
+                </View>
+              }
             />
           </Animated.View>
 
@@ -172,17 +197,57 @@ export default function CustomerArcScreen() {
               </View>
             ) : (
               <>
-                {stackedEntry === undefined ? null : (
-                  <View
-                    style={[
-                      styles.gutter,
-                      styles.stackedSlot,
-                      nextEntry === undefined ? styles.stackedPrevious : styles.stackedNext,
-                    ]}
-                  >
-                    <ArcEnvelope entry={stackedEntry} stacked />
-                  </View>
-                )}
+                {/*
+                  뒤에 깔리는 봉투는 장마다 한 벌씩 두고 스크롤에 맞춰 갈아 깝니다.
+                  한 벌만 두고 지금 보는 장에 따라 바꾸면, 절반쯤 넘긴 순간 뒷장이 툭 바뀝니다.
+                */}
+                {pageWidth === 0
+                  ? null
+                  : ARC_ENTRIES.map((item, position) => {
+                      // 다음 장을 뒤에 깔고, 마지막 장에서는 좌우를 뒤집어 이전 장을 깝니다.
+                      const isLast = position === ARC_ENTRIES.length - 1;
+                      const behind = ARC_ENTRIES[isLast ? position - 1 : position + 1];
+
+                      if (behind === undefined) {
+                        return null;
+                      }
+
+                      const restX = isLast ? -STACK_OFFSET_X : STACK_OFFSET_X;
+
+                      return (
+                        <Animated.View
+                          key={item.id}
+                          style={[
+                            styles.gutter,
+                            styles.stackedSlot,
+                            {
+                              opacity: scrollX.interpolate({
+                                inputRange: pageRange(position),
+                                outputRange: [0, 1, 0],
+                                extrapolate: 'clamp',
+                              }),
+                              transform: [
+                                {
+                                  translateX: scrollX.interpolate({
+                                    inputRange: pageRange(position),
+                                    outputRange: [
+                                      restX + STACK_DRIFT_X,
+                                      restX,
+                                      restX - STACK_DRIFT_X,
+                                    ],
+                                    extrapolate: 'clamp',
+                                  }),
+                                },
+                                { translateY: STACK_OFFSET_Y },
+                                { rotate: isLast ? STACK_ROTATION_REVERSED : STACK_ROTATION },
+                              ],
+                            },
+                          ]}
+                        >
+                          <ArcEnvelope entry={behind} stacked />
+                        </Animated.View>
+                      );
+                    })}
 
                 {/*
                   편지를 꺼내도 캐러셀은 그대로 두고 그 위에 편지를 덮습니다.
@@ -205,12 +270,8 @@ export default function CustomerArcScreen() {
                   {pageWidth === 0
                     ? null
                     : ARC_ENTRIES.map((item, position) => {
-                        // 이웃한 장은 뒤로 물러났다가 가운데로 오면서 제 크기를 찾습니다.
-                        const inputRange = [
-                          (position - 1) * pageWidth,
-                          position * pageWidth,
-                          (position + 1) * pageWidth,
-                        ];
+                        // 이웃한 장은 뒤로 물러나 가라앉았다가, 가운데로 오면서 제 크기와 자리를 찾습니다.
+                        const inputRange = pageRange(position);
 
                         return (
                           <Animated.View
@@ -226,6 +287,21 @@ export default function CustomerArcScreen() {
                                   extrapolate: 'clamp',
                                 }),
                                 transform: [
+                                  { perspective: PEEK_PERSPECTIVE },
+                                  {
+                                    translateY: scrollX.interpolate({
+                                      inputRange,
+                                      outputRange: [PEEK_SINK_Y, 0, PEEK_SINK_Y],
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
+                                  {
+                                    rotate: scrollX.interpolate({
+                                      inputRange,
+                                      outputRange: [PEEK_TILT, '0deg', PEEK_TILT_REVERSED],
+                                      extrapolate: 'clamp',
+                                    }),
+                                  },
                                   {
                                     scale: scrollX.interpolate({
                                       inputRange,
@@ -246,7 +322,17 @@ export default function CustomerArcScreen() {
                                 setIsLetterOpen(true);
                               }}
                             >
-                              <ArcEnvelope entry={item} />
+                              {/*
+                                편지를 꺼내는 동안에는 이 봉투를 감춥니다. 편지를 덮은 무대가
+                                같은 자리에 제 봉투를 들고 있어서, 그냥 두면 가라앉는 봉투 뒤로
+                                멈춰 있는 봉투가 비칩니다.
+                              */}
+                              <ArcEnvelope
+                                entry={item}
+                                style={
+                                  isLetterOpen && position === index ? styles.envelopeOpened : null
+                                }
+                              />
                             </Pressable>
                           </Animated.View>
                         );
@@ -255,7 +341,7 @@ export default function CustomerArcScreen() {
 
                 {isLetterOpen ? (
                   <View style={[styles.gutter, styles.letterOverlay]}>
-                    <ArcLetterCard letter={entry.letter} onPress={() => setIsLetterOpen(false)} />
+                    <ArcLetterReveal entry={entry} onClose={handleLetterClose} />
                   </View>
                 ) : null}
               </>
@@ -292,6 +378,11 @@ const styles = StyleSheet.create({
   gutter: {
     paddingHorizontal: Spacing.four,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
   cardStage: {
     height: ENVELOPE_HEIGHT,
     marginTop: HEADER_TO_CARD,
@@ -306,19 +397,9 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
-  stackedNext: {
-    transform: [
-      { translateX: STACK_OFFSET_X },
-      { translateY: STACK_OFFSET_Y },
-      { rotate: STACK_ROTATION },
-    ],
-  },
-  stackedPrevious: {
-    transform: [
-      { translateX: -STACK_OFFSET_X },
-      { translateY: STACK_OFFSET_Y },
-      { rotate: STACK_ROTATION_REVERSED },
-    ],
+  // 편지를 꺼내는 동안 자리만 지키는 봉투. 자리가 비면 캐러셀이 되감기므로 지우지 않습니다.
+  envelopeOpened: {
+    opacity: 0,
   },
   // 봉투와 같은 자리에 겹쳐 놓아, 편지를 꺼내도 카드가 제자리에서 뒤집힙니다.
   letterOverlay: {

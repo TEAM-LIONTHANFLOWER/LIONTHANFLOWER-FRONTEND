@@ -13,16 +13,22 @@ import type { ArcEntry, InitialSetupItem, LetterContent, LetterSection } from '@
 
 /** 시안에는 고객이 모두 `Ethan` 으로 그려져 있습니다. 자리 채우기용 이름입니다. */
 const PLACE = 'MCM HAUS · SEOUL(REPUBLIC OF KOREA)';
-const ISSUED_ON = '13 AUGUST 2026';
 
-/** 두 Arc 가 같은 본문을 씁니다. 시안에 한 벌만 그려져 있어서입니다. */
-const LETTER_SECTIONS: readonly LetterSection[] = [
+/**
+ * 시안에는 편지 본문이 한 벌만 그려져 있습니다.
+ * 봉투를 세 장 넘겨 보는 데모라 내용이 같으면 넘긴 티가 나지 않아서,
+ * 시안 본문은 1번 Arc 에 그대로 두고 2·3번은 같은 짜임으로 방문마다 다른 기록을 적었습니다.
+ *
+ * 시안은 봉투 날짜(2026.08.12)와 편지 발행일(13 AUGUST 2026)이 하루 어긋나 있습니다.
+ * 같은 방문을 가리키는 값이라 여기서는 봉투 날짜에 맞춰 적습니다.
+ */
+const FIRST_SECTIONS: readonly LetterSection[] = [
   {
     id: 'moment',
     title: 'Your MCM Moment',
     lines: [
       '당신은 디자인과 실용성의 균형을 중요하게 생각하는군요.',
-      'Selected 👜 A Bag',
+      'Selected A Bag',
       'Black / Small',
     ],
   },
@@ -39,6 +45,48 @@ const LETTER_SECTIONS: readonly LetterSection[] = [
   },
 ] as const;
 
+const SECOND_SECTIONS: readonly LetterSection[] = [
+  {
+    id: 'moment',
+    title: 'Your MCM Moment',
+    lines: ['매일 드는 가방일수록 가벼움을 먼저 보시는군요.', 'Selected B Bag', 'Cognac / Medium'],
+  },
+  {
+    id: 'preference',
+    title: 'Your Preference',
+    bulleted: true,
+    lines: ['가볍게 드는 무게', '어디에나 어울리는 색', '천천히 둘러볼 수 있는 시간'],
+  },
+  {
+    id: 'remember',
+    title: 'A Moment to Remember',
+    lines: ['어깨에 걸었을 때의 스트랩 길이를 여러 번 맞춰 보셨습니다.'],
+  },
+] as const;
+
+const THIRD_SECTIONS: readonly LetterSection[] = [
+  {
+    id: 'moment',
+    title: 'Your MCM Moment',
+    lines: [
+      '가방과 나란히 둘 작은 물건까지 함께 고르셨습니다.',
+      'Selected C Wallet',
+      'Black / Compact',
+    ],
+  },
+  {
+    id: 'preference',
+    title: 'Your Preference',
+    bulleted: true,
+    lines: ['오래 쓸 수 있는 마감', '한 손에 들어오는 크기', '군더더기 없는 구성'],
+  },
+  {
+    id: 'remember',
+    title: 'A Moment to Remember',
+    lines: ['카드 수납 칸의 개수를 가장 오래 들여다보셨습니다.'],
+  },
+] as const;
+
 export const ARC_ENTRIES: readonly ArcEntry[] = [
   {
     id: 'arc-1',
@@ -48,20 +96,32 @@ export const ARC_ENTRIES: readonly ArcEntry[] = [
     letter: {
       title: 'Ethan’s 1st Arc',
       place: PLACE,
-      issuedOn: ISSUED_ON,
-      sections: LETTER_SECTIONS,
+      issuedOn: '12 AUGUST 2026',
+      sections: FIRST_SECTIONS,
     },
   },
   {
     id: 'arc-2',
     envelopeTitle: 'Your 2nd Arc',
     store: 'MCM Haus',
-    date: '2026.08.12',
+    date: '2026.08.14',
     letter: {
       title: 'Ethan’s 2nd Arc',
       place: PLACE,
-      issuedOn: ISSUED_ON,
-      sections: LETTER_SECTIONS,
+      issuedOn: '14 AUGUST 2026',
+      sections: SECOND_SECTIONS,
+    },
+  },
+  {
+    id: 'arc-3',
+    envelopeTitle: 'Your 3rd Arc',
+    store: 'MCM Haus',
+    date: '2026.08.16',
+    letter: {
+      title: 'Ethan’s 3rd Arc',
+      place: PLACE,
+      issuedOn: '16 AUGUST 2026',
+      sections: THIRD_SECTIONS,
     },
   },
 ] as const;
@@ -73,7 +133,7 @@ export const ARC_ENTRIES: readonly ArcEntry[] = [
 export const VISIT_MEMORY_LETTER: LetterContent = {
   title: 'Ethan’s Visit Memory',
   place: PLACE,
-  issuedOn: ISSUED_ON,
+  issuedOn: '18 AUGUST 2026',
   sections: [
     {
       id: 'moment',
