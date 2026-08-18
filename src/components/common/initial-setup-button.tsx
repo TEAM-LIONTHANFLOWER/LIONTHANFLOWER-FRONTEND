@@ -6,6 +6,7 @@ import { ActionPill } from '@components/common/action-pill';
 import { PopupOverlay } from '@components/common/popup-overlay';
 import { INITIAL_SETUP_ITEMS } from '@constants/arc';
 import { FixedColors, Typography } from '@constants/theme';
+import { useLocale } from '@stores/locale-store';
 import paperclip from '@assets/images/arc/paperclip.svg';
 import settingsIcon from '@assets/images/common/settings.svg';
 
@@ -50,6 +51,7 @@ interface InitialSetupButtonProps {
  * 고객 Arc 화면과 직원 고객 상세 화면이 같은 동작을 해서 버튼과 팝업을 함께 들고 있습니다.
  */
 export function InitialSetupButton({ iconOnly = false, style }: InitialSetupButtonProps) {
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -85,7 +87,9 @@ export function InitialSetupButton({ iconOnly = false, style }: InitialSetupButt
             {INITIAL_SETUP_ITEMS.map((item) => (
               <View key={item.id}>
                 <Text style={styles.label}>{item.label}</Text>
-                <Text style={[styles.value, Typography[item.valueToken]]}>{item.value}</Text>
+                <Text style={[styles.value, Typography[item.valueToken]]}>
+                  {item.value[locale]}
+                </Text>
               </View>
             ))}
           </View>

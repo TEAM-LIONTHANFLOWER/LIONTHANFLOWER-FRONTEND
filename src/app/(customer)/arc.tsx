@@ -19,8 +19,9 @@ import { PageIndicator } from '@components/common/page-indicator';
 import { ScreenContainer } from '@components/common/screen-container';
 import { ArcEnvelope, ENVELOPE_HEIGHT } from '@components/customer/arc-envelope';
 import { ArcLetterCard } from '@components/customer/arc-letter-card';
-import { ARC_EMPTY_MESSAGE, ARC_ENTRIES } from '@constants/arc';
+import { ARC_ENTRIES } from '@constants/arc';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /** 머리말과 봉투 사이. 시안(393 폭)의 세로 리듬이라 Spacing 스케일에 없는 값입니다. */
 const HEADER_TO_CARD = 34;
@@ -55,10 +56,10 @@ const CARD_RISE = 28;
 /** 안내 문구. Figma 텍스트 스타일에 없는 크기라 여기서 직접 잡습니다. */
 const EMPTY_FONT_SIZE = 16;
 
-const DESCRIPTION = '오늘의 경험이 새로운 Arc로 기록됩니다.';
-
 /** 고객 Arc 화면 — `/arc` */
 export default function CustomerArcScreen() {
+  const { t } = useTranslation();
+
   const [index, setIndex] = useState(0);
   /** 봉투를 열어 편지를 꺼냈는지. 편지를 다시 누르면 봉투로 돌아옵니다. */
   const [isLetterOpen, setIsLetterOpen] = useState(false);
@@ -157,7 +158,7 @@ export default function CustomerArcScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <Animated.View style={[styles.gutter, headerStyle]}>
             <BrandIntroHeader
-              description={DESCRIPTION}
+              description={t('arc.description')}
               align="center"
               compact
               accessory={<InitialSetupButton iconOnly />}
@@ -168,7 +169,7 @@ export default function CustomerArcScreen() {
           <Animated.View style={[styles.cardStage, cardStyle]} onLayout={handleStageLayout}>
             {entry === undefined ? (
               <View style={styles.emptySlot}>
-                <Text style={styles.empty}>{ARC_EMPTY_MESSAGE}</Text>
+                <Text style={styles.empty}>{t('arc.empty')}</Text>
               </View>
             ) : (
               <>
@@ -240,7 +241,9 @@ export default function CustomerArcScreen() {
                             {/* 넘기는 도중 옆 봉투를 눌렀다면 그 장으로 옮겨 놓고 엽니다. */}
                             <Pressable
                               accessibilityRole="button"
-                              accessibilityLabel={`${item.envelopeTitle} 열기`}
+                              accessibilityLabel={t('a11y.openEnvelope', {
+                                title: item.envelopeTitle,
+                              })}
                               onPress={() => {
                                 goTo(position);
                                 setIsLetterOpen(true);

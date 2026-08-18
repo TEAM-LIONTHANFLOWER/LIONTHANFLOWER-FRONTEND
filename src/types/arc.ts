@@ -7,6 +7,7 @@
  * 실제 데이터는 아직 API 가 없어 `@constants/arc` 에 고정값으로 있습니다.
  */
 import type { TypographyToken } from '@constants/theme';
+import type { LocalizedText } from '@/types/i18n';
 
 /** 편지 본문의 한 단락. 제목 한 줄과 여러 줄 본문으로 이루어집니다. */
 export interface LetterSection {
@@ -15,7 +16,8 @@ export interface LetterSection {
   title: string;
   /** 본문을 글머리 기호 목록으로 그릴지. 생략하면 줄만 바꾼 문단입니다. */
   bulleted?: boolean;
-  lines: readonly string[];
+  /** 고객이 고른 언어로 보여 줍니다. */
+  lines: readonly LocalizedText[];
 }
 
 /**
@@ -48,7 +50,8 @@ export interface InitialSetupItem {
   id: string;
   /** `Service`, `Language` 처럼 영문 항목명 */
   label: string;
-  value: string;
+  /** 고객이 고른 언어로 보여 줍니다. */
+  value: LocalizedText;
   /**
    * 값에 쓸 타이포 토큰.
    * 시안이 줄마다 13 / 14 로 다르게 지정해서 데이터로 들고 있습니다.

@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-na
 import { Image } from 'expo-image';
 
 import { FixedColors, LineHeightRatio, Radius, Spacing, Typography } from '@constants/theme';
+import { useLocale } from '@stores/locale-store';
 import letterPaper from '@assets/images/arc/letter-paper.jpg';
 import reimaginedForYou from '@assets/images/arc/reimagined-for-you.svg';
 import type { LetterContent } from '@/types/arc';
@@ -53,6 +54,7 @@ interface LetterSheetProps {
  */
 export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProps) {
   const isArc = variant === 'arc';
+  const locale = useLocale();
 
   return (
     <View style={[styles.sheet, style]}>
@@ -90,11 +92,11 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
                   // 순서가 바뀌지 않는 목록이라 자리를 키로 씁니다.
                   <View key={index} style={styles.bulletRow}>
                     <Text style={styles.line}>{'•'}</Text>
-                    <Text style={[styles.line, styles.bulletLine]}>{line}</Text>
+                    <Text style={[styles.line, styles.bulletLine]}>{line[locale]}</Text>
                   </View>
                 ) : (
                   <Text key={index} style={styles.line}>
-                    {line}
+                    {line[locale]}
                   </Text>
                 )
               )}

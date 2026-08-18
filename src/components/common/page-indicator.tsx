@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { FixedColors, Radius, Spacing } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /** 지금 보고 있는 점이 알약으로 늘어나는 시간. */
 const GROW_DURATION_MS = 260;
@@ -71,7 +72,8 @@ function Dot({ isActive }: DotProps) {
  * 온보딩 슬라이드와 Arc 봉투 캐러셀이 같은 표시를 씁니다.
  */
 export function PageIndicator({ count, activeIndex, onSelect, style }: PageIndicatorProps) {
-  const label = `전체 ${count}장 중 ${activeIndex + 1}번째`;
+  const { t } = useTranslation();
+  const label = t('a11y.pageIndicator', { count, current: activeIndex + 1 });
   const indexes = Array.from({ length: count }, (_, index) => index);
 
   if (onSelect === undefined) {
@@ -99,7 +101,7 @@ export function PageIndicator({ count, activeIndex, onSelect, style }: PageIndic
         <Pressable
           key={index}
           accessibilityRole="tab"
-          accessibilityLabel={`${index + 1}번째`}
+          accessibilityLabel={t('a11y.pageNumber', { page: index + 1 })}
           accessibilityState={{ selected: index === activeIndex }}
           onPress={() => onSelect(index)}
           style={styles.touchTarget}
