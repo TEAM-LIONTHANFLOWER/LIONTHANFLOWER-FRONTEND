@@ -59,12 +59,22 @@
   font-display: swap;
 }
 
+/* Studio 프레임 문구 전용. DM Sans 와 같은 이유로 ttf 를 그대로 씁니다. */
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --font-sans:
     Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', 'Apple SD Gothic Neo',
     'Noto Sans KR', 'Malgun Gothic', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
   --font-serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
   --font-label: 'DM Sans', var(--font-sans);
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
