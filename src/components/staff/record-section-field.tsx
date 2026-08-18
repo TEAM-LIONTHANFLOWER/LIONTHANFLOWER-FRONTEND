@@ -85,11 +85,11 @@ export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
       );
 
     case 'options':
+      // 줄 목록은 늘 하나만 고릅니다. 자세한 이유는 `RecordOptionsSection` 주석 참고.
       return (
         <OptionList
           label={section.label}
           options={section.options}
-          multiple={section.multiple}
           value={choices}
           onChange={(next) => setChoices(flow, section.id, next)}
         />

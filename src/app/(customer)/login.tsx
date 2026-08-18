@@ -46,8 +46,9 @@ export default function CustomerLoginScreen() {
   const canStart = name.trim().length > 0;
 
   const handleStart = useCallback(() => {
-    router.replace('/matching');
-  }, [router]);
+    // 혼자 보겠다고 한 고객은 직원을 배정하지 않으므로 매칭 대기를 건너뛰고 바로 홈으로 갑니다.
+    router.replace(serviceStyle === 'self-guided' ? '/home' : '/matching');
+  }, [router, serviceStyle]);
 
   return (
     <ScreenContainer backgroundColor={FixedColors.splashBackground} style={styles.stage}>

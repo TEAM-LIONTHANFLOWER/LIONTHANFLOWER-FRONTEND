@@ -28,11 +28,3 @@ export interface BrandStory {
   /** 이 줄 수를 넘으면 말줄임표로 접습니다. 없으면 전문을 그대로 보여줍니다. */
   maxLines?: number;
 }
-
-/** `MCM Myself` 가로 갤러리에 걸리는 사진 한 장. */
-export interface MyselfPhoto {
-  id: string;
-  image: ImageRequireSource;
-  /** 사진을 볼 수 없는 사용자에게 읽어 줄 설명 */
-  description: string;
-}

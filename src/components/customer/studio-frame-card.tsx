@@ -93,8 +93,14 @@ const FRAME04_WINDOW_LEFT = 13;
 
 interface StudioFrameCardProps {
   frameId: StudioFrameId;
-  selected: boolean;
-  onSelect: () => void;
+  /** 지금 고른 프레임인지. 고를 수 없는 자리에서는 뜻이 없어 생략합니다. */
+  selected?: boolean;
+  /**
+   * 누르면 이 프레임을 고릅니다.
+   * 생략하면 누를 수 없는 그림 한 장이 됩니다 — 홈의 `MCM Myself` 줄과 Studio 결과 화면처럼
+   * 이미 정해진 프레임을 보여 주기만 하는 자리에서 그렇게 씁니다.
+   */
+  onSelect?: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -102,19 +108,21 @@ interface StudioFrameCardProps {
  * Studio 화면에서 고를 수 있는 프레임 한 장.
  * 프레임마다 디자인이 완전히 달라서 `frameId` 로 내용만 갈아 끼웁니다.
  */
-export function StudioFrameCard({ frameId, selected, onSelect, style }: StudioFrameCardProps) {
-  return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityLabel={`프레임 ${frameId.slice(-2)}`}
-      accessibilityState={{ selected }}
-      onPress={onSelect}
-      style={[
-        styles.frame,
-        (frameId === 'frame-02' || frameId === 'frame-03') && styles.frameWindowBackground,
-        style,
-      ]}
-    >
+export function StudioFrameCard({
+  frameId,
+  selected = false,
+  onSelect,
+  style,
+}: StudioFrameCardProps) {
+  const label = `프레임 ${frameId.slice(-2)}`;
+  const frameStyle = [
+    styles.frame,
+    (frameId === 'frame-02' || frameId === 'frame-03') && styles.frameWindowBackground,
+    style,
+  ];
+
+  const art = (
+    <>
       {frameId === 'frame-01' ? (
         <>
           {/* 흰 바탕을 셋으로 잘라 사진 자리만 남기고, 그 자리는 공통 채움색으로 채웁니다. */}
@@ -194,6 +202,27 @@ export function StudioFrameCard({ frameId, selected, onSelect, style }: StudioFr
           <Text style={styles.frame04Detail}>{ARC_DETAIL_TEXT}</Text>
         </>
       ) : null}
+    </>
+  );
+
+  // 고를 수 없는 자리에서는 누르기를 받지 않고 그림 한 장으로만 놓습니다.
+  if (onSelect === undefined) {
+    return (
+      <View accessibilityRole="image" accessibilityLabel={label} style={frameStyle}>
+        {art}
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      onPress={onSelect}
+      style={frameStyle}
+    >
+      {art}
     </Pressable>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { ActionPill } from '@components/common/action-pill';
 import { LetterSheet } from '@components/common/letter-sheet';
 import { PopupOverlay } from '@components/common/popup-overlay';
 import { VISIT_MEMORY_LETTER } from '@constants/arc';
@@ -15,6 +16,17 @@ const SHEET_WIDTH = 294;
 
 const LABEL = 'Visit Memory';
 
+interface VisitMemoryLinkProps {
+  /**
+   * 버튼의 모양.
+   *
+   * - `text` — 글자만. 직원 화면의 머리말과 완료 화면이 씁니다.
+   * - `pill` — 흰 테두리를 두른 알약. 고객 Arc 화면이 씁니다. 시안(2-1 Arc)이
+   *   봉투 위에 놓이는 이 버튼만 테두리로 감싸 톱니 아이콘과 눈높이를 맞춰 둡니다.
+   */
+  variant?: 'text' | 'pill';
+}
+
 /**
  * 머리말 오른쪽 끝의 `Visit Memory`. 누르면 그날의 방문 기록이 팝업으로 열립니다.
  *
@@ -23,20 +35,24 @@ const LABEL = 'Visit Memory';
  *
  * 어두운 브랜드 배경 위에만 올라가므로 글자색이 흰색으로 고정입니다.
  */
-export function VisitMemoryLink() {
+export function VisitMemoryLink({ variant = 'text' }: VisitMemoryLinkProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={LABEL}
-        accessibilityState={{ expanded: isOpen }}
-        hitSlop={HIT_SLOP}
-        onPress={() => setIsOpen(true)}
-      >
-        <Text style={styles.label}>{LABEL}</Text>
-      </Pressable>
+      {variant === 'pill' ? (
+        <ActionPill label={LABEL} tone="outline" onPress={() => setIsOpen(true)} />
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={LABEL}
+          accessibilityState={{ expanded: isOpen }}
+          hitSlop={HIT_SLOP}
+          onPress={() => setIsOpen(true)}
+        >
+          <Text style={styles.label}>{LABEL}</Text>
+        </Pressable>
+      )}
 
       <PopupOverlay visible={isOpen} onClose={() => setIsOpen(false)} label={LABEL}>
         <LetterSheet content={VISIT_MEMORY_LETTER} variant="memory" style={styles.sheet} />

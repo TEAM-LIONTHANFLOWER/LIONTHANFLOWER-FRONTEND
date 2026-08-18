@@ -148,7 +148,7 @@ export function StudioFrameStage({
 
   return (
     <View style={[styles.stage, style]}>
-      <StudioFrameCard frameId={frameId} selected onSelect={() => {}} />
+      <StudioFrameCard frameId={frameId} />
 
       {status === 'idle' ? (
         <Pressable

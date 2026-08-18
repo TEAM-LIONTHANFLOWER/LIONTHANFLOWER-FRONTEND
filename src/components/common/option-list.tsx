@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { FieldLabel } from '@components/common/field-label';
+import { FieldLabel, MULTI_SELECT_HINT } from '@components/common/field-label';
 import { FixedColors, Spacing } from '@constants/theme';
 
 /** 줄 높이가 42 라 최소 터치 영역 44 를 채우려면 위아래로 1 씩 더 필요합니다. */
@@ -41,6 +41,8 @@ interface OptionListProps<T extends string> {
  *
  * 어두운 브랜드 배경 위에만 올라가므로 색이 `FixedColors` 로 고정입니다.
  * 고른 줄은 흰색 90% 면으로 뒤집히고 글자는 검정이 됩니다.
+ *
+ * 여러 개를 고를 수 있는 묶음에는 라벨 아래에 `복수 응답 가능` 안내가 자동으로 붙습니다.
  */
 export function OptionList<T extends string>({
   label,
@@ -62,7 +64,13 @@ export function OptionList<T extends string>({
 
   return (
     <View style={styles.field}>
-      {hideLabel ? null : <FieldLabel label={label} required={required} />}
+      {hideLabel ? null : (
+        <FieldLabel
+          label={label}
+          required={required}
+          hint={multiple ? MULTI_SELECT_HINT : undefined}
+        />
+      )}
 
       <View
         accessibilityRole={multiple ? 'list' : 'radiogroup'}

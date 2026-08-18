@@ -148,6 +148,8 @@ export const FixedColors = {
   cardSurface: '#f7f3ec',
   /** 카드 제목과 상태 배지 바탕. Figma `Dark Leather Brown` 과 같은 값입니다. */
   cardAccent: '#6e4426',
+  /** 밝은 카드 위에서 한 걸음 물러나는 글자. Arc 편지 맨 아래 발행 정보가 씁니다. */
+  cardMuted: '#6b6b6b',
   /** 밝은 카드 위에 얹는 검은 알약 버튼 바탕 */
   solidButton: '#000000',
   /** Arc 봉투 겉면. Figma `MCM Cognac` 과 같은 값입니다. */

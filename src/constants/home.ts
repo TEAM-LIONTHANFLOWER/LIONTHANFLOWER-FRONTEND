@@ -5,9 +5,10 @@
  * 지금은 고정값입니다. 콘텐츠 API 가 붙으면 `@hooks` 의 쿼리 훅으로 옮깁니다.
  */
 
-import myselfElevator from '@assets/images/home/myself-elevator.jpg';
+import { STUDIO_FRAME_IDS } from '@constants/studio';
 import nowOnMcmHaus from '@assets/images/home/now-on-mcm-haus.jpg';
-import type { BrandStory, MyselfPhoto, NowOnFeature } from '@/types/home';
+import type { BrandStory, NowOnFeature } from '@/types/home';
+import type { StudioFrameId } from '@/types/studio';
 
 export const NOW_ON_FEATURE: NowOnFeature = {
   id: 'mcm-haus',
@@ -36,12 +37,10 @@ export const BRAND_STORIES: readonly BrandStory[] = [
 ] as const;
 
 /**
- * `MCM Myself` 갤러리 사진.
- * 시안에는 같은 사진이 세 장 걸려 있습니다. 자리와 개수를 맞추려고 그대로 두었고,
- * 콘텐츠 API 가 붙으면 실제 화보로 교체합니다.
+ * `MCM Myself` 줄에 걸리는 프레임.
+ * 시안이 Studio 의 네 프레임을 그대로 줄여 늘어놓습니다.
+ *
+ * 아직 고객이 만든 결과를 가져올 API 가 없어 프레임 원본을 그대로 보여 줍니다.
+ * Studio 저장이 붙으면 고객이 실제로 만든 것만 남기고 이 목록은 지웁니다.
  */
-export const MYSELF_PHOTOS: readonly MyselfPhoto[] = [
-  { id: 'myself-1', image: myselfElevator, description: 'MCM 백팩을 멘 모델 화보' },
-  { id: 'myself-2', image: myselfElevator, description: 'MCM 백팩을 멘 모델 화보' },
-  { id: 'myself-3', image: myselfElevator, description: 'MCM 백팩을 멘 모델 화보' },
-] as const;
+export const MYSELF_FRAMES: readonly StudioFrameId[] = STUDIO_FRAME_IDS;

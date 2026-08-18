@@ -9,7 +9,7 @@ import { ScreenContainer } from '@components/common/screen-container';
 import { BrandStoryBlock } from '@components/customer/brand-story-block';
 import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
-import { BRAND_STORIES, MYSELF_PHOTOS, NOW_ON_FEATURE } from '@constants/home';
+import { BRAND_STORIES, MYSELF_FRAMES, NOW_ON_FEATURE } from '@constants/home';
 import { CUSTOMER_SECTION_TABS } from '@constants/navigation';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
 import type { CustomerSectionKey } from '@/types/home';
@@ -43,7 +43,8 @@ export default function CustomerHomeScreen() {
     // 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
     // 탭 바도 같은 이유로 바깥에 두고 화면 맨 아래에 붙입니다.
     <View style={styles.root}>
-      <BrandBackdrop />
+      {/* 조명은 앱에서 처음 만나는 이 화면에서만 켭니다. */}
+      <BrandBackdrop showLight />
 
       <ScreenContainer backgroundColor="transparent" edgeToEdge style={styles.stage}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -70,7 +71,7 @@ export default function CustomerHomeScreen() {
             <Text style={styles.galleryTitle}>MCM Myself</Text>
           </View>
 
-          <MyselfGallery photos={MYSELF_PHOTOS} />
+          <MyselfGallery frames={MYSELF_FRAMES} />
         </ScrollView>
       </ScreenContainer>
     </View>

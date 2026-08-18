@@ -17,6 +17,11 @@ export type RecordFlow = 'arc' | 'memory';
 export interface RecordOption {
   value: string;
   label: string;
+  /**
+   * 라벨 왼쪽에 놓는 색 동그라미. 색 자체가 보기인 선호 컬러 묶음만 들고 있습니다.
+   * 한 가지 색이면 문자열, 그러데이션이면 색을 흐르는 순서대로 담은 배열입니다.
+   */
+  swatch?: string | readonly [string, string, ...string[]];
 }
 
 interface RecordSectionBase {
@@ -49,12 +54,15 @@ export interface RecordChipsSection extends RecordSectionBase {
   multiple?: boolean;
 }
 
-/** 화면 폭을 꽉 채우는 줄 목록으로 고르는 묶음. */
+/**
+ * 화면 폭을 꽉 채우는 줄 목록으로 고르는 묶음.
+ *
+ * 시안(2-1-3)이 이 모양을 늘 하나만 고르는 자리로 씁니다 — 응대 방식이나 구매 결정 방식처럼
+ * 서로 배타적인 보기라서입니다. 여러 개를 고를 항목은 칩(`chips`) 으로 그립니다.
+ */
 export interface RecordOptionsSection extends RecordSectionBase {
   kind: 'options';
   options: readonly RecordOption[];
-  /** 여러 개를 고를 수 있습니다. 비우면 하나만 고릅니다. */
-  multiple?: boolean;
 }
 
 /** 제품을 검색해 여러 개 담는 묶음. `+` 로 줄을 늘립니다. */
