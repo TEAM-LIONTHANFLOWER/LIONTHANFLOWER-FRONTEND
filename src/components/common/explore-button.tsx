@@ -1,4 +1,11 @@
-import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,11 +19,17 @@ const BUTTON_HEIGHT = 58;
 /**
  * 배경 흐림 세기. 시안의 유리는 안쪽에 배경 형태가 남을 만큼 투명하면서 살짝 밝아집니다.
  *
- * 웹에서 `expo-blur` 는 이 값을 `blur(intensity * 0.2px)` 와
- * 흰 면 `alpha = intensity / 100 * 0.3` 으로 환산합니다 — 45 면 흐림 9px, 흰 면 12% 입니다.
- * 유리가 너무 뿌옇거나 너무 옅으면 여기만 조절하면 됩니다.
+ * `intensity` 하나가 흐림과 그 위에 깔리는 흰 면을 함께 정합니다. 둘을 따로 줄 수 없어서,
+ * 흐림이 실제로 걸리는지에 따라 값을 다르게 잡습니다.
+ *
+ * - iOS: 네이티브 흐림이 걸리므로 흰 면까지 더해져 유리가 됩니다.
+ * - Android: 아래 설명대로 흐림을 걸 수 없어 흰 면만 남습니다. 여기에 45 를 주면
+ *   흐려지지도 않은 채 흰 면 19.6% 만 덮여 뿌옇기만 합니다. 그래서 면은 겨우 비칠
+ *   만큼만 남기고, 알약 모양은 가장자리 빛으로 읽히게 둡니다.
+ *
+ * 웹은 `expo-blur` 로 맑은 유리를 만들 수 없어 `explore-button.web.tsx` 로 나눠 두었습니다.
  */
-const GLASS_BLUR_INTENSITY = 45;
+const GLASS_BLUR_INTENSITY = Platform.select({ android: 18, default: 45 });
 
 /** 가장자리에 걸리는 빛의 두께. */
 const EDGE_WIDTH = 1;

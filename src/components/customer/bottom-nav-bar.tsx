@@ -63,7 +63,7 @@ const ANTICIPATION_OFFSET = Spacing.two;
 const ANTICIPATION_DURATION_MS = 160;
 const MOVE_DURATION_MS = 420;
 
-/** 배경 흐림 세기. `ExploreButton` 과 같은 값. */
+/** 배경 흐림 세기. `ExploreButton` 의 iOS 값과 같습니다. */
 const GLASS_BLUR_INTENSITY = 45;
 
 /** 가장자리에 걸리는 빛의 두께. */
