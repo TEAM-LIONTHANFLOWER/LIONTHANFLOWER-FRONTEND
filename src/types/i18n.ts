@@ -18,6 +18,15 @@ export interface LanguageOption {
 }
 
 /**
+ * 한 덩이의 글을 언어별로 담은 값.
+ *
+ * 화면을 이루는 문구는 `MESSAGES` 사전에서 꺼내지만, 브랜드 소개글처럼 나중에
+ * 콘텐츠 API 로 옮겨 갈 글은 데이터 쪽에 언어별로 담아 둡니다. 서버가 내려줄
+ * 모양과 같아서, API 가 붙으면 자리만 바꾸면 됩니다.
+ */
+export type LocalizedText = Record<LocaleCode, string>;
+
+/**
  * 번역 문구 키.
  *
  * `점(.)` 앞은 문구가 쓰이는 화면입니다. 여기에 키를 추가하면 다섯 언어 사전이
@@ -30,6 +39,8 @@ export type MessageKey =
   | 'serviceStyle.recommendation'
   | 'serviceStyle.selfGuided'
   | 'matching.waiting'
+  | 'home.description'
+  | 'home.sectionTabsLabel'
   | 'a11y.startJourney';
 
 /** 한 언어의 문구 묶음. */

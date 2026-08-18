@@ -22,6 +22,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'serviceStyle.recommendation': '직원의 추천을 받고 싶어요',
     'serviceStyle.selfGuided': '혼자 보고 싶어요',
     'matching.waiting': '직원을 매칭중입니다...\n잠시만 직원을 기다려주세요',
+    'home.description': '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.',
+    'home.sectionTabsLabel': '홈에서 볼 내용',
     'a11y.startJourney': '여정 시작',
   },
   en: {
@@ -31,6 +33,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'serviceStyle.recommendation': "I'd like a staff recommendation",
     'serviceStyle.selfGuided': "I'd like to browse on my own",
     'matching.waiting': 'Matching you with a staff member...\nPlease wait a moment.',
+    'home.description': 'Discover brand experiences shaped by your taste and your journey.',
+    'home.sectionTabsLabel': 'What to show on Home',
     'a11y.startJourney': 'Start to journey',
   },
   zh: {
@@ -40,6 +44,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'serviceStyle.recommendation': '希望店员为我推荐',
     'serviceStyle.selfGuided': '想自己逛逛',
     'matching.waiting': '正在为您匹配店员…\n请稍候片刻。',
+    'home.description': '探索契合你今日品味与旅程的品牌体验。',
+    'home.sectionTabsLabel': '首页显示内容',
     'a11y.startJourney': '开始旅程',
   },
   ja: {
@@ -49,6 +55,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'serviceStyle.recommendation': 'スタッフのおすすめを受けたい',
     'serviceStyle.selfGuided': 'ひとりで見て回りたい',
     'matching.waiting': 'スタッフをおつなぎしています…\n少々お待ちください。',
+    'home.description': '今日の気分と旅にあわせたブランド体験に出会ってください。',
+    'home.sectionTabsLabel': 'ホームで見る内容',
     'a11y.startJourney': '旅を始める',
   },
   ru: {
@@ -58,6 +66,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'serviceStyle.recommendation': 'Хочу получить совет консультанта',
     'serviceStyle.selfGuided': 'Хочу посмотреть самостоятельно',
     'matching.waiting': 'Подбираем консультанта…\nПожалуйста, подождите.',
+    'home.description': 'Откройте для себя опыт бренда, созвучный вашему вкусу и пути.',
+    'home.sectionTabsLabel': 'Что показать на главной',
     'a11y.startJourney': 'Начать путешествие',
   },
 };

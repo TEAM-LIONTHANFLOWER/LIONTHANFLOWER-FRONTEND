@@ -11,6 +11,7 @@ import {
   Spacing,
   Typography,
 } from '@constants/theme';
+import { useLocale } from '@stores/locale-store';
 import type { NowOnFeature } from '@/types/home';
 
 /** 시안의 카드 안쪽 여백과 배지 치수. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
@@ -35,6 +36,8 @@ interface NowOnCardProps {
  * 사진은 위쪽을 기준으로 잘립니다 — 시안에서 피사체가 카드 윗부분에 잡혀 있습니다.
  */
 export function NowOnCard({ feature, style }: NowOnCardProps) {
+  const locale = useLocale();
+
   return (
     <View style={[styles.card, style]}>
       <Image
@@ -53,7 +56,7 @@ export function NowOnCard({ feature, style }: NowOnCardProps) {
           </View>
           <Text style={styles.title}>{feature.title}</Text>
         </View>
-        <Text style={styles.description}>{feature.description}</Text>
+        <Text style={styles.description}>{feature.description[locale]}</Text>
       </View>
     </View>
   );

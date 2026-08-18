@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 're
 import { Image } from 'expo-image';
 
 import { Spacing } from '@constants/theme';
+import { useLocale } from '@stores/locale-store';
 import type { MyselfPhoto } from '@/types/home';
 
 /** 시안의 사진 한 장 크기. */
@@ -21,6 +22,8 @@ interface MyselfGalleryProps {
  * 여백 안에 갇히면 세로 스크롤 영역에서 오른쪽이 잘려 마지막 사진이 끊겨 보입니다.
  */
 export function MyselfGallery({ photos, style }: MyselfGalleryProps) {
+  const locale = useLocale();
+
   return (
     <ScrollView
       horizontal
@@ -34,7 +37,7 @@ export function MyselfGallery({ photos, style }: MyselfGalleryProps) {
             source={photo.image}
             style={StyleSheet.absoluteFill}
             contentFit="cover"
-            accessibilityLabel={photo.description}
+            accessibilityLabel={photo.description[locale]}
           />
         </View>
       ))}

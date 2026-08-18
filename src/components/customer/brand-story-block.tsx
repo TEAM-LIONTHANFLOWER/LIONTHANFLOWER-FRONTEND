@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { FixedColors, Spacing, Typography } from '@constants/theme';
+import { useLocale } from '@stores/locale-store';
 import type { BrandStory } from '@/types/home';
 
 interface BrandStoryBlockProps {
@@ -12,11 +13,13 @@ interface BrandStoryBlockProps {
  * 본문 크기는 글마다 달라서 `story.bodyToken` 이 정합니다.
  */
 export function BrandStoryBlock({ story }: BrandStoryBlockProps) {
+  const locale = useLocale();
+
   return (
     <View style={styles.story}>
       <Text style={styles.title}>{story.title}</Text>
       <Text style={[styles.body, Typography[story.bodyToken]]} numberOfLines={story.maxLines}>
-        {story.body}
+        {story.body[locale]}
       </Text>
     </View>
   );

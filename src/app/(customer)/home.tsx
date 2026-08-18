@@ -15,6 +15,7 @@ import { NowOnCard } from '@components/customer/now-on-card';
 import { BRAND_STORIES, MYSELF_PHOTOS, NOW_ON_FEATURE } from '@constants/home';
 import { CUSTOMER_SECTION_TABS } from '@constants/navigation';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 import type { CustomerSectionKey } from '@/types/home';
 import type { NavTabId } from '@/types/navigation';
 
@@ -32,12 +33,11 @@ const NAV_BAR_TOP = 16;
 const TOP = { x: 0.5, y: 0 } as const;
 const BOTTOM = { x: 0.5, y: 1 } as const;
 
-const DESCRIPTION = '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.';
-
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<NavTabId>('home');
 
   const handleSectionChange = useCallback(
@@ -73,10 +73,10 @@ export default function CustomerHomeScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* 화보 줄만 화면 끝까지 이어져야 해서 좌우 여백 바깥에 둡니다. */}
           <View style={styles.gutter}>
-            <BrandIntroHeader description={DESCRIPTION} />
+            <BrandIntroHeader description={t('home.description')} />
 
             <PillTabs
-              label="홈에서 볼 내용"
+              label={t('home.sectionTabsLabel')}
               options={CUSTOMER_SECTION_TABS}
               value="home"
               onChange={handleSectionChange}
