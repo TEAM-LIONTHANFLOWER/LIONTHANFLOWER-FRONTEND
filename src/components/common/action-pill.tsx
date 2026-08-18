@@ -40,6 +40,11 @@ interface ActionPillProps {
    *   뒤에 놓인 카드를 가리지 않아야 하는 자리(Arc 화면의 `Visit Memory`)에 씁니다.
    */
   tone?: 'dark' | 'light' | 'outline';
+  /**
+   * 눌러서 팝업을 여는 버튼이면 그 열림 상태.
+   * 보조 기술이 펼쳐졌는지 접혔는지를 함께 읽어 줍니다.
+   */
+  expanded?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -53,6 +58,7 @@ export function ActionPill({
   icon,
   fill = false,
   tone = 'dark',
+  expanded,
   style,
 }: ActionPillProps) {
   const disabled = onPress === undefined;
@@ -63,7 +69,7 @@ export function ActionPill({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled, expanded }}
       disabled={disabled}
       hitSlop={HIT_SLOP}
       onPress={onPress}
@@ -102,7 +108,7 @@ const styles = StyleSheet.create({
   pillOutline: {
     backgroundColor: 'transparent',
     borderWidth: BORDER_WIDTH,
-    borderColor: FixedColors.onDark,
+    borderColor: FixedColors.outlineOnDark,
     paddingHorizontal: PADDING_X - BORDER_WIDTH,
     paddingVertical: PADDING_Y - BORDER_WIDTH,
   },

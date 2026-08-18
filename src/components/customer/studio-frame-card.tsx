@@ -208,7 +208,7 @@ export function StudioFrameCard({
   // 고를 수 없는 자리에서는 누르기를 받지 않고 그림 한 장으로만 놓습니다.
   if (onSelect === undefined) {
     return (
-      <View accessibilityRole="image" accessibilityLabel={label} style={frameStyle}>
+      <View accessible accessibilityRole="image" accessibilityLabel={label} style={frameStyle}>
         {art}
       </View>
     );

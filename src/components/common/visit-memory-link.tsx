@@ -41,7 +41,12 @@ export function VisitMemoryLink({ variant = 'text' }: VisitMemoryLinkProps) {
   return (
     <>
       {variant === 'pill' ? (
-        <ActionPill label={LABEL} tone="outline" onPress={() => setIsOpen(true)} />
+        <ActionPill
+          label={LABEL}
+          tone="outline"
+          expanded={isOpen}
+          onPress={() => setIsOpen(true)}
+        />
       ) : (
         <Pressable
           accessibilityRole="button"
