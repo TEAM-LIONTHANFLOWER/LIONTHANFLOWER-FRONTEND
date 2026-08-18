@@ -105,26 +105,35 @@ export function ArcLetterReveal({ entry, onClose }: ArcLetterRevealProps) {
     // 여는 도중에 눌렀다면 지금 값에서 그대로 되감습니다.
     running.current?.stop();
 
-    const closing = Animated.sequence([
-      Animated.timing(flip, {
-        toValue: 0,
-        duration: CLOSE_FLIP_DURATION_MS,
-        easing: Easing.inOut(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(open, {
+    // 아직 앞면으로 넘어가기 전이라면 뒤집기를 건너뜁니다. 그대로 두면 되돌릴 것이
+    // 없는데도 편지가 멈춰 선 채 뒤집기 시간만큼 흘려보냅니다.
+    flip.stopAnimation((flipped: number) => {
+      const sinkBack = Animated.timing(open, {
         toValue: 0,
         duration: CLOSE_DURATION_MS,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
-      }),
-    ]);
+      });
 
-    running.current = closing;
-    closing.start(({ finished }) => {
-      if (finished) {
-        onClose();
-      }
+      const closing =
+        flipped === 0
+          ? sinkBack
+          : Animated.sequence([
+              Animated.timing(flip, {
+                toValue: 0,
+                duration: CLOSE_FLIP_DURATION_MS,
+                easing: Easing.inOut(Easing.cubic),
+                useNativeDriver: true,
+              }),
+              sinkBack,
+            ]);
+
+      running.current = closing;
+      closing.start(({ finished }) => {
+        if (finished) {
+          onClose();
+        }
+      });
     });
   }, [flip, onClose, open]);
 
