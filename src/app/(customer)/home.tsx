@@ -8,6 +8,7 @@ import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
 import { ARC_INTRO_STORY, BRAND_STORIES, MYSELF_FRAMES, NOW_ON_FEATURE } from '@constants/home';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
 const INTRO_TO_ARC = 36;
@@ -19,10 +20,10 @@ const STORIES_TO_GALLERY = 45;
  * `NAV_AREA_HEIGHT` 와 같은 값이어야 합니다 — 내비게이션은 거기서 그립니다. */
 const NAV_AREA_HEIGHT = 118;
 
-const DESCRIPTION = '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.';
-
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
+  const { t } = useTranslation();
+
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
     // 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
@@ -35,7 +36,7 @@ export default function CustomerHomeScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* 화보 줄만 화면 끝까지 이어져야 해서 좌우 여백 바깥에 둡니다. */}
           <View style={styles.gutter}>
-            <BrandIntroHeader description={DESCRIPTION} />
+            <BrandIntroHeader description={t('home.description')} />
 
             {/* Arc 소개는 시안에서 머리말 바로 아래, `Now On` 카드 위에 옵니다. */}
             <BrandStoryBlock story={ARC_INTRO_STORY} style={styles.arcIntro} />

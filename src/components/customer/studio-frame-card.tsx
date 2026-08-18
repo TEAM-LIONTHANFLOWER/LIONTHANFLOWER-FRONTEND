@@ -14,6 +14,7 @@ import frame02Logo from '@assets/images/studio/frame02_logo.svg';
 import frame03Logo from '@assets/images/studio/frame03.svg';
 import frame04Logo from '@assets/images/studio/frame04.svg';
 import { FixedColors, FontFamily, FontWeight, LineHeightRatio } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /** 프레임 1~4 가 함께 쓰는 기록 상세 문구. */
 const ARC_DETAIL_TEXT = 'Today\'s Arc\nMCM Haus\nApgujeong\n2026.08.12\n"Urban Escape"';
@@ -114,7 +115,8 @@ export function StudioFrameCard({
   onSelect,
   style,
 }: StudioFrameCardProps) {
-  const label = `프레임 ${frameId.slice(-2)}`;
+  const { t } = useTranslation();
+  const label = t('a11y.frame', { number: frameId.slice(-2) });
   const frameStyle = [
     styles.frame,
     (frameId === 'frame-02' || frameId === 'frame-03') && styles.frameWindowBackground,

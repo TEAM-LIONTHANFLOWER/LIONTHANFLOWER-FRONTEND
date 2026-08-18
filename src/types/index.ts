@@ -1,6 +1,7 @@
 export * from './api';
 export * from './arc';
 export * from './home';
+export * from './i18n';
 export * from './navigation';
 export * from './onboarding';
 export * from './record-form';

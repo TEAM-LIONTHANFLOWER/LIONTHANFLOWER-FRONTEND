@@ -1,5 +1,6 @@
 import type { ImageRequireSource } from 'react-native';
 
+import type { LocalizedText } from '@/types/i18n';
 import type { TypographyToken } from '@constants/theme';
 
 /** 지금 진행 중인 브랜드 경험을 소개하는 큰 사진 카드. */
@@ -8,7 +9,8 @@ export interface NowOnFeature {
   /** 카드 왼쪽 위 흰 알약에 들어가는 짧은 라벨 */
   badge: string;
   title: string;
-  description: string;
+  /** 고객이 고른 언어로 보여 줍니다. */
+  description: LocalizedText;
   image: ImageRequireSource;
 }
 
@@ -21,7 +23,8 @@ export interface BrandStory {
    * 시안이 `What is Arc?` 만 24 로 키워 놓아서 데이터로 들고 있습니다.
    */
   titleToken: Extract<TypographyToken, 'titleEn20' | 'titleEn24'>;
-  body: string;
+  /** 고객이 고른 언어로 보여 줍니다. */
+  body: LocalizedText;
   /**
    * 본문에 쓸 타이포 토큰.
    * 시안이 글마다 13 / 14 로 다르게 지정해서 데이터로 들고 있습니다.

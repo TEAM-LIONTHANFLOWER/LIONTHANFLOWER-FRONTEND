@@ -9,6 +9,7 @@ import { ScreenContainer } from '@components/common/screen-container';
 import { StudioFrameCarousel } from '@components/customer/studio-frame-carousel';
 import { StudioFrameStage } from '@components/customer/studio-frame-stage';
 import { Spacing } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. `(customer)/_layout.tsx` 의
  * `NAV_AREA_HEIGHT` 와 같은 값이어야 합니다 — 내비게이션은 거기서 그립니다. */
@@ -25,18 +26,10 @@ const FRAMES_ENTER_DURATION_MS = 720;
 const FRAMES_RISE = 28;
 
 const TITLE = 'MCM Studio';
-const DESCRIPTION = '원하는 프레임을 고르고, \n 특별한 MCM 매거진으로 나만의 경험을 기록해보세요.';
-/** 프레임을 고른 뒤 미리보기 단계에서 보여주는 안내 문구. */
-const PREVIEW_DESCRIPTION = '촬영한 사진을 업로드하고, \n 나만의 스토리를 만들어보세요.';
-/**
- * 다음 버튼을 눌러 AI 생성이 시작된 뒤 보여주는 안내 문구.
- */
-const GENERATING_DESCRIPTION = 'AI가 생성중입니다...\n';
-/** 생성이 끝난 뒤 보여주는 안내 문구. */
-const COMPLETE_DESCRIPTION = '생성이 완료되었습니다. \n 나만의 매거진을 SNS에 공유해보세요.';
 
 /** 고객 Studio 화면 — `/studio` */
 export default function CustomerStudioScreen() {
+  const { t } = useTranslation();
   const [selectedFrameId, setSelectedFrameId] = useState<StudioFrameId | null>(null);
   const [generationStatus, setGenerationStatus] = useState<StudioGenerationStatus>('idle');
 
@@ -96,11 +89,11 @@ export default function CustomerStudioScreen() {
               description={
                 selectedFrameId
                   ? generationStatus === 'complete'
-                    ? COMPLETE_DESCRIPTION
+                    ? t('studio.complete')
                     : generationStatus === 'generating'
-                      ? GENERATING_DESCRIPTION
-                      : PREVIEW_DESCRIPTION
-                  : DESCRIPTION
+                      ? t('studio.generating')
+                      : t('studio.previewDescription')
+                  : t('studio.description')
               }
               align="center"
               compact

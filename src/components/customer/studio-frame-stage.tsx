@@ -27,6 +27,7 @@ import {
   StudioFrameCard,
 } from '@components/customer/studio-frame-card';
 import { FixedColors } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 /**
  * 다음 아이콘 원본 치수.
@@ -86,6 +87,7 @@ export function StudioFrameStage({
   onReturnToFrames,
   style,
 }: StudioFrameStageProps) {
+  const { t } = useTranslation();
   const shiftLeft = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -109,13 +111,13 @@ export function StudioFrameStage({
             source={resultImage}
             style={styles.resultImage}
             contentFit="contain"
-            accessibilityLabel="AI가 생성한 매거진 이미지"
+            accessibilityLabel={t('a11y.generatedMagazine')}
           />
 
           <View style={styles.resultActions}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="삭제"
+              accessibilityLabel={t('a11y.delete')}
               onPress={onReturnToFrames}
               style={styles.resultActionButton}
             >
@@ -129,7 +131,7 @@ export function StudioFrameStage({
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="저장"
+              accessibilityLabel={t('a11y.save')}
               onPress={onReturnToFrames}
               style={styles.resultActionButton}
             >
@@ -153,7 +155,7 @@ export function StudioFrameStage({
       {status === 'idle' ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="다음"
+          accessibilityLabel={t('a11y.next')}
           onPress={onPressNext}
           style={styles.nextButton}
         >

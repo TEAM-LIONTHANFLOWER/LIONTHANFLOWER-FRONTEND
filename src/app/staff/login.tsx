@@ -7,10 +7,10 @@ import { OrbitLogo } from '@components/common/orbit-logo';
 import { OutlinedTextField } from '@components/common/outlined-text-field';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StartJourneyButton } from '@components/common/start-journey-button';
-import { SERVICE_LANGUAGES } from '@constants/onboarding';
+import { SUPPORTED_LANGUAGES } from '@constants/languages';
 import { FixedColors, Spacing } from '@constants/theme';
 import searchIcon from '@assets/images/login/search.svg';
-import type { ServiceLanguageCode } from '@/types/onboarding';
+import type { LocaleCode } from '@/types/i18n';
 
 /**
  * 시안(393×852) 의 세로 배치입니다.
@@ -26,14 +26,15 @@ export default function StaffLoginScreen() {
   const router = useRouter();
 
   const [store, setStore] = useState('MCM HAUS');
-  const [language, setLanguage] = useState<ServiceLanguageCode>('ko');
+  // 고객과 달리 직원은 `응대 가능한 언어` 를 고르는 것이라 여러 개를 켤 수 있습니다.
+  const [languages, setLanguages] = useState<readonly LocaleCode[]>(['ko']);
   const [name, setName] = useState('');
 
-  const languageOptions = SERVICE_LANGUAGES.map((option) => ({
+  const languageOptions = SUPPORTED_LANGUAGES.map((option) => ({
     value: option.code,
     label: option.label,
   }));
-  const canStart = store.trim().length > 0 && name.trim().length > 0;
+  const canStart = store.trim().length > 0 && languages.length > 0 && name.trim().length > 0;
 
   const handleStart = useCallback(() => {
     router.replace('/staff/dashboard');
@@ -61,9 +62,10 @@ export default function StaffLoginScreen() {
           <ChoiceChips
             label="Language"
             required
+            multiple
             options={languageOptions}
-            value={language}
-            onChange={setLanguage}
+            value={languages}
+            onChange={setLanguages}
           />
           <OutlinedTextField
             label="Name"

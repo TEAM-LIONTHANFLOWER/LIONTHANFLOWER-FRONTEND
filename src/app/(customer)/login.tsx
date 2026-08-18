@@ -8,9 +8,12 @@ import { OutlinedSelectField } from '@components/common/outlined-select-field';
 import { OutlinedTextField } from '@components/common/outlined-text-field';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StartJourneyButton } from '@components/common/start-journey-button';
-import { SERVICE_LANGUAGES, SERVICE_STYLES } from '@constants/onboarding';
+import { SUPPORTED_LANGUAGES } from '@constants/languages';
+import { SERVICE_STYLES } from '@constants/onboarding';
 import { FixedColors, Spacing } from '@constants/theme';
-import type { ServiceLanguageCode, ServiceStyleCode } from '@/types/onboarding';
+import { useTranslation } from '@hooks/use-translation';
+import { useLocaleStore } from '@stores/locale-store';
+import type { ServiceStyleCode } from '@/types/onboarding';
 
 /**
  * 시안(393×852) 의 세로 배치입니다.
@@ -30,18 +33,23 @@ const VISITED_STORE = 'MCM HAUS';
 export default function CustomerLoginScreen() {
   const router = useRouter();
 
-  const [language, setLanguage] = useState<ServiceLanguageCode>('ko');
+  // 고른 언어는 이 화면 밖에서도 쓰이므로 전역 상태에 둡니다.
+  // 칩을 누르는 순간 이 화면 문구부터 그 언어로 바뀝니다.
+  const language = useLocaleStore((state) => state.locale);
+  const setLanguage = useLocaleStore((state) => state.setLocale);
+  const { t } = useTranslation();
+
   const [name, setName] = useState('');
   const [serviceStyle, setServiceStyle] = useState<ServiceStyleCode>('recommendation');
   const [request, setRequest] = useState('');
 
-  const languageOptions = SERVICE_LANGUAGES.map((option) => ({
+  const languageOptions = SUPPORTED_LANGUAGES.map((option) => ({
     value: option.code,
     label: option.nativeLabel,
   }));
   const serviceStyleOptions = SERVICE_STYLES.map((option) => ({
     value: option.code,
-    label: option.label,
+    label: t(option.labelKey),
   }));
   const canStart = name.trim().length > 0;
 
@@ -61,9 +69,7 @@ export default function CustomerLoginScreen() {
         <OrbitLogo style={styles.logo} />
 
         <View style={styles.form}>
-          <Text style={styles.notice}>
-            {`현재 고객님이 방문하신 매장은\n[${VISITED_STORE}] 입니다.`}
-          </Text>
+          <Text style={styles.notice}>{t('login.storeNotice', { store: VISITED_STORE })}</Text>
 
           <ChoiceChips
             label="Language"
@@ -77,7 +83,7 @@ export default function CustomerLoginScreen() {
             required
             value={name}
             onChangeText={setName}
-            placeholder="성함을 입력해주세요."
+            placeholder={t('login.namePlaceholder')}
           />
           <OutlinedSelectField
             label="Service Style"
@@ -90,7 +96,7 @@ export default function CustomerLoginScreen() {
             label="Additional Requests"
             value={request}
             onChangeText={setRequest}
-            placeholder="특별히 요청하실 사항이 있으면 적어 주세요."
+            placeholder={t('login.requestPlaceholder')}
           />
         </View>
 
