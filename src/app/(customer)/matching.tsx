@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
 import { FixedColors } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 import storeFront from '@assets/images/matching/store-front.jpg';
 import mcmSymbol from '@assets/images/splash/mcm-symbol.png';
 
@@ -33,6 +34,7 @@ const DEMO_MATCHING_DELAY_MS = 3000;
  */
 export default function CustomerMatchingScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,7 +63,7 @@ export default function CustomerMatchingScreen() {
 
         <View style={styles.messageSlot}>
           <Text style={styles.message} accessibilityLiveRegion="polite">
-            {'직원을 매칭중입니다...\n잠시만 직원을 기다려주세요'}
+            {t('matching.waiting')}
           </Text>
         </View>
 

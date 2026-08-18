@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'rea
 import { Image } from 'expo-image';
 
 import { FixedColors, FontFamily } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 import arrowNext from '@assets/images/onboarding/arrow-next.svg';
 
 interface StartJourneyButtonProps {
@@ -16,10 +17,13 @@ interface StartJourneyButtonProps {
  * 시안에서 라벨은 왼쪽, 화살표는 188 폭의 오른쪽 끝에 붙습니다.
  */
 export function StartJourneyButton({ onPress, disabled = false, style }: StartJourneyButtonProps) {
+  // 버튼에 보이는 글자는 시안대로 영문 고정이라, 보조 기술이 읽을 이름만 번역합니다.
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="여정 시작"
+      accessibilityLabel={t('a11y.startJourney')}
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}

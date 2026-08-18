@@ -1,5 +1,7 @@
 import type { ImageRequireSource } from 'react-native';
 
+import type { MessageKey } from '@/types/i18n';
+
 /**
  * 앱에 들어온 경로.
  * 스플래시와 온보딩은 고객·직원이 함께 쓰기 때문에, 온보딩이 끝난 뒤
@@ -21,21 +23,11 @@ export interface OnboardingSlide {
   titleLetterSpacing?: number;
 }
 
-/** 접객에 쓰는 언어. 온보딩 마지막 정보 입력 화면의 Language 칩 선택지입니다. */
-export type ServiceLanguageCode = 'ko' | 'en' | 'zh' | 'ja' | 'fr' | 'de';
-
-export interface ServiceLanguageOption {
-  code: ServiceLanguageCode;
-  /** 영문 이름. 직원 화면에서 씁니다. */
-  label: string;
-  /** 해당 언어로 쓴 이름. 고객 화면에서 씁니다. */
-  nativeLabel: string;
-}
-
 /** 고객이 원하는 접객 방식. 정보 입력 화면의 Service Style 선택지입니다. */
 export type ServiceStyleCode = 'recommendation' | 'self-guided';
 
 export interface ServiceStyleOption {
   code: ServiceStyleCode;
-  label: string;
+  /** 화면에 보이는 글자는 고객이 고른 언어를 따르므로, 문구 대신 키를 들고 있습니다. */
+  labelKey: MessageKey;
 }
