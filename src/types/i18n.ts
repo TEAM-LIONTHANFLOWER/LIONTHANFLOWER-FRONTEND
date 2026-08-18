@@ -41,7 +41,15 @@ export type MessageKey =
   | 'matching.waiting'
   | 'home.description'
   | 'home.sectionTabsLabel'
-  | 'a11y.startJourney';
+  | 'arc.description'
+  | 'arc.empty'
+  | 'a11y.startJourney'
+  | 'a11y.openEnvelope'
+  | 'a11y.backToEnvelopes'
+  | 'a11y.closePopup'
+  | 'a11y.goBack'
+  | 'a11y.pageIndicator'
+  | 'a11y.pageNumber';
 
 /** 한 언어의 문구 묶음. */
 export type Messages = Record<MessageKey, string>;

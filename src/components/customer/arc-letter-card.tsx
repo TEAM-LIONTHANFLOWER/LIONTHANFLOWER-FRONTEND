@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 
 import { LETTER_HEIGHT, LetterSheet } from '@components/common/letter-sheet';
 import { FixedColors, Radius } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 import letterEmboss from '@assets/images/arc/letter-emboss.jpg';
 import type { LetterContent } from '@/types/arc';
 
@@ -30,6 +31,7 @@ interface ArcLetterCardProps {
  * 뒤집힙니다. 두 면은 같은 자리에 겹쳐 두고 `backfaceVisibility` 로 등을 돌린 쪽만 감춥니다.
  */
 export function ArcLetterCard({ letter, onPress }: ArcLetterCardProps) {
+  const { t } = useTranslation();
   // 지연 초기화로 한 번만 만들고, 이후에는 애니메이션으로만 값을 바꿉니다.
   const [flip] = useState(() => new Animated.Value(0));
 
@@ -52,7 +54,7 @@ export function ArcLetterCard({ letter, onPress }: ArcLetterCardProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="봉투 목록으로 돌아가기"
+      accessibilityLabel={t('a11y.backToEnvelopes')}
       onPress={onPress}
     >
       <View style={styles.stage}>

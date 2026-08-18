@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 
+import { useTranslation } from '@hooks/use-translation';
 import backArrow from '@assets/images/common/back-arrow.svg';
 
 /** 시안(`2-1 Worldline`)의 버튼 크기. 그대로도 최소 터치 영역 44 를 넘습니다. */
@@ -20,11 +21,13 @@ interface BackArrowButtonProps {
  *
  * 어두운 브랜드 배경 위에만 올라가므로 화살표 색이 흰색으로 고정입니다.
  */
-export function BackArrowButton({ onPress, label = '뒤로 가기', style }: BackArrowButtonProps) {
+export function BackArrowButton({ onPress, label, style }: BackArrowButtonProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={label ?? t('a11y.goBack')}
       onPress={onPress}
       style={[styles.button, style]}
     >

@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { FixedColors, Spacing } from '@constants/theme';
+import { useTranslation } from '@hooks/use-translation';
 
 type PopupOverlayProps = PropsWithChildren<{
   visible: boolean;
@@ -17,6 +18,8 @@ type PopupOverlayProps = PropsWithChildren<{
  * 시안에는 팝업이 놓일 자리가 그려져 있지 않아 화면 한가운데에 둡니다.
  */
 export function PopupOverlay({ visible, onClose, label, children }: PopupOverlayProps) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -29,7 +32,7 @@ export function PopupOverlay({ visible, onClose, label, children }: PopupOverlay
       <View style={styles.stage}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${label} 닫기`}
+          accessibilityLabel={t('a11y.closePopup', { label })}
           onPress={onClose}
           style={StyleSheet.absoluteFill}
         />
