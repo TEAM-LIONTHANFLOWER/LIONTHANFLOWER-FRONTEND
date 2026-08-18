@@ -5,7 +5,7 @@
  * 시안의 오타와 자리 표시는 아래처럼 바로잡아 적었습니다. 시안도 함께 고쳐야 합니다.
  * - `구매 제품` 필드의 플레이스홀더가 로그인 화면에서 넘어온 `Please enter your name.` 이라
  *   같은 성격의 다른 필드처럼 `제품을 검색하여 입력해주세요` 로 적습니다.
- * - 선호 컬러의 `Metlaic` → `Metallic`
+ * - 선호 컬러의 `Metalic` → `Metallic`
  *
  * 보기의 `value` 로 라벨을 그대로 씁니다. 아직 서버와 맞출 코드값이 없고,
  * 한 묶음 안에서 라벨이 겹치지 않기 때문입니다. API 가 붙으면 코드값으로 바꿉니다.
@@ -21,6 +21,31 @@ import type { MemoryCardContent } from '@/types/visit';
 function toOptions(labels: readonly string[]): readonly RecordOption[] {
   return labels.map((label) => ({ value: label, label }));
 }
+
+/**
+ * 선호 컬러 보기. 라벨 왼쪽에 색 동그라미가 함께 붙습니다.
+ *
+ * 동그라미 색은 UI 토큰이 아니라 보기가 가리키는 제품 컬러 값 자체입니다.
+ * 다크 모드에 따라 뒤집히면 뜻이 달라지므로 `@constants/theme` 이 아니라 여기에 적습니다.
+ * `Metallic` 과 `Multicolor` 만 한 색으로 나타낼 수 없어 그러데이션으로 둡니다.
+ */
+const COLOR_OPTIONS: readonly RecordOption[] = [
+  { value: 'Black', label: 'Black', swatch: '#000000' },
+  { value: 'White', label: 'White', swatch: '#ffffff' },
+  { value: 'Brown / Beige', label: 'Brown / Beige', swatch: '#6e4426' },
+  { value: 'Grey', label: 'Grey', swatch: '#6b6b6b' },
+  { value: 'Navy / Blue', label: 'Navy / Blue', swatch: '#123d84' },
+  { value: 'Red', label: 'Red', swatch: '#b00c0c' },
+  { value: 'Pink', label: 'Pink', swatch: '#f669e8' },
+  { value: 'Green', label: 'Green', swatch: '#34a853' },
+  { value: 'Yellow', label: 'Yellow', swatch: '#ffca1a' },
+  { value: 'Metallic', label: 'Metallic', swatch: ['#ffffff', '#4c4c4c'] },
+  {
+    value: 'Multicolor',
+    label: 'Multicolor',
+    swatch: ['#c92323', '#ff8031', '#f5d02d', '#39ca54', '#142ad2'],
+  },
+] as const;
 
 const NOTE_PLACEHOLDER = '텍스트를 입력해주세요 (200자)';
 const NOTE_MAX_LENGTH = 200;
@@ -81,19 +106,7 @@ const ARC_STEPS: readonly RecordStep[] = [
         id: 'preferred-color',
         label: '이번 방문에서의 선호 컬러',
         multiple: true,
-        options: toOptions([
-          'Black',
-          'White',
-          'Brown / Beige',
-          'Grey',
-          'Navy / Blue',
-          'Red',
-          'Pink',
-          'Green',
-          'Yellow',
-          'Metallic',
-          'Multicolor',
-        ]),
+        options: COLOR_OPTIONS,
       },
       {
         kind: 'chips',

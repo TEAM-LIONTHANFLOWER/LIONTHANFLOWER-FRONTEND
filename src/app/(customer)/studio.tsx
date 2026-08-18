@@ -79,7 +79,7 @@ export default function CustomerStudioScreen() {
     // 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
     // 탭 바도 같은 이유로 바깥에 두고 화면 맨 아래에 붙입니다.
     <View style={styles.root}>
-      <BrandBackdrop showLight={false} />
+      <BrandBackdrop />
 
       <ScreenContainer backgroundColor="transparent" edgeToEdge style={styles.stage}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

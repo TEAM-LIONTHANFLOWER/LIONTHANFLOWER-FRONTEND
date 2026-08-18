@@ -57,7 +57,8 @@ export default function StaffDashboardScreen() {
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
     // 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
     <View style={styles.root}>
-      <BrandBackdrop />
+      {/* 직원도 앱에서 처음 만나는 화면이라 고객 홈과 같은 조명을 켭니다. */}
+      <BrandBackdrop showLight />
 
       <ScreenContainer backgroundColor="transparent" style={styles.stage}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

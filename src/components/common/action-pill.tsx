@@ -16,6 +16,7 @@ const HIT_SLOP = { top: 8, bottom: 8 } as const;
 /** 시안의 버튼 치수. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
 const PADDING_X = 15;
 const PADDING_Y = 5;
+const BORDER_WIDTH = 1;
 const LABEL_FONT_SIZE = 12;
 const ICON_SIZE = 24;
 
@@ -35,8 +36,15 @@ interface ActionPillProps {
    *
    * - `dark` — 검은 바탕에 흰 글자. 밝은 카드 위에 놓입니다.
    * - `light` — 흰 바탕에 검은 글자. 어두운 브랜드 배경 위에 놓입니다.
+   * - `outline` — 바탕 없이 흰 테두리와 흰 글자. 어두운 브랜드 배경 위에서
+   *   뒤에 놓인 카드를 가리지 않아야 하는 자리(Arc 화면의 `Visit Memory`)에 씁니다.
    */
-  tone?: 'dark' | 'light';
+  tone?: 'dark' | 'light' | 'outline';
+  /**
+   * 눌러서 팝업을 여는 버튼이면 그 열림 상태.
+   * 보조 기술이 펼쳐졌는지 접혔는지를 함께 읽어 줍니다.
+   */
+  expanded?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -50,22 +58,25 @@ export function ActionPill({
   icon,
   fill = false,
   tone = 'dark',
+  expanded,
   style,
 }: ActionPillProps) {
   const disabled = onPress === undefined;
   const isLight = tone === 'light';
+  const isOutline = tone === 'outline';
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled, expanded }}
       disabled={disabled}
       hitSlop={HIT_SLOP}
       onPress={onPress}
       style={[
         styles.pill,
         isLight && styles.pillLight,
+        isOutline && styles.pillOutline,
         fill && styles.pillFill,
         disabled && styles.pillDisabled,
         style,
@@ -92,6 +103,14 @@ const styles = StyleSheet.create({
   },
   pillLight: {
     backgroundColor: FixedColors.onDark,
+  },
+  // 테두리 굵기만큼 커지지 않도록 좌우 여백에서 그만큼 덜어냅니다.
+  pillOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: BORDER_WIDTH,
+    borderColor: FixedColors.outlineOnDark,
+    paddingHorizontal: PADDING_X - BORDER_WIDTH,
+    paddingVertical: PADDING_Y - BORDER_WIDTH,
   },
   pillFill: {
     flex: 1,

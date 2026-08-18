@@ -1,22 +1,18 @@
-import { useCallback } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
 
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
-import { PillTabs } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
 import { BrandStoryBlock } from '@components/customer/brand-story-block';
 import { MyselfGallery } from '@components/customer/myself-gallery';
 import { NowOnCard } from '@components/customer/now-on-card';
-import { BRAND_STORIES, MYSELF_PHOTOS, NOW_ON_FEATURE } from '@constants/home';
-import { CUSTOMER_SECTION_TABS } from '@constants/navigation';
+import { ARC_INTRO_STORY, BRAND_STORIES, MYSELF_FRAMES, NOW_ON_FEATURE } from '@constants/home';
 import { FixedColors, Spacing, Typography } from '@constants/theme';
 import { useTranslation } from '@hooks/use-translation';
-import type { CustomerSectionKey } from '@/types/home';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
-const TABS_TO_FEATURE = 20;
+const INTRO_TO_ARC = 36;
+const ARC_TO_FEATURE = 30;
 const FEATURE_TO_STORIES = 29;
 const STORIES_TO_GALLERY = 45;
 
@@ -26,24 +22,15 @@ const NAV_AREA_HEIGHT = 118;
 
 /** 고객 홈 화면 — `/home` */
 export default function CustomerHomeScreen() {
-  const router = useRouter();
   const { t } = useTranslation();
-
-  const handleSectionChange = useCallback(
-    (section: CustomerSectionKey) => {
-      if (section === 'arc') {
-        router.navigate('/arc');
-      }
-    },
-    [router]
-  );
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
     // 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
     // 탭 바도 같은 이유로 바깥에 두고 화면 맨 아래에 붙입니다.
     <View style={styles.root}>
-      <BrandBackdrop />
+      {/* 조명은 앱에서 처음 만나는 홈 화면에서만 켭니다. 직원 홈도 같습니다. */}
+      <BrandBackdrop showLight />
 
       <ScreenContainer backgroundColor="transparent" edgeToEdge style={styles.stage}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -51,13 +38,8 @@ export default function CustomerHomeScreen() {
           <View style={styles.gutter}>
             <BrandIntroHeader description={t('home.description')} />
 
-            <PillTabs
-              label={t('home.sectionTabsLabel')}
-              options={CUSTOMER_SECTION_TABS}
-              value="home"
-              onChange={handleSectionChange}
-              style={styles.tabs}
-            />
+            {/* Arc 소개는 시안에서 머리말 바로 아래, `Now On` 카드 위에 옵니다. */}
+            <BrandStoryBlock story={ARC_INTRO_STORY} style={styles.arcIntro} />
 
             <NowOnCard feature={NOW_ON_FEATURE} style={styles.feature} />
 
@@ -70,7 +52,7 @@ export default function CustomerHomeScreen() {
             <Text style={styles.galleryTitle}>MCM Myself</Text>
           </View>
 
-          <MyselfGallery photos={MYSELF_PHOTOS} />
+          <MyselfGallery frames={MYSELF_FRAMES} />
         </ScrollView>
       </ScreenContainer>
     </View>
@@ -93,11 +75,11 @@ const styles = StyleSheet.create({
   gutter: {
     paddingHorizontal: Spacing.four,
   },
-  tabs: {
-    marginTop: Spacing.four,
+  arcIntro: {
+    marginTop: INTRO_TO_ARC,
   },
   feature: {
-    marginTop: TABS_TO_FEATURE,
+    marginTop: ARC_TO_FEATURE,
   },
   stories: {
     marginTop: FEATURE_TO_STORIES,

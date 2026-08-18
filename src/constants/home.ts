@@ -10,10 +10,10 @@
  * 언어와 상관없이 그대로 쓰는 말이라 번역하지 않습니다.
  */
 
-import myselfElevator from '@assets/images/home/myself-elevator.jpg';
+import { STUDIO_FRAME_IDS } from '@constants/studio';
 import nowOnMcmHaus from '@assets/images/home/now-on-mcm-haus.jpg';
-import type { BrandStory, MyselfPhoto, NowOnFeature } from '@/types/home';
-import type { LocalizedText } from '@/types/i18n';
+import type { BrandStory, NowOnFeature } from '@/types/home';
+import type { StudioFrameId } from '@/types/studio';
 
 export const NOW_ON_FEATURE: NowOnFeature = {
   id: 'mcm-haus',
@@ -29,10 +29,30 @@ export const NOW_ON_FEATURE: NowOnFeature = {
   image: nowOnMcmHaus,
 };
 
+/**
+ * 머리말 바로 아래, `Now On` 카드 위에 놓이는 Arc 소개.
+ * 시안(1-1 Home)에서 이 제목만 24 입니다.
+ */
+export const ARC_INTRO_STORY: BrandStory = {
+  id: 'what-is-arc',
+  title: 'What is Arc?',
+  titleToken: 'titleEn24',
+  body: {
+    ko: '모든 방문은 당신의 이야기가 됩니다.\nWorldline은 MCM과 함께한 발견의 순간부터 만들어가는 추억까지, 당신만의 여정을 기록합니다.',
+    en: 'Every visit becomes your story.\nWorldline records a journey that is yours alone — from the moment of discovery with MCM to the memories you go on to build.',
+    zh: '每一次到访，都会成为你的故事。\nWorldline 记录属于你一个人的旅程——从与 MCM 相遇的发现瞬间，到你亲手创造的回忆。',
+    ja: 'すべての来店が、あなたの物語になります。\nWorldline は MCM と出会った発見の瞬間から、育んでいく思い出まで、あなただけの旅を記録します。',
+    ru: 'Каждый визит становится вашей историей.\nWorldline сохраняет путь, который принадлежит только вам, — от момента открытия вместе с MCM до воспоминаний, которые вы создаёте.',
+  },
+  bodyToken: 'bodyKo13',
+};
+
+/** `Now On` 카드 아래로 이어지는 브랜드 소개 글. */
 export const BRAND_STORIES: readonly BrandStory[] = [
   {
     id: 'about-mcm',
     title: 'About MCM',
+    titleToken: 'titleEn20',
     body: {
       ko: '1976년부터 MCM은 장인정신과 혁신을 바탕으로 전통적인 럭셔리의 개념을 새롭게 정의해왔습니다. 젊음과 독립성, 그리고 쉽게 알아볼 수 있는 디자인 감각을 지닌 MCM은 오늘도 세계를 움직이는 사람들과 함께합니다.',
       en: 'Since 1976, MCM has redefined traditional luxury through craftsmanship and innovation. With its spirit of youth, independence, and instantly recognizable design, MCM walks today with the people who move the world.',
@@ -44,36 +64,13 @@ export const BRAND_STORIES: readonly BrandStory[] = [
     // 시안에서 세 줄까지만 보이고 나머지는 말줄임표로 접혀 있습니다.
     maxLines: 3,
   },
-  {
-    id: 'what-is-arc',
-    title: 'What is Arc?',
-    body: {
-      ko: '모든 방문은 당신의 이야기가 됩니다.\nWorldline은 MCM과 함께한 발견의 순간부터 만들어가는 추억까지, 당신만의 여정을 기록합니다.',
-      en: 'Every visit becomes your story.\nWorldline records a journey that is yours alone — from the moment of discovery with MCM to the memories you go on to build.',
-      zh: '每一次到访，都会成为你的故事。\nWorldline 记录属于你一个人的旅程——从与 MCM 相遇的发现瞬间，到你亲手创造的回忆。',
-      ja: 'すべての来店が、あなたの物語になります。\nWorldline は MCM と出会った発見の瞬間から、育んでいく思い出まで、あなただけの旅を記録します。',
-      ru: 'Каждый визит становится вашей историей.\nWorldline сохраняет путь, который принадлежит только вам, — от момента открытия вместе с MCM до воспоминаний, которые вы создаёте.',
-    },
-    bodyToken: 'bodyKo13',
-  },
 ] as const;
-
-/** 화보 세 장이 같은 사진이라 대체 텍스트도 하나로 두고 나눠 씁니다. */
-const MYSELF_PHOTO_DESCRIPTION: LocalizedText = {
-  ko: 'MCM 백팩을 멘 모델 화보',
-  en: 'Editorial photo of a model carrying an MCM backpack',
-  zh: 'MCM 双肩包模特画报',
-  ja: 'MCM のバックパックを背負ったモデルの写真',
-  ru: 'Съёмка модели с рюкзаком MCM',
-};
 
 /**
- * `MCM Myself` 갤러리 사진.
- * 시안에는 같은 사진이 세 장 걸려 있습니다. 자리와 개수를 맞추려고 그대로 두었고,
- * 콘텐츠 API 가 붙으면 실제 화보로 교체합니다.
+ * `MCM Myself` 줄에 걸리는 프레임.
+ * 시안이 Studio 의 네 프레임을 그대로 줄여 늘어놓습니다.
+ *
+ * 아직 고객이 만든 결과를 가져올 API 가 없어 프레임 원본을 그대로 보여 줍니다.
+ * Studio 저장이 붙으면 고객이 실제로 만든 것만 남기고 이 목록은 지웁니다.
  */
-export const MYSELF_PHOTOS: readonly MyselfPhoto[] = [
-  { id: 'myself-1', image: myselfElevator, description: MYSELF_PHOTO_DESCRIPTION },
-  { id: 'myself-2', image: myselfElevator, description: MYSELF_PHOTO_DESCRIPTION },
-  { id: 'myself-3', image: myselfElevator, description: MYSELF_PHOTO_DESCRIPTION },
-] as const;
+export const MYSELF_FRAMES: readonly StudioFrameId[] = STUDIO_FRAME_IDS;

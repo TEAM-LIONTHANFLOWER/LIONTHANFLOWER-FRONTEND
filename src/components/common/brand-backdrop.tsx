@@ -31,13 +31,19 @@ const LIGHT_SCALE_FROM = 1.08;
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface BrandBackdropProps {
-  /** 조명 없이 검정 배경만 필요한 화면(Studio)에서 끕니다. */
+  /**
+   * 우상단에서 쏟아지는 금빛 조명을 함께 켭니다.
+   *
+   * 기본은 꺼져 있습니다 — 조명은 앱에 들어와 처음 만나는 홈 화면의 인사말이라,
+   * 뒤따르는 화면까지 계속 켜 두면 그 자리에서만 갖는 뜻이 옅어집니다.
+   * 지금은 고객 홈(`/home`) 과 직원 홈(`/staff/dashboard`) 두 곳만 켭니다.
+   */
   showLight?: boolean;
 }
 
 /**
  * 홈·Arc 계열 화면이 공유하는 배경.
- * 시안의 모든 브랜드 화면과 같은 검정 단색 위에, 우상단에서 쏟아지는 금빛을 얹습니다.
+ * 시안의 모든 브랜드 화면과 같은 검정 단색입니다. 홈 화면만 그 위에 금빛 조명을 얹습니다.
  *
  * **`ScreenContainer` 바깥에 둡니다.** 안에 넣으면 안전 영역 안쪽에 갇혀
  * 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
@@ -48,7 +54,7 @@ interface BrandBackdropProps {
  * 조명은 블러 처리된 그림입니다. React Native 에는 도형에 블러를 먹이는
  * 방법이 플랫폼마다 제각각이라, 시안의 도형과 블러를 그대로 구운 PNG 를 씁니다.
  */
-export function BrandBackdrop({ showLight = true }: BrandBackdropProps) {
+export function BrandBackdrop({ showLight = false }: BrandBackdropProps) {
   // 지연 초기화로 한 번만 만들고, 이후에는 애니메이션으로만 값을 바꿉니다.
   const [glow] = useState(() => new Animated.Value(0));
 

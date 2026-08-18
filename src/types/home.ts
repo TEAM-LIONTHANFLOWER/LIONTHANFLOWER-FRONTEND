@@ -1,10 +1,7 @@
 import type { ImageRequireSource } from 'react-native';
 
-import type { TypographyToken } from '@constants/theme';
 import type { LocalizedText } from '@/types/i18n';
-
-/** 고객 홈 위쪽에서 화면 내용을 가르는 탭. */
-export type CustomerSectionKey = 'home' | 'arc';
+import type { TypographyToken } from '@constants/theme';
 
 /** 지금 진행 중인 브랜드 경험을 소개하는 큰 사진 카드. */
 export interface NowOnFeature {
@@ -21,6 +18,11 @@ export interface NowOnFeature {
 export interface BrandStory {
   id: string;
   title: string;
+  /**
+   * 제목에 쓸 타이포 토큰.
+   * 시안이 `What is Arc?` 만 24 로 키워 놓아서 데이터로 들고 있습니다.
+   */
+  titleToken: Extract<TypographyToken, 'titleEn20' | 'titleEn24'>;
   /** 고객이 고른 언어로 보여 줍니다. */
   body: LocalizedText;
   /**
@@ -30,12 +32,4 @@ export interface BrandStory {
   bodyToken: Extract<TypographyToken, 'bodyKo13' | 'bodyKo14'>;
   /** 이 줄 수를 넘으면 말줄임표로 접습니다. 없으면 전문을 그대로 보여줍니다. */
   maxLines?: number;
-}
-
-/** `MCM Myself` 가로 갤러리에 걸리는 사진 한 장. */
-export interface MyselfPhoto {
-  id: string;
-  image: ImageRequireSource;
-  /** 사진을 볼 수 없는 사용자에게 읽어 줄 설명. 고객이 고른 언어로 읽힙니다. */
-  description: LocalizedText;
 }
