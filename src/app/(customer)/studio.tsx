@@ -9,6 +9,7 @@ import { ScreenContainer } from '@components/common/screen-container';
 import { StudioFrameCarousel } from '@components/customer/studio-frame-carousel';
 import { StudioFrameStage } from '@components/customer/studio-frame-stage';
 import { Spacing } from '@constants/theme';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 
 /** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. `(customer)/_layout.tsx` 의
@@ -30,6 +31,7 @@ const TITLE = 'MCM Studio';
 /** 고객 Studio 화면 — `/studio` */
 export default function CustomerStudioScreen() {
   const { t } = useTranslation();
+  useReportActiveTab('studio');
   const [selectedFrameId, setSelectedFrameId] = useState<StudioFrameId | null>(null);
   const [generationStatus, setGenerationStatus] = useState<StudioGenerationStatus>('idle');
 

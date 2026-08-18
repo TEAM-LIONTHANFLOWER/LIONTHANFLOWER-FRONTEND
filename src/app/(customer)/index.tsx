@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 
 import { BrandSplash } from '@components/common/brand-splash';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useOnboardingStore } from '@stores/onboarding-store';
 
 /**
@@ -13,6 +14,7 @@ import { useOnboardingStore } from '@stores/onboarding-store';
 export default function CustomerEntryScreen() {
   const router = useRouter();
   const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompleted);
+  useReportActiveTab(null);
 
   const handleSplashFinish = useCallback(() => {
     if (hasCompletedOnboarding) {

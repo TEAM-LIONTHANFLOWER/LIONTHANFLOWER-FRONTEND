@@ -1,11 +1,13 @@
 import { StyleSheet, Text } from 'react-native';
 
 import { ScreenContainer } from '@components/common/screen-container';
+import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useThemeColors } from '@hooks/use-theme-colors';
 
 /** 고객 상품 화면 — `/product` */
 export default function CustomerProductScreen() {
   const colors = useThemeColors();
+  useReportActiveTab(null);
 
   return (
     <ScreenContainer>
