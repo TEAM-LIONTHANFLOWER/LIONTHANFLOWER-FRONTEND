@@ -22,6 +22,12 @@ interface StoreSearchFieldProps {
   onChange: (store: StoreSummary | null) => void;
   /** 라벨에 빨간 별표를 붙입니다. */
   required?: boolean;
+  placeholder?: string;
+  /**
+   * 칸에 미리 적혀 있을 글.
+   * 기록 작성 폼처럼 화면을 나갔다 돌아와도 고른 매장이 남아 있어야 할 때 씁니다.
+   */
+  initialQuery?: string;
 }
 
 /**
@@ -39,8 +45,10 @@ export function StoreSearchField({
   value,
   onChange,
   required = false,
+  placeholder = 'Search your store.',
+  initialQuery = '',
 }: StoreSearchFieldProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [isOpen, setIsOpen] = useState(false);
   // 글자를 칠 때마다 요청이 나가지 않도록 잠잠해질 때까지 기다립니다.
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
@@ -69,7 +77,7 @@ export function StoreSearchField({
         value={query}
         onChangeText={handleChangeText}
         onFocus={() => setIsOpen(true)}
-        placeholder="Search your store."
+        placeholder={placeholder}
         icon={searchIcon}
       />
 

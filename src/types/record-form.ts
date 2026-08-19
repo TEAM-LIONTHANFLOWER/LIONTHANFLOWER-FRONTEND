@@ -44,6 +44,40 @@ export interface RecordTextSection extends RecordSectionBase {
   icon?: 'calendar' | 'search';
 }
 
+/**
+ * 달력에서 하루를 골라 넣는 칸.
+ *
+ * 서버가 `YYYY-MM-DD` 만 받아서 타이핑을 받지 않습니다 — 손으로 적게 두면 `200601` 처럼
+ * 보낼 수 없는 값이 그대로 남습니다.
+ */
+export interface RecordDateSection extends RecordSectionBase {
+  kind: 'date';
+  placeholder: string;
+  required?: boolean;
+}
+
+/**
+ * `GET /api/stores` 에서 매장을 찾아 하나 고르는 칸.
+ * 고르면 짝이 되는 국가 칸(`countryFieldId`)도 그 매장의 국가로 함께 채웁니다.
+ */
+export interface RecordStoreSection extends RecordSectionBase {
+  kind: 'store';
+  placeholder: string;
+  required?: boolean;
+  /** 매장을 고를 때 국가 코드를 함께 채울 묶음의 `id`. */
+  countryFieldId?: string;
+}
+
+/**
+ * 매장 목록에 실제로 있는 국가 중 하나를 고르는 칸.
+ * 서버에 국가 목록 API 가 없어 매장의 `countryCode` 를 모아 씁니다.
+ */
+export interface RecordCountrySection extends RecordSectionBase {
+  kind: 'country';
+  placeholder: string;
+  required?: boolean;
+}
+
 /** 여러 줄을 받는 메모. 라벨 아래에 안내 한 줄이 더 붙습니다. */
 export interface RecordNoteSection extends RecordSectionBase {
   kind: 'note';
@@ -97,6 +131,9 @@ export interface RecordProductsSection extends RecordSectionBase {
 /** 입력 묶음 하나. 단계 안에 적힌 순서대로 놓입니다. */
 export type RecordSection =
   | RecordTextSection
+  | RecordDateSection
+  | RecordStoreSection
+  | RecordCountrySection
   | RecordNoteSection
   | RecordChipsSection
   | RecordOptionsSection

@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ChoiceChips } from '@components/common/choice-chips';
+import { DateField } from '@components/common/date-field';
 import { OptionList } from '@components/common/option-list';
 import { OutlinedTextField } from '@components/common/outlined-text-field';
+import { RecordCountryField } from '@components/staff/record-country-field';
 import { RecordProductField } from '@components/staff/record-product-field';
+import { StoreSearchField } from '@components/staff/store-search-field';
 import { toOtherFieldId } from '@constants/record-form';
 import { Spacing } from '@constants/theme';
 import { readChoices, readProducts, useRecordFormStore } from '@stores/record-form-store';
@@ -14,8 +18,10 @@ import type {
   RecordFlow,
   RecordOptionsSection,
   RecordSection,
+  RecordStoreSection,
   RecordTextSection,
 } from '@/types/record-form';
+import type { StoreSummary } from '@/types/store';
 
 /** `기타` 입력의 안내 문구를 묶음이 따로 정하지 않았을 때. */
 const DEFAULT_OTHER_PLACEHOLDER = '직접 입력해주세요';
@@ -43,6 +49,8 @@ function readIcon(section: RecordTextSection) {
  */
 export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
   const otherId = toOtherFieldId(section.id);
+  // 고른 매장은 서버로 이름만 나가지만, 목록에서 어느 줄을 골랐는지 표시하려면 통째로 들고 있어야 합니다.
+  const [selectedStore, setSelectedStore] = useState<StoreSummary | null>(null);
 
   const text = useRecordFormStore((state) => state.values[flow].texts[section.id] ?? '');
   const otherText = useRecordFormStore((state) => state.values[flow].texts[otherId] ?? '');
@@ -77,6 +85,21 @@ export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
     );
   };
 
+  /**
+   * 매장을 고르면 이름을 이 칸에, 국가 코드를 짝이 되는 칸에 함께 넣습니다.
+   *
+   * 서버는 `purchaseStore` 를 문자열로 받아서 이름을 그대로 보냅니다. 국가까지 같이 채우는
+   * 것은, 매장이 곧 그 나라에 있는 것이라 직원이 두 번 고를 이유가 없어서입니다.
+   */
+  const handleStoreChange = (group: RecordStoreSection, store: StoreSummary | null) => {
+    setSelectedStore(store);
+    setText(flow, group.id, store === null ? '' : store.name);
+
+    if (store !== null && group.countryFieldId !== undefined) {
+      setText(flow, group.countryFieldId, store.countryCode);
+    }
+  };
+
   switch (section.kind) {
     case 'text':
       return (
@@ -87,6 +110,40 @@ export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
           placeholder={section.placeholder}
           icon={readIcon(section)}
           onChangeText={(next) => setText(flow, section.id, next)}
+        />
+      );
+
+    case 'date':
+      return (
+        <DateField
+          label={section.label}
+          required={section.required}
+          value={text}
+          placeholder={section.placeholder}
+          onChange={(next) => setText(flow, section.id, next)}
+        />
+      );
+
+    case 'country':
+      return (
+        <RecordCountryField
+          label={section.label}
+          required={section.required}
+          value={text}
+          placeholder={section.placeholder}
+          onChange={(next) => setText(flow, section.id, next)}
+        />
+      );
+
+    case 'store':
+      return (
+        <StoreSearchField
+          label={section.label}
+          required={section.required}
+          value={selectedStore}
+          placeholder={section.placeholder}
+          initialQuery={text}
+          onChange={(store) => handleStoreChange(section, store)}
         />
       );
 

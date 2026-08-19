@@ -157,6 +157,16 @@ export const NO_PURCHASE_ETC = toChoiceGroup<NoPurchaseReason>([
 ]);
 
 /**
+ * Arc 의 구매정보 칸을 가리키는 열쇠.
+ * 매장을 고를 때 국가 칸을 함께 채워야 해서 서로의 `id` 를 알아야 합니다.
+ */
+export const ARC_FIELD_IDS = {
+  purchaseDate: 'purchase-date',
+  purchaseCountry: 'purchase-country',
+  purchaseStore: 'purchase-store',
+} as const;
+
+/**
  * Visit Memory 요청을 만들 때 값을 꺼내는 열쇠.
  * 아래 단계 정의가 이 값을 그대로 쓰므로 폼과 요청이 어긋날 수 없습니다.
  */
@@ -180,29 +190,28 @@ const ARC_STEPS: readonly RecordStep[] = [
     label: '구매정보',
     sections: [
       {
-        kind: 'text',
-        id: 'purchase-date',
+        // 서버가 `YYYY-MM-DD` 만 받습니다. 점으로 적어 보내면 400 이라 달력에서 고르게 합니다.
+        kind: 'date',
+        id: ARC_FIELD_IDS.purchaseDate,
         label: '구매 날짜',
-        // 서버가 `YYYY-MM-DD` 만 받습니다. 점으로 적어 보내면 400 입니다.
-        placeholder: 'YYYY-MM-DD',
+        placeholder: '날짜를 선택해주세요',
         required: true,
-        icon: 'calendar',
       },
       {
-        kind: 'text',
-        id: 'purchase-country',
+        // 매장을 고르면 이 칸도 그 매장의 국가로 함께 채워집니다.
+        kind: 'country',
+        id: ARC_FIELD_IDS.purchaseCountry,
         label: '구매 국가',
-        placeholder: '국가를 검색하여 입력해주세요',
+        placeholder: '국가를 선택해주세요',
         required: true,
-        icon: 'search',
       },
       {
-        kind: 'text',
-        id: 'purchase-store',
+        kind: 'store',
+        id: ARC_FIELD_IDS.purchaseStore,
         label: '구매 매장',
         placeholder: '매장을 검색하여 입력해주세요',
         required: true,
-        icon: 'search',
+        countryFieldId: ARC_FIELD_IDS.purchaseCountry,
       },
       {
         kind: 'products',
