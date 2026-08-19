@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 
@@ -28,6 +29,14 @@ interface BrandSplashProps {
  *
  * 진입점이 `/` 와 `/staff` 로 갈라져 있어 라우트가 아니라 컴포넌트로 두고,
  * 양쪽 진입 화면에서 각각 렌더한 뒤 `onFinish` 로 다음 목적지를 정합니다.
+ *
+ * **시간은 이 화면이 실제로 떠 있는 동안에만 셉니다.**
+ * `(customer)/_layout.tsx` 가 `unstable_settings.initialRouteName = 'index'` 를 두고 있어,
+ * 웹에서 `/home` 같은 안쪽 주소로 곧장 들어오면(주소창 입력·새로고침) expo-router 가 뒤로
+ * 가기용으로 스택을 `[index, home]` 으로 만듭니다. 그러면 진입 화면(`index`)이 화면에
+ * 보이지도 않은 채 함께 마운트되고, 여기 타이머가 그대로 돌아 `onFinish` 가 불립니다 —
+ * 진입 화면이 `router.replace()` 로 이동해 버려서 **보고 있던 `/home` 이 1.5 초 뒤
+ * 온보딩으로 튕겼습니다.** 포커스를 받은 동안에만 재게 해서 막습니다.
  */
 export function BrandSplash({ onFinish }: BrandSplashProps) {
   // 렌더 중 ref 를 읽을 수 없어(react-hooks/refs) 지연 초기화 state 로 값을 한 번만 만듭니다.
@@ -39,23 +48,28 @@ export function BrandSplash({ onFinish }: BrandSplashProps) {
     onFinishRef.current = onFinish;
   }, [onFinish]);
 
-  useEffect(() => {
-    const animation = Animated.timing(opacity, {
-      toValue: 1,
-      duration: FADE_IN_DURATION_MS,
-      useNativeDriver: true,
-    });
+  useFocusEffect(
+    useCallback(() => {
+      // 스택에 깔린 채로 한 번 흘러간 뒤 다시 앞으로 나올 수 있어, 페이드를 처음부터 돌립니다.
+      opacity.setValue(0);
 
-    animation.start();
-    const timer = setTimeout(() => {
-      onFinishRef.current();
-    }, FADE_IN_DURATION_MS + HOLD_DURATION_MS);
+      const animation = Animated.timing(opacity, {
+        toValue: 1,
+        duration: FADE_IN_DURATION_MS,
+        useNativeDriver: true,
+      });
 
-    return () => {
-      animation.stop();
-      clearTimeout(timer);
-    };
-  }, [opacity]);
+      animation.start();
+      const timer = setTimeout(() => {
+        onFinishRef.current();
+      }, FADE_IN_DURATION_MS + HOLD_DURATION_MS);
+
+      return () => {
+        animation.stop();
+        clearTimeout(timer);
+      };
+    }, [opacity])
+  );
 
   return (
     <ScreenContainer edgeToEdge backgroundColor={FixedColors.splashBackground} style={styles.stage}>
