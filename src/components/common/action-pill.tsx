@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import {
   Pressable,
   StyleSheet,
@@ -6,7 +7,6 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { Image } from 'expo-image';
 
 import { FixedColors, FontFamily, LineHeightRatio, Radius, Spacing } from '@constants/theme';
 
@@ -102,7 +102,9 @@ const styles = StyleSheet.create({
     backgroundColor: FixedColors.solidButton,
   },
   pillLight: {
-    backgroundColor: FixedColors.onDark,
+    backgroundColor: FixedColors.cardSurface,
+    borderWidth: BORDER_WIDTH,
+    borderColor: FixedColors.onLight,
   },
   // 테두리 굵기만큼 커지지 않도록 좌우 여백에서 그만큼 덜어냅니다.
   pillOutline: {
