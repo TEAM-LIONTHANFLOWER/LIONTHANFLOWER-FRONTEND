@@ -8,7 +8,7 @@ export const studioKeys = {
   frames: () => [...studioKeys.all, 'frames'] as const,
 };
 
-/** MCM Studio 에서 고를 수 있는 프레임 목록. 투명 PNG 오버레이 주소를 함께 내려줍니다. */
+/** MCM Studio 에서 고를 수 있는 프레임 목록. 투명 오버레이(SVG) 주소를 함께 내려줍니다. */
 export function useStudioFrames() {
   return useQuery({
     queryKey: studioKeys.frames(),

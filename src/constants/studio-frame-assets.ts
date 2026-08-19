@@ -13,10 +13,10 @@
 import type { ImageRequireSource } from 'react-native';
 import { Platform } from 'react-native';
 
-import frame1 from '@assets/images/studio/Frame_1.png';
-import frame2 from '@assets/images/studio/Frame_2.png';
-import frame3 from '@assets/images/studio/Frame_3.png';
-import frame4 from '@assets/images/studio/Frame_4.png';
+import frame1 from '@assets/images/studio/Frame_1.svg';
+import frame2 from '@assets/images/studio/Frame_2.svg';
+import frame3 from '@assets/images/studio/Frame_3.svg';
+import frame4 from '@assets/images/studio/Frame_4.svg';
 import type { StudioFrame } from '@/types/studio';
 
 export const STUDIO_FRAME_ASSETS: Record<string, ImageRequireSource> = {
