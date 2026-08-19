@@ -23,11 +23,11 @@ export const DEFAULT_LOCALE: LocaleCode = 'ko';
 /**
  * 표시 언어 → 서버가 받는 응대 언어(`serviceLanguage`).
  *
- * 서버 enum 에는 한국어가 없습니다 (`EN` `ZH` `JA` `RU`). 한국어를 고른 고객은 보낼 값이
- * 마땅치 않아 국제 기본값인 `EN` 으로 보냅니다. 서버에 `KO` 가 추가되면 이 줄만 고치면 됩니다.
+ * 서버 enum 에 `KO` 가 추가되어 다섯 언어가 하나씩 그대로 짝을 이룹니다.
+ * 예전에는 한국어를 고른 고객을 `EN` 으로 보내 직원에게 응대 언어를 잘못 알렸습니다.
  */
 export const SERVICE_LANGUAGE_BY_LOCALE: Record<LocaleCode, ServiceLanguage> = {
-  ko: 'EN',
+  ko: 'KO',
   en: 'EN',
   zh: 'ZH',
   ja: 'JA',
@@ -38,10 +38,10 @@ export const SERVICE_LANGUAGE_BY_LOCALE: Record<LocaleCode, ServiceLanguage> = {
  * 서버 응대 언어 → 화면에 찍는 이름.
  *
  * 직원 홈의 카드가 고객의 응대 언어를 그대로 한 줄로 보여줍니다.
- * `SERVICE_LANGUAGE_BY_LOCALE` 의 반대 방향인데, 한국어가 `EN` 으로 합쳐지므로
- * 되돌릴 때는 영어로만 돌아옵니다.
+ * `SERVICE_LANGUAGE_BY_LOCALE` 의 정확한 반대 방향이라 되돌려도 값이 뭉개지지 않습니다.
  */
 export const LANGUAGE_LABEL_BY_SERVICE_LANGUAGE: Record<ServiceLanguage, string> = {
+  KO: '한국어',
   EN: 'English',
   ZH: '中文',
   JA: '日本語',
@@ -51,8 +51,8 @@ export const LANGUAGE_LABEL_BY_SERVICE_LANGUAGE: Record<ServiceLanguage, string>
 /**
  * 직원이 고른 표시 언어들 → 서버가 받는 응대 언어 목록.
  *
- * 서버가 중복을 허용하지 않는데(`uniqueItems`) 한국어와 영어가 모두 `EN` 으로 가므로,
- * 둘 다 고른 직원은 값이 겹칩니다. 그래서 옮긴 뒤 중복을 걷어냅니다.
+ * 옮기는 규칙이 일대일이라 값이 겹칠 일은 없지만, 서버가 `uniqueItems` 를 요구하므로
+ * 마지막에 한 번 걸러 보냅니다.
  */
 export function toServiceLanguages(locales: readonly LocaleCode[]): ServiceLanguage[] {
   return [...new Set(locales.map((locale) => SERVICE_LANGUAGE_BY_LOCALE[locale]))];

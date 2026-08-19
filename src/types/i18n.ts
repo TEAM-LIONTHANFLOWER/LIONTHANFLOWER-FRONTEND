@@ -40,6 +40,8 @@ export type MessageKey =
   | 'serviceStyle.recommendation'
   | 'serviceStyle.selfGuided'
   | 'matching.waiting'
+  | 'matching.failed'
+  | 'matching.retry'
   | 'home.description'
   | 'home.sectionTabsLabel'
   | 'arc.description'

@@ -22,6 +22,8 @@ interface OutlinedTextFieldProps {
   multiline?: boolean;
   /** 받을 수 있는 최대 글자 수 */
   maxLength?: number;
+  /** 칸에 커서가 들어왔을 때. 입력을 받아 목록을 펼치는 필드가 씁니다. */
+  onFocus?: () => void;
 }
 
 /** 어두운 배경 위 테두리만 있는 입력 필드. 기본은 한 줄이고 `multiline` 으로 메모가 됩니다. */
@@ -35,6 +37,7 @@ export function OutlinedTextField({
   description,
   multiline = false,
   maxLength,
+  onFocus,
 }: OutlinedTextFieldProps) {
   return (
     <View style={styles.field}>
@@ -54,6 +57,7 @@ export function OutlinedTextField({
           accessibilityLabel={label}
           multiline={multiline}
           maxLength={maxLength}
+          onFocus={onFocus}
           style={[styles.input, multiline && styles.inputMultiline]}
         />
         {icon ? (

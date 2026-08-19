@@ -44,10 +44,18 @@ npm run web
 
 ## 웹 배포 (Cloudflare)
 
+| 주소                                                                        | 무엇                      |
+| --------------------------------------------------------------------------- | ------------------------- |
+| [mcm-orbit-n34.pages.dev](https://mcm-orbit-n34.pages.dev/)                 | 본 배포                   |
+| [develop.mcm-orbit-n34.pages.dev](https://develop.mcm-orbit-n34.pages.dev/) | `develop` 브랜치 미리보기 |
+
 ```bash
 npm run build:web              # dist/ 생성
 npx wrangler pages deploy dist # 최초 실행 시 wrangler login 필요
 ```
+
+> 백엔드가 쿠키 인증이라 **웹은 서버의 CORS 허용 목록에 출처가 등록돼야** 동작합니다.
+> 지금은 본 배포만 등록돼 있습니다 — 자세한 것은 [docs/api-integration.md](./docs/api-integration.md) 참고.
 
 Cloudflare 대시보드에서 Git 연동으로 자동 배포할 경우:
 

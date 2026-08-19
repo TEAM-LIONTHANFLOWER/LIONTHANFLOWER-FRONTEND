@@ -1,12 +1,26 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { api } from '@services/api';
 import type {
   CustomerVisitSession,
   OnboardingSubmission,
   VisitEntry,
+  VisitMatching,
   VisitOnboardingResult,
 } from '@/types/visit';
+
+export const visitKeys = {
+  all: ['customer-visit'] as const,
+  matching: (visitId: string) => [...visitKeys.all, 'matching', visitId] as const,
+};
+
+/**
+ * 배정 여부를 다시 물어보는 간격.
+ *
+ * 서버가 배정 사실을 밀어 주지 않아(웹소켓·푸시가 없습니다) 고객 쪽에서 되물어야 합니다.
+ * 매장에서 직원이 화면을 누르고 고객이 알아차리기까지의 체감을 기준으로 2 초로 둡니다.
+ */
+const MATCHING_POLL_INTERVAL_MS = 2000;
 
 /**
  * 고객 로그인 — 서비스 진입과 온보딩 제출을 잇달아 보냅니다.
@@ -37,5 +51,30 @@ export function useStartVisit() {
         status: result.status,
       };
     },
+  });
+}
+
+/** 담당 직원이 정해졌는지. 배정 전에는 `staffId` 가 비어 있습니다. */
+export function isMatched(matching: VisitMatching | undefined): boolean {
+  return matching?.staffId !== undefined && matching.staffId !== null;
+}
+
+/**
+ * 직원 배정을 기다리는 고객이 자기 방문 상태를 되읽습니다 — `/matching` 이 씁니다.
+ *
+ * 직원이 `POST /api/staff/visits/{visitId}/assignment` 를 누르면 서버 상태가 `ACTIVE` 로
+ * 바뀌고 `staffId` `staffName` `matchedAt` 이 채워집니다. 그때까지 짧은 간격으로 되묻고,
+ * 배정이 끝나면 폴링을 멈춥니다.
+ *
+ * `visitId` 가 없으면(로그인을 거치지 않고 화면에 들어온 경우) 요청을 보내지 않습니다.
+ */
+export function useVisitMatching(visitId: string | null) {
+  return useQuery({
+    queryKey: visitKeys.matching(visitId ?? ''),
+    queryFn: () => api.get<VisitMatching>(`/api/customers/visits/${visitId}/matching`),
+    enabled: visitId !== null,
+    // 기다리는 화면이라 캐시된 값을 그대로 쓰면 안 됩니다. 매번 서버에 다시 묻습니다.
+    staleTime: 0,
+    refetchInterval: (query) => (isMatched(query.state.data) ? false : MATCHING_POLL_INTERVAL_MS),
   });
 }

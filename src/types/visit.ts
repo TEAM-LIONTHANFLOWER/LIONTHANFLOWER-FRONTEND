@@ -72,10 +72,10 @@ export type VisitStatus =
 
 /**
  * 직원이 고객을 응대할 언어.
- * 서버 목록에 한국어가 없습니다 — 표시 언어에서 이 값으로 옮기는 규칙은
+ * 앱이 보여주는 다섯 언어와 하나씩 짝이 맞습니다 — 옮기는 규칙은
  * `@constants/languages` 의 `SERVICE_LANGUAGE_BY_LOCALE` 에 있습니다.
  */
-export type ServiceLanguage = 'EN' | 'ZH' | 'JA' | 'RU';
+export type ServiceLanguage = 'KO' | 'EN' | 'ZH' | 'JA' | 'RU';
 
 /** 고객이 고른 접객 방식. 화면 쪽 `ServiceStyleCode` 에 대응합니다. */
 export type InteractionStyle = 'STAFF_RECOMMENDATION' | 'SELF_GUIDED';
@@ -100,6 +100,20 @@ export interface OnboardingSubmission {
 export interface VisitOnboardingResult {
   visitId: string;
   status: VisitStatus;
+}
+
+/**
+ * `GET /api/customers/visits/{visitId}/matching` 응답.
+ *
+ * 직원 추천을 고른 고객이 담당 직원 배정을 기다리며 되읽는 값입니다.
+ * 아직 아무도 배정되지 않았으면 `staffId` `staffName` `matchedAt` 이 모두 비어 있습니다.
+ */
+export interface VisitMatching {
+  visitId: string;
+  status: VisitStatus;
+  staffId?: string;
+  staffName?: string;
+  matchedAt?: string;
 }
 
 /**

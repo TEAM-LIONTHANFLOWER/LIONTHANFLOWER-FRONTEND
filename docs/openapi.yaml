@@ -337,6 +337,27 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ApiResponseNotificationView'
+  /api/stores:
+    get:
+      tags:
+        - store-controller
+      summary: 매장 검색
+      description: 직원 프로필 등록 전에 이름 또는 코드로 매장을 검색합니다.
+      operationId: search
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ''
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListStoreSummary'
   /api/staff/visits:
     get:
       tags:
@@ -393,6 +414,32 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ApiResponseStaffArcRevisionResponse'
+  /api/customers/visits/{visitId}/matching:
+    get:
+      tags:
+        - customer-visit-controller
+      summary: 고객 매칭 상태 조회
+      description: 직원 추천을 선택한 고객이 담당 직원 배정 상태를 조회합니다.
+      operationId: getMatching
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseMatchingResponse'
   /api/customers/visit-memories/{visitMemoryId}:
     get:
       tags:
@@ -891,6 +938,7 @@ components:
         serviceLanguage:
           type: string
           enum:
+            - KO
             - EN
             - ZH
             - JA
@@ -961,6 +1009,27 @@ components:
         createdAt:
           type: string
           format: date-time
+    ApiResponseListStoreSummary:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoreSummary'
+    StoreSummary:
+      type: object
+      properties:
+        storeId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        countryCode:
+          type: string
     ApiResponseStaffVisitListResponse:
       type: object
       properties:
@@ -996,6 +1065,7 @@ components:
         serviceLanguage:
           type: string
           enum:
+            - KO
             - EN
             - ZH
             - JA
@@ -1036,12 +1106,44 @@ components:
           items:
             type: string
             enum:
+              - KO
               - EN
               - ZH
               - JA
               - RU
           uniqueItems: true
         createdAt:
+          type: string
+          format: date-time
+    ApiResponseMatchingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/MatchingResponse'
+    MatchingResponse:
+      type: object
+      properties:
+        visitId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - ONBOARDING
+            - WAITING_FOR_STAFF
+            - ACTIVE
+            - ARC_IN_PROGRESS
+            - VISIT_MEMORY_IN_PROGRESS
+            - COMPLETED
+            - CANCELED
+        staffId:
+          type: string
+          format: uuid
+        staffName:
+          type: string
+        matchedAt:
           type: string
           format: date-time
     ApiResponseVisitMemoryDetail:
@@ -1213,8 +1315,9 @@ components:
             $ref: '#/components/schemas/ProductResponse'
     ApiErrorResponse:
       type: object
-      description: 모든 실패 응답이 이 모양으로 옵니다. 예) 401 →
-        {"success":false,"error":{"code":"COMMON-401","message":"인증이 필요합니다.","fieldErrors":[]}}
+      description: >-
+        모든 실패 응답이 이 모양으로 옵니다. 예) 401 → {"success":false,"error":{"code":"COMMON-401","message":"인증이
+        필요합니다.","fieldErrors":[]}}
       properties:
         success:
           type: boolean
