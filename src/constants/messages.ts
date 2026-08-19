@@ -31,8 +31,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'arc.empty': '당신의 하나뿐인 이야기가 담긴 Arc는\nOrbit에 기록됩니다.',
     'arc.loadFailed': 'Arc를 불러오지 못했습니다.',
     'arc.retry': '다시 시도',
-    'visitMemory.empty':
-      '아직 도착한 방문 기록이 없습니다.\n직원이 오늘의 기록을 보내면 여기에서 볼 수 있습니다.',
+    'visitMemory.defaultMoment': 'You visited MCM Haus.\n오늘 MCM HAUS를 방문하셨습니다.',
+    'visitMemory.defaultClosing': "our MCM journey doesn't end here.",
     'visitMemory.loadFailed': '방문 기록을 불러오지 못했습니다.',
     'studio.description':
       '원하는 프레임을 고르고, \n 특별한 MCM 매거진으로 나만의 경험을 기록해보세요.',
@@ -76,8 +76,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'arc.empty': 'The Arc that holds your one and only story\nis recorded in Orbit.',
     'arc.loadFailed': 'We could not load your Arcs.',
     'arc.retry': 'Try again',
-    'visitMemory.empty':
-      'No visit memory has arrived yet.\nIt will appear here once your staff member sends it.',
+    'visitMemory.defaultMoment': 'You visited MCM Haus.',
+    'visitMemory.defaultClosing': "our MCM journey doesn't end here.",
     'visitMemory.loadFailed': 'We could not load your visit memory.',
     'studio.description':
       'Choose the frame you like, \n and record your experience in a special MCM magazine.',
@@ -121,7 +121,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'arc.empty': '承载你独一无二故事的 Arc，\n将记录在 Orbit 中。',
     'arc.loadFailed': '无法加载 Arc。',
     'arc.retry': '重试',
-    'visitMemory.empty': '还没有收到到访记录。\n店员发送后即可在此查看。',
+    'visitMemory.defaultMoment': '您今天到访了 MCM HAUS。',
+    'visitMemory.defaultClosing': '我们的 MCM 之旅不止于此。',
     'visitMemory.loadFailed': '无法加载到访记录。',
     'studio.description': '挑选你喜欢的相框， \n 用专属 MCM 杂志记录你的体验。',
     'studio.previewDescription': '上传你拍下的照片， \n 创作属于你的故事。',
@@ -164,8 +165,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'arc.empty': 'あなただけの物語を収めた Arc は\nOrbit に記録されます。',
     'arc.loadFailed': 'Arc を読み込めませんでした。',
     'arc.retry': '再試行',
-    'visitMemory.empty':
-      'まだ届いた訪問記録はありません。\nスタッフが送ると、ここでご覧いただけます。',
+    'visitMemory.defaultMoment': '本日、MCM HAUSにご来店いただきました。',
+    'visitMemory.defaultClosing': '私たちのMCMの旅はここで終わりません。',
     'visitMemory.loadFailed': '訪問記録を読み込めませんでした。',
     'studio.description':
       'お好みのフレームを選んで、 \n 特別な MCM マガジンに自分だけの体験を残しましょう。',
@@ -210,8 +211,8 @@ export const MESSAGES: Record<LocaleCode, Messages> = {
     'arc.empty': 'Arc с вашей единственной историей\nсохраняется в Orbit.',
     'arc.loadFailed': 'Не удалось загрузить Arc.',
     'arc.retry': 'Повторить',
-    'visitMemory.empty':
-      'Записей о визите пока нет.\nОни появятся здесь, как только консультант их отправит.',
+    'visitMemory.defaultMoment': 'Сегодня вы посетили MCM HAUS.',
+    'visitMemory.defaultClosing': 'Наше путешествие с MCM не заканчивается здесь.',
     'visitMemory.loadFailed': 'Не удалось загрузить запись о визите.',
     'studio.description': 'Выберите рамку, \n и запишите свой опыт в особом журнале MCM.',
     'studio.previewDescription': 'Загрузите снятое фото \n и создайте свою историю.',

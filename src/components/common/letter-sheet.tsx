@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 
 import { FixedColors, LineHeightRatio, Radius, Spacing, Typography } from '@constants/theme';
@@ -38,6 +38,8 @@ const RULE_WIDTH = StyleSheet.hairlineWidth;
 
 /** 밑줄 아래 본문이 시작하는 높이. */
 const BODY_TOP_ARC = 89;
+/** 본문이 발행 정보 자리를 침범하지 않도록 남겨 두는 아래쪽 여백. 글이 넘치면 이 안에서 스크롤합니다. */
+const BODY_BOTTOM_ARC = 50;
 
 /** 편지지 맨 아래에 남기는 발행 정보. */
 const FOOTER_TOP = 391;
@@ -144,7 +146,13 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
             <View style={styles.rule} />
           </View>
 
-          <View style={styles.bodyArc}>{sections}</View>
+          <ScrollView
+            style={styles.bodyArc}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
+            {sections}
+          </ScrollView>
 
           <View style={styles.footer}>
             {content.place === undefined ? null : (
@@ -158,14 +166,24 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
       ) : (
         <View style={styles.bodyMemory}>
           <View>
-            <Text style={styles.titleMemory}>{content.title}</Text>
-            {content.place === undefined ? null : <Text style={styles.meta}>{content.place}</Text>}
-            {content.issuedOn === undefined ? null : (
-              <Text style={styles.meta}>{content.issuedOn}</Text>
-            )}
+            <View>
+              <Text style={styles.titleMemory}>{content.title}</Text>
+              {content.place === undefined ? null : (
+                <Text style={styles.meta}>{content.place}</Text>
+              )}
+              {content.issuedOn === undefined ? null : (
+                <Text style={styles.meta}>{content.issuedOn}</Text>
+              )}
+            </View>
+
+            {sections}
           </View>
 
-          {sections}
+          {/* 내용이 얼마나 길든 항상 카드 바닥에 붙어야 해서 위 블록과 따로 두고
+              `bodyMemory` 의 `space-between` 으로 밀어냅니다. */}
+          {content.closingLine === undefined ? null : (
+            <Text style={styles.line}>{content.closingLine[locale]}</Text>
+          )}
         </View>
       )}
     </View>
@@ -204,6 +222,7 @@ const styles = StyleSheet.create({
   bodyArc: {
     position: 'absolute',
     top: BODY_TOP_ARC,
+    bottom: BODY_BOTTOM_ARC,
     left: PADDING_LEFT,
     right: PADDING_RIGHT_ARC,
   },
@@ -223,8 +242,12 @@ const styles = StyleSheet.create({
   bodyMemory: {
     flex: 1,
     paddingTop: PADDING_TOP_MEMORY,
+    paddingBottom: PADDING_TOP_MEMORY,
     paddingLeft: PADDING_LEFT,
     paddingRight: PADDING_RIGHT_MEMORY,
+    // 위 블록(제목·매장·날짜·본문)은 위에서부터 흘리고, 마무리 문구가 있으면 이 gap 이
+    // 카드 바닥까지 밀어냅니다.
+    justifyContent: 'space-between',
     gap: SECTION_GAP_MEMORY,
   },
   titleMemory: {

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { ActionPill } from '@components/common/action-pill';
@@ -20,18 +21,14 @@ interface CustomerVisitMemoryLinkProps {
  * 직원이 전송하면 고객에게 알림이 하나 생기고, 그 알림이 가리키는 것이 방문 기록입니다.
  * 알림 목록을 보여주는 화면은 시안에 없어서, 이 버튼이 알림을 대신 읽어 가장 최근 기록을 엽니다.
  *
- * 아직 받은 기록이 없는 것은 오류가 아니라 흔한 상태입니다 — 직원이 아직 안 보낸 것뿐이라
- * 다시 시도 버튼 없이 안내만 보여줍니다.
+ * 아직 받은 기록이 없어도 `useCustomerVisitMemory` 가 기본 문구를 담은 편지를 내려줘서
+ * 오류가 아닙니다 — 여기서는 로딩·오류일 때만 그 자리를 대신 그립니다.
  */
 export function CustomerVisitMemoryLink({ variant }: CustomerVisitMemoryLinkProps) {
   const { t } = useTranslation();
   const { letter, isPending, isError, refetch } = useCustomerVisitMemory();
 
-  let fallback = (
-    <Text style={styles.message} accessibilityRole="text">
-      {t('visitMemory.empty')}
-    </Text>
-  );
+  let fallback: ReactNode;
 
   if (isPending) {
     fallback = <ActivityIndicator color={FixedColors.onDark} />;
