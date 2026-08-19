@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 
 import { FixedColors, LineHeightRatio, Radius, Spacing, Typography } from '@constants/theme';
@@ -38,6 +38,8 @@ const RULE_WIDTH = StyleSheet.hairlineWidth;
 
 /** 밑줄 아래 본문이 시작하는 높이. */
 const BODY_TOP_ARC = 89;
+/** 본문이 발행 정보 자리를 침범하지 않도록 남겨 두는 아래쪽 여백. 글이 넘치면 이 안에서 스크롤합니다. */
+const BODY_BOTTOM_ARC = 50;
 
 /** 편지지 맨 아래에 남기는 발행 정보. */
 const FOOTER_TOP = 391;
@@ -144,7 +146,13 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
             <View style={styles.rule} />
           </View>
 
-          <View style={styles.bodyArc}>{sections}</View>
+          <ScrollView
+            style={styles.bodyArc}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
+            {sections}
+          </ScrollView>
 
           <View style={styles.footer}>
             {content.place === undefined ? null : (
@@ -204,6 +212,7 @@ const styles = StyleSheet.create({
   bodyArc: {
     position: 'absolute',
     top: BODY_TOP_ARC,
+    bottom: BODY_BOTTOM_ARC,
     left: PADDING_LEFT,
     right: PADDING_RIGHT_ARC,
   },
