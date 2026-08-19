@@ -19,8 +19,8 @@ import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { InitialSetupButton } from '@components/common/initial-setup-button';
 import { PageIndicator } from '@components/common/page-indicator';
 import { ScreenContainer } from '@components/common/screen-container';
-import { VisitMemoryLink } from '@components/common/visit-memory-link';
 import { ArcEnvelope, ENVELOPE_HEIGHT } from '@components/customer/arc-envelope';
+import { CustomerVisitMemoryLink } from '@components/customer/customer-visit-memory-link';
 import { ArcLetterReveal } from '@components/customer/arc-letter-reveal';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
 import { useCustomerArcEntries } from '@hooks/use-customer-arcs';
@@ -226,7 +226,7 @@ export default function CustomerArcScreen() {
               accessory={
                 // 시안(2-1 Arc)은 워드마크 오른쪽에 `Visit Memory` 와 톱니를 나란히 겁니다.
                 <View style={styles.headerActions}>
-                  <VisitMemoryLink variant="pill" />
+                  <CustomerVisitMemoryLink variant="pill" />
                   <InitialSetupButton iconOnly />
                 </View>
               }

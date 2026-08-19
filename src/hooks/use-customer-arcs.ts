@@ -1,6 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { toDotDate, toLetterDate, toOrdinal } from '@constants/format';
+import { toDotDate, toLetterDate, toOrdinal, toSameText } from '@constants/format';
 import { api } from '@services/api';
 import type {
   ArcDetail,
@@ -18,40 +18,31 @@ export const arcKeys = {
   detail: (arcId: string) => [...arcKeys.all, 'detail', arcId] as const,
 };
 
-/**
- * 서버가 내려주는 편지 글은 한 벌뿐이고, 그게 맞습니다.
- *
- * 고객은 온보딩에서 고른 언어(`serviceLanguage`)로 방문 하나를 끝까지 보냅니다 —
- * `Language` 칩이 `/login` 에만 있어 로그인 뒤에는 언어가 바뀌지 않습니다. 그래서 서버가
- * 그 방문의 언어로 쓴 문장 하나를 주면 충분하고, 언어별 묶음을 받을 이유가 없습니다.
- *
- * 화면 타입(`LocalizedText`)이 그보다 넓어서 다섯 칸에 같은 문장을 넣어 둡니다. 편지지는
- * 지금 언어의 칸을 꺼내 쓰므로, 그리는 결과는 **서버가 보낸 문장 그대로** 입니다.
- * 임시 방편이 아니라 넓은 타입에 맞추는 어댑터라, 서버가 언어를 맞춰 보내도 이대로 둡니다.
- */
-function asIs(line: string): LocalizedText {
-  return { ko: line, en: line, zh: line, ja: line, ru: line };
-}
-
 /** `A Bag` `Black / Small` 두 줄. 색·사이즈가 없으면 이름 줄만 남깁니다. */
 function toProductLines(product: ArcProduct): LocalizedText[] {
   const spec = [product.color, product.option].filter((value) => value !== undefined).join(' / ');
 
   return spec.length === 0
-    ? [asIs(`Selected ${product.productName}`)]
-    : [asIs(`Selected ${product.productName}`), asIs(spec)];
+    ? [toSameText(`Selected ${product.productName}`)]
+    : [toSameText(`Selected ${product.productName}`), toSameText(spec)];
 }
 
 /**
  * 상세 응답 → 편지 본문.
  * 서버가 비워 보낸 항목은 소제목째 빼고, 시안의 세 단락 순서는 그대로 지킵니다.
+ *
+ * **서버가 내려주는 편지 글은 한 벌뿐이고, 그게 맞습니다.** 고객은 온보딩에서 고른
+ * 언어(`serviceLanguage`)로 방문 하나를 끝까지 보냅니다 — `Language` 칩이 `/login` 에만
+ * 있어 로그인 뒤에는 언어가 바뀌지 않습니다. 그래서 그 방문의 언어로 쓴 문장 하나면
+ * 충분하고, 언어별 묶음을 받을 이유가 없습니다. 넓은 화면 타입에 끼워 맞추는 일은
+ * `toSameText()` 가 합니다.
  */
 function toLetterSections(detail: ArcDetail): LetterSection[] {
   const sections: LetterSection[] = [];
 
   const momentLines: LocalizedText[] = [];
   if (detail.momentSummary !== undefined) {
-    momentLines.push(asIs(detail.momentSummary));
+    momentLines.push(toSameText(detail.momentSummary));
   }
   for (const product of detail.purchasedProducts ?? []) {
     momentLines.push(...toProductLines(product));
@@ -66,7 +57,7 @@ function toLetterSections(detail: ArcDetail): LetterSection[] {
       id: 'preference',
       title: 'Your Preference',
       bulleted: true,
-      lines: preferences.map(asIs),
+      lines: preferences.map(toSameText),
     });
   }
 
@@ -74,7 +65,7 @@ function toLetterSections(detail: ArcDetail): LetterSection[] {
     sections.push({
       id: 'remember',
       title: 'A Moment to Remember',
-      lines: [asIs(detail.momentToRemember)],
+      lines: [toSameText(detail.momentToRemember)],
     });
   }
 

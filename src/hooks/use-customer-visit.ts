@@ -49,6 +49,10 @@ export function useStartVisit() {
         // 방금 입력한 이름이 서버에 저장된 이름입니다.
         customerName: submission.name,
         status: result.status,
+        // 보낸 값을 그대로 세션에 남깁니다. 서버가 되돌려주지 않아 여기서 잃으면 다시 알 길이 없습니다.
+        serviceLanguage: submission.serviceLanguage,
+        interactionStyle: submission.interactionStyle,
+        additionalRequest: submission.additionalRequest,
       };
     },
   });

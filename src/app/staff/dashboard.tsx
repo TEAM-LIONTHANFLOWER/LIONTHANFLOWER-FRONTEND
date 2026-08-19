@@ -9,9 +9,8 @@ import { PillTabs, type PillTabOption } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
 import { DateSection } from '@components/staff/date-section';
 import { VisitCard } from '@components/staff/visit-card';
-import { toDotDate } from '@constants/format';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
-import { useAssignVisit, useStaffVisits } from '@hooks/use-staff-visits';
+import { toVisitDays, useAssignVisit, useStaffVisits } from '@hooks/use-staff-visits';
 import type { RecordFlow } from '@/types/record-form';
 import type { MemoryPage, VisitMode } from '@/types/visit';
 
@@ -42,19 +41,20 @@ export default function StaffDashboardScreen() {
 
   /**
    * 고객 상세는 프로필(Arc)과 방문 기록 두 면을 넘겨 보는 화면입니다.
-   * 어느 면을 먼저 열지 액션마다 다르게 넘깁니다.
+   * 어느 고객인지(`visitId`)와 어느 면을 먼저 열지(`page`)를 함께 넘깁니다 —
+   * 상세 화면은 이 `visitId` 로 방문 목록에서 자기 고객을 찾습니다.
    */
   const openDetail = useCallback(
-    (page: MemoryPage) => {
-      router.push({ pathname: '/staff/customer-detail', params: { page } });
+    (visitId: string, page: MemoryPage) => {
+      router.push({ pathname: '/staff/customer-detail', params: { visitId, page } });
     },
     [router]
   );
 
   /** 방문 하나를 기록하러 갑니다. 구매했으면 Arc, 아니면 Visit Memory 를 씁니다. */
   const openRecordForm = useCallback(
-    (flow: RecordFlow) => {
-      router.push({ pathname: '/staff/record-form', params: { flow } });
+    (visitId: string, flow: RecordFlow) => {
+      router.push({ pathname: '/staff/record-form', params: { visitId, flow } });
     },
     [router]
   );
@@ -66,15 +66,15 @@ export default function StaffDashboardScreen() {
   const startService = useCallback(
     (visitId: string) => {
       assignVisit(visitId, {
-        onSuccess: () => openDetail('arc'),
+        onSuccess: () => openDetail(visitId, 'arc'),
       });
     },
     [assignVisit, openDetail]
   );
 
-  // 서버는 지금 매장에 들어와 있는 고객만 내려줍니다. 그래서 날짜 묶음은 오늘 하루뿐입니다.
-  const today = toDotDate(new Date().toISOString());
   const visibleVisits = (visits ?? []).filter((visit) => visit.mode === mode);
+  // 탭을 고른 뒤에 묶습니다. With 와 Solo 는 각자의 날짜만 머리글로 답니다.
+  const days = toVisitDays(visibleVisits);
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
@@ -113,20 +113,20 @@ export default function StaffDashboardScreen() {
               <Text style={styles.empty}>{mode === 'with' ? EMPTY_WITH : EMPTY_SOLO}</Text>
             )}
 
-            {visibleVisits.length === 0 ? null : (
-              <DateSection date={today}>
-                {visibleVisits.map((visit) => (
+            {days.map((day) => (
+              <DateSection key={day.date} date={day.date}>
+                {day.visits.map((visit) => (
                   <VisitCard
                     key={visit.id}
                     visit={visit}
-                    onOpen={() => openDetail('arc')}
-                    onCreateArc={() => openRecordForm('arc')}
-                    onSaveMemory={() => openRecordForm('memory')}
+                    onOpen={() => openDetail(visit.id, 'arc')}
+                    onCreateArc={() => openRecordForm(visit.id, 'arc')}
+                    onSaveMemory={() => openRecordForm(visit.id, 'memory')}
                     onStartService={() => startService(visit.id)}
                   />
                 ))}
               </DateSection>
-            )}
+            ))}
           </View>
         </ScrollView>
       </ScreenContainer>

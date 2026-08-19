@@ -2,10 +2,13 @@
  * 고객 Arc 화면에서 아직 서버가 내려주지 않는 부분.
  * 문구는 시안(2-1 Arc - Visit Memory, 기본설정)을 옮긴 것입니다.
  *
- * 봉투와 편지(`ARC_ENTRIES`)는 `GET /api/customers/arcs` 로 옮겨 갔습니다.
- * 여기 남은 둘은 대응하는 엔드포인트가 없어 고정값 그대로입니다 —
- * `Visit Memory` 팝업은 알림에서 받은 `visitMemoryId` 가 있어야 조회할 수 있고,
- * 기본설정 팝업은 고객의 온보딩 입력을 되읽는 엔드포인트가 없습니다.
+ * 봉투와 편지(`ARC_ENTRIES`)는 `GET /api/customers/arcs` 로,
+ * 기본설정 팝업은 방문 세션(`@stores/visit-store`)으로 옮겨 갔습니다.
+ * 고객이 받는 `Visit Memory` 도 알림 → 상세 두 번으로 읽어 옵니다(`useCustomerVisitMemory()`).
+ *
+ * 여기 남은 것은 **직원 화면이 쓰는 자리 채우기 한 벌** 입니다. 직원은 방문에 딸린
+ * Visit Memory 의 식별자를 알아낼 방법이 없어(`docs/api-integration.md` 의 "막힌 것" 2-2)
+ * 아직 서버에서 읽어 오지 못합니다.
  *
  * 시안의 영문 소제목에는 오타가 있습니다 — `Your Prefernrce`, `Your Seemed drown to...`.
  * `@constants/visit` 의 `MEMORY_CARDS` 가 이미 `You seemed drawn to` 로 바로잡아 두었어서
@@ -16,7 +19,7 @@
  * 그대로 쓰는 말이라 번역하지 않습니다.
  */
 
-import type { InitialSetupItem, LetterContent } from '@/types/arc';
+import type { LetterContent } from '@/types/arc';
 import type { LocalizedText } from '@/types/i18n';
 
 /** 시안에는 고객이 모두 `Ethan` 으로 그려져 있습니다. 자리 채우기용 이름입니다. */
@@ -69,26 +72,3 @@ export const VISIT_MEMORY_LETTER: LetterContent = {
     },
   ],
 };
-
-/** `Initial setup` 을 누르면 열리는 팝업에 걸리는 항목. */
-export const INITIAL_SETUP_ITEMS: readonly InitialSetupItem[] = [
-  {
-    id: 'service',
-    label: 'Service',
-    value: {
-      ko: '혼자 둘러보는 것을 선호합니다',
-      en: 'Prefers to browse alone',
-      zh: '偏好自己逛',
-      ja: 'ひとりで見て回ることを好みます',
-      ru: 'Предпочитает смотреть самостоятельно',
-    },
-    valueToken: 'bodyKo13',
-  },
-  {
-    id: 'language',
-    label: 'Language',
-    // 언어 이름은 그 언어의 글자로 적는 것이 관례라 어느 언어에서 봐도 같습니다.
-    value: asIs('한국어 · English'),
-    valueToken: 'bodyKo14',
-  },
-] as const;

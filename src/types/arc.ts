@@ -12,8 +12,11 @@ import type { LocalizedText } from '@/types/i18n';
 /** 편지 본문의 한 단락. 제목 한 줄과 여러 줄 본문으로 이루어집니다. */
 export interface LetterSection {
   id: string;
-  /** `Your MCM Moment` 처럼 영문 소제목 */
-  title: string;
+  /**
+   * `Your MCM Moment` 처럼 영문 소제목.
+   * 서버가 본문을 토막 내지 않고 한 덩이로 보내는 `Visit Memory` 는 이 줄이 없습니다.
+   */
+  title?: string;
   /** 본문을 글머리 기호 목록으로 그릴지. 생략하면 줄만 바꾼 문단입니다. */
   bulleted?: boolean;
   /** 고객이 고른 언어로 보여 줍니다. */
@@ -27,10 +30,13 @@ export interface LetterSection {
 export interface LetterContent {
   /** `Ethan’s 2nd Arc` 처럼 완성된 제목 */
   title: string;
-  /** 매장과 도시 한 줄 — `MCM HAUS · SEOUL(REPUBLIC OF KOREA)` */
-  place: string;
+  /**
+   * 매장과 도시 한 줄 — `MCM HAUS · SEOUL(REPUBLIC OF KOREA)`.
+   * 아직 고객에게 보내지 않은 Visit Memory 처럼 적을 것이 없으면 비웁니다.
+   */
+  place?: string;
   /** 편지 머리의 날짜. 봉투와 달리 영문으로 적습니다 — `13 AUGUST 2026` */
-  issuedOn: string;
+  issuedOn?: string;
   sections: readonly LetterSection[];
 }
 
@@ -59,8 +65,11 @@ export interface InitialSetupItem {
   id: string;
   /** `Service`, `Language` 처럼 영문 항목명 */
   label: string;
-  /** 고객이 고른 언어로 보여 줍니다. */
-  value: LocalizedText;
+  /**
+   * 이미 언어가 정해진 글.
+   * 고객 화면은 고객이 고른 언어로, 직원 화면은 한국어로 골라 넣습니다.
+   */
+  value: string;
   /**
    * 값에 쓸 타이포 토큰.
    * 시안이 줄마다 13 / 14 로 다르게 지정해서 데이터로 들고 있습니다.
@@ -103,11 +112,20 @@ export interface ArcProduct {
   option?: ProductOption;
 }
 
-/** `GET /api/customers/arcs` 의 한 건. 목록에는 편지 본문이 없습니다. */
+/**
+ * `GET /api/customers/arcs` 의 한 건.
+ *
+ * 봉투 겉면에 필요한 값은 이제 목록에 다 있습니다(`storeName`). 다만 편지 본문은
+ * 아직 여기 다 오지 않아 — 고객 이름·국가·`preferences`·구매 제품은 상세에만 있습니다 —
+ * 봉투를 열었을 때 그릴 글을 얻으려면 상세를 한 번 더 불러야 합니다.
+ */
 export interface ArcListItem {
   arcId: string;
   arcNumber: number;
+  /** 봉투 겉면에 적히는 매장 이름. */
+  storeName?: string;
   momentSummary?: string;
+  momentToRemember?: string;
   representativeProduct?: ArcProduct;
   status: ArcStatus;
   sharedAt?: string;

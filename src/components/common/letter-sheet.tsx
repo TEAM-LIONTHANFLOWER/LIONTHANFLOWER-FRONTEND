@@ -93,9 +93,11 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
     <View style={isArc ? styles.sectionsArc : styles.sectionsMemory}>
       {content.sections.map((section) => (
         <View key={section.id}>
-          <Text style={[styles.sectionTitle, isArc && styles.sectionTitleArc]}>
-            {section.title}
-          </Text>
+          {section.title === undefined ? null : (
+            <Text style={[styles.sectionTitle, isArc && styles.sectionTitleArc]}>
+              {section.title}
+            </Text>
+          )}
 
           {section.lines.map((line, index) =>
             section.bulleted ? (
@@ -145,16 +147,22 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
           <View style={styles.bodyArc}>{sections}</View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerLine}>{content.place}</Text>
-            <Text style={styles.footerLine}>{content.issuedOn}</Text>
+            {content.place === undefined ? null : (
+              <Text style={styles.footerLine}>{content.place}</Text>
+            )}
+            {content.issuedOn === undefined ? null : (
+              <Text style={styles.footerLine}>{content.issuedOn}</Text>
+            )}
           </View>
         </>
       ) : (
         <View style={styles.bodyMemory}>
           <View>
             <Text style={styles.titleMemory}>{content.title}</Text>
-            <Text style={styles.meta}>{content.place}</Text>
-            <Text style={styles.meta}>{content.issuedOn}</Text>
+            {content.place === undefined ? null : <Text style={styles.meta}>{content.place}</Text>}
+            {content.issuedOn === undefined ? null : (
+              <Text style={styles.meta}>{content.issuedOn}</Text>
+            )}
           </View>
 
           {sections}
