@@ -47,6 +47,13 @@ export type MessageKey =
   | 'studio.previewDescription'
   | 'studio.generating'
   | 'studio.complete'
+  | 'studio.cameraDenied'
+  | 'studio.cameraError'
+  | 'studio.captureError'
+  | 'studio.webOnly'
+  | 'studio.framesError'
+  | 'studio.retry'
+  | 'studio.framePreviewUnavailable'
   | 'a11y.startJourney'
   | 'a11y.openEnvelope'
   | 'a11y.backToEnvelopes'
@@ -58,7 +65,8 @@ export type MessageKey =
   | 'a11y.generatedMagazine'
   | 'a11y.delete'
   | 'a11y.save'
-  | 'a11y.next';
+  | 'a11y.next'
+  | 'a11y.shutter';
 
 /** 한 언어의 문구 묶음. */
 export type Messages = Record<MessageKey, string>;
