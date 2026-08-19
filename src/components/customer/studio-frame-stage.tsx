@@ -138,6 +138,9 @@ const styles = StyleSheet.create({
     height: STUDIO_FRAME_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'center',
+    // resultGroup 의 translateX 애니메이션 중 브라우저가 트랜스폼된 레이어의 페인트
+    // 경계를 놓쳐 이전 프레임 잔상을 남기는 경우가 있어, 클리핑 경계를 명시적으로 둡니다.
+    overflow: 'hidden',
   },
   camera: {
     width: STUDIO_FRAME_WIDTH,
@@ -146,6 +149,9 @@ const styles = StyleSheet.create({
   resultGroup: {
     width: STUDIO_FRAME_WIDTH,
     height: STUDIO_FRAME_HEIGHT,
+    // translateX 애니메이션 중 GPU 레이어가 불안정해져 이전 프레임이 잔상으로 남는
+    // 문제를 막기 위한 힌트입니다.
+    backfaceVisibility: 'hidden',
   },
   resultImage: {
     width: STUDIO_FRAME_WIDTH,
