@@ -91,6 +91,9 @@ export function StudioCamera({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [status, setStatus] = useState<CameraStatus>('idle');
+  // 합성 실패는 카메라 스트림이 살아 있는 일시적 오류라 status 를 'error' 로 두지 않고
+  // 이 배너로만 알립니다. 셔터를 다시 누르면 사라집니다.
+  const [captureErrorMessage, setCaptureErrorMessage] = useState<string | null>(null);
 
   // 컴포넌트가 사라질 때는 카메라 버튼을 눌렀었는지와 상관없이 스트림을 정리합니다.
   useEffect(
@@ -129,6 +132,7 @@ export function StudioCamera({
     }
 
     setStatus('capturing');
+    setCaptureErrorMessage(null);
     onCaptureStart();
 
     try {
@@ -154,10 +158,12 @@ export function StudioCamera({
       onCapture({ blob, previewUrl: URL.createObjectURL(blob) });
       setStatus('ready');
     } catch {
-      setStatus('error');
+      // 스트림은 살아 있으므로 'error' 화면으로 막지 않고 'ready' 로 되돌려 바로 다시 찍을 수 있게 합니다.
+      setStatus('ready');
+      setCaptureErrorMessage(t('studio.captureError'));
       onCaptureError();
     }
-  }, [frame.overlayImageUrl, onCapture, onCaptureStart, onCaptureError]);
+  }, [frame.overlayImageUrl, onCapture, onCaptureStart, onCaptureError, t]);
 
   // idle 에서 누르면 카메라를 켜 촬영 준비 상태로 넘어가고, ready 에서 누르면 그대로 촬영합니다.
   const handleCameraPress = useCallback(() => {
@@ -174,6 +180,14 @@ export function StudioCamera({
         <Text style={styles.messageText}>
           {status === 'denied' ? t('studio.cameraDenied') : t('studio.cameraError')}
         </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('studio.retry')}
+          onPress={startCamera}
+          style={styles.retryButton}
+        >
+          <Text style={styles.retryText}>{t('studio.retry')}</Text>
+        </Pressable>
       </View>
     );
   }
@@ -188,6 +202,12 @@ export function StudioCamera({
         contentFit="fill"
         accessible={false}
       />
+
+      {captureErrorMessage ? (
+        <View style={styles.captureErrorBanner}>
+          <Text style={styles.captureErrorText}>{captureErrorMessage}</Text>
+        </View>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"
@@ -238,10 +258,37 @@ const styles = StyleSheet.create({
   message: {
     alignItems: 'center',
     justifyContent: 'center',
+    gap: Spacing.three,
     backgroundColor: FixedColors.frameWindowFill,
     paddingHorizontal: Spacing.four,
   },
   messageText: {
+    ...Typography.bodyKo14,
+    color: FixedColors.onDark,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.two,
+    borderRadius: 999,
+    backgroundColor: FixedColors.optionSurface,
+  },
+  retryText: {
+    ...Typography.bodyKo14,
+    color: FixedColors.onDark,
+  },
+  captureErrorBanner: {
+    position: 'absolute',
+    top: Spacing.three,
+    left: Spacing.three,
+    right: Spacing.three,
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: FixedColors.scrim,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  captureErrorText: {
     ...Typography.bodyKo14,
     color: FixedColors.onDark,
     textAlign: 'center',

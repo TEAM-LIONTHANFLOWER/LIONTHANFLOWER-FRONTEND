@@ -49,6 +49,7 @@ export type MessageKey =
   | 'studio.complete'
   | 'studio.cameraDenied'
   | 'studio.cameraError'
+  | 'studio.captureError'
   | 'studio.webOnly'
   | 'studio.framesError'
   | 'studio.retry'
