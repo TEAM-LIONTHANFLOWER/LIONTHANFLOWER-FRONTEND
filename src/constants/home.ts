@@ -10,10 +10,10 @@
  * 언어와 상관없이 그대로 쓰는 말이라 번역하지 않습니다.
  */
 
-import { STUDIO_FRAME_IDS } from '@constants/studio';
-import nowOnMcmHaus from '@assets/images/home/now-on-mcm-haus.jpg';
 import type { BrandStory, NowOnFeature } from '@/types/home';
 import type { StudioFrameId } from '@/types/studio';
+import nowOnMcmHaus from '@assets/images/home/now-on-mcm-haus.jpg';
+import { STUDIO_FRAME_IDS } from '@constants/studio';
 
 export const NOW_ON_FEATURE: NowOnFeature = {
   id: 'mcm-haus',
@@ -54,15 +54,15 @@ export const BRAND_STORIES: readonly BrandStory[] = [
     title: 'About MCM',
     titleToken: 'titleEn20',
     body: {
-      ko: '1976년부터 MCM은 장인정신과 혁신을 바탕으로 전통적인 럭셔리의 개념을 새롭게 정의해왔습니다. 젊음과 독립성, 그리고 쉽게 알아볼 수 있는 디자인 감각을 지닌 MCM은 오늘도 세계를 움직이는 사람들과 함께합니다.',
-      en: 'Since 1976, MCM has redefined traditional luxury through craftsmanship and innovation. With its spirit of youth, independence, and instantly recognizable design, MCM walks today with the people who move the world.',
-      zh: '自 1976 年起，MCM 以匠心与创新重新定义传统奢华的概念。以年轻、独立以及一眼可辨的设计感，MCM 今天依然与推动世界前行的人们同行。',
-      ja: '1976年以来、MCM は職人技と革新をもとに、伝統的なラグジュアリーの概念を新たに定義してきました。若さと自立、そして一目でそれとわかるデザイン感覚をもつ MCM は、今日も世界を動かす人々とともにあります。',
-      ru: 'С 1976 года MCM заново определяет само понятие традиционной роскоши — через мастерство и новаторство. Молодость, независимость и мгновенно узнаваемый дизайн: MCM и сегодня идёт рядом с теми, кто движет мир.',
+      ko: 'MCM은 1976년 독일 뮌헨에서 탄생한 럭셔리 브랜드로,\n 현대적인 감각과 기능성을 바탕으로 혁신적인 액세서리를 \n선보입니다. 전통적인 디자인을 미래지향적으로 재해석하며\n새로운 스타일을 제안합니다.\n\n뮌헨과 서울에서 영감을 받아 글로벌 감성을 담아내며, 나이와 성별의 경계를 넘어 자유로운 라이프스타일을 추구합니다.\n현재 전 세계 35개국에서 430여 개 매장을 운영하고\n있습니다.',
+      en: 'MCM is a luxury brand born in Munich, Germany in 1976, offering innovative accessories built on modern sensibility and functionality. It reinterprets traditional design with a forward-looking vision, proposing a new style.\nDrawing inspiration from Munich and Seoul, MCM captures a global sensibility and pursues a free lifestyle beyond the boundaries of age and gender. Today, it operates more than 430 stores across 35 countries worldwide.',
+      zh: 'MCM 是 1976 年诞生于德国慕尼黑的奢侈品牌，以现代感与实用性为基础，呈现创新的配饰。品牌以未来视角重新诠释传统设计，提出全新风格。\n从慕尼黑与首尔汲取灵感，MCM 融入全球化的感性，超越年龄与性别的界限，追求自由的生活方式。目前，MCM 在全球 35 个国家运营着 430 余家门店。',
+      ja: 'MCM は 1976 年にドイツ・ミュンヘンで誕生したラグジュアリーブランドで、モダンな感性と機能性をもとに革新的なアクセサリーを展開しています。伝統的なデザインを未来志向に再解釈し、新しいスタイルを提案します。\nミュンヘンとソウルからインスピレーションを得てグローバルな感性を取り入れ、年齢や性別の垣根を越えた自由なライフスタイルを追求しています。現在、世界 35 か国で 430 以上の店舗を展開しています。',
+      ru: 'MCM — люксовый бренд, рождённый в 1976 году в Мюнхене, Германия. Он создаёт инновационные аксессуары на основе современной эстетики и функциональности, переосмысливая традиционный дизайн в духе будущего и предлагая новый стиль.\nВдохновляясь Мюнхеном и Сеулом, MCM воплощает глобальную чувственность и стремится к свободному образу жизни вне границ возраста и пола. Сегодня бренд управляет более чем 430 магазинами в 35 странах мира.',
     },
     bodyToken: 'bodyKo14',
-    // 시안에서 세 줄까지만 보이고 나머지는 말줄임표로 접혀 있습니다.
-    maxLines: 3,
+    // 시안에서 세 줄까지만 보이고 나머지는 말줄임표로 접혀 있었으나, 문구가 길어져 열 줄까지 늘렸습니다.
+    maxLines: 10,
   },
 ] as const;
 
