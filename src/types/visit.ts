@@ -31,6 +31,10 @@ export interface StoreVisit {
   startedAt?: string;
   /** 이 고객이 매장에 들어온 날(`YYYY.MM.DD`). 직원 홈이 날짜별로 묶는 기준입니다. */
   visitedOn: string;
+  /** 이 방문에 딸린 Arc. 아직 쓰지 않았으면 비어 있습니다. */
+  arcId?: string;
+  /** 이 방문에 딸린 Visit Memory. 아직 쓰지 않았으면 비어 있습니다. */
+  visitMemoryId?: string;
 }
 
 /** 이미 마무리돼 기록으로 남은 Arc 한 건. */

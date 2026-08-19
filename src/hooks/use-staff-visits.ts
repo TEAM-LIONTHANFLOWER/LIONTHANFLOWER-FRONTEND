@@ -77,6 +77,9 @@ function toStoreVisit(summary: StaffVisitSummary, today: string): StoreVisit {
     startedAt: toBadgeTime(summary.matchedAt),
     // 서버가 방문 시각을 비워 보내면 지금 매장에 들어와 있는 고객이므로 오늘로 묶습니다.
     visitedOn: visitedOn === '' ? today : visitedOn,
+    // 이 방문에 이미 쓴 기록. 고객 상세의 기록 면이 이 열쇠로 본문을 불러옵니다.
+    arcId: summary.arcId,
+    visitMemoryId: summary.visitMemoryId,
   };
 }
 

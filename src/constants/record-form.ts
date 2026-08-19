@@ -19,7 +19,18 @@
 
 import { CUSTOMER_PROFILE_CARD, VISIT_RECORD_CARD } from '@constants/visit';
 import type { RecordFlow, RecordOption, RecordStep } from '@/types/record-form';
-import type { InterestPoint, NoPurchaseReason, ProductEngagement } from '@/types/staff';
+import type {
+  ExplanationPreference,
+  InteractionPreference,
+  InterestPoint,
+  NoPurchaseReason,
+  PreferredCategory,
+  PreferredColor,
+  PreferredStyle,
+  ProductEngagement,
+  PurchaseCriterion,
+  PurchaseDecisionStyle,
+} from '@/types/staff';
 import type { MemoryCardContent } from '@/types/visit';
 
 /** `기타` 보기의 서버 값. 다섯 묶음이 같은 값을 씁니다. */
@@ -39,7 +50,6 @@ export function toOtherFieldId(sectionId: string): string {
  *
  * 타입 인자로 서버 enum 을 넘기면 **값이 실제 enum 에 있는지 컴파일 때 검사됩니다.**
  * 서버가 enum 을 고치면 `@/types/staff` 만 맞춰 두어도 여기서 어긋난 자리가 드러납니다.
- * Arc 쪽 목록은 아직 요청 타입이 없어(생성이 막혀 있습니다) 검사 없이 둡니다.
  */
 function toOptions<T extends string = string>(
   pairs: readonly (readonly [T, string])[]
@@ -74,6 +84,15 @@ function toChoiceGroup<T extends string>(
   };
 }
 
+/** 색 동그라미처럼 보기를 손으로 적어 둔 묶음을 `RecordChoiceGroup` 으로 옮깁니다. */
+function toChoiceGroupOf<T extends string>(
+  options: readonly (RecordOption & { value: T })[]
+): RecordChoiceGroup<T> {
+  const values = options.map((option) => option.value);
+
+  return { options, select: (chosen) => values.filter((value) => chosen.includes(value)) };
+}
+
 /**
  * 선호 컬러 보기. 라벨 왼쪽에 색 동그라미가 함께 붙습니다.
  *
@@ -82,7 +101,7 @@ function toChoiceGroup<T extends string>(
  * `Metallic` 과 `Multicolor` 만 한 색으로 나타낼 수 없어 그러데이션으로 둡니다.
  * `Other` 는 가리키는 색이 없어 동그라미를 달지 않습니다.
  */
-const COLOR_OPTIONS: readonly RecordOption[] = [
+const COLOR_OPTIONS: readonly (RecordOption & { value: PreferredColor })[] = [
   { value: 'BLACK', label: 'Black', swatch: '#000000' },
   { value: 'WHITE', label: 'White', swatch: '#ffffff' },
   { value: 'BROWN_BEIGE', label: 'Brown / Beige', swatch: '#6e4426' },
@@ -156,14 +175,91 @@ export const NO_PURCHASE_ETC = toChoiceGroup<NoPurchaseReason>([
   [OTHER, '기타'],
 ]);
 
+/* Arc 요청에 그대로 실리는 묶음들. Visit Memory 쪽과 같은 이유로 보기와 고르는 방법을
+ * 함께 내어 줍니다 — 요청을 만드는 `@hooks/use-staff-arcs` 가 값 목록을 다시 적지 않습니다. */
+
+/** 이번 방문에서 눈여겨본 제품군. */
+export const PREFERRED_CATEGORIES = toChoiceGroup<PreferredCategory>([
+  ['BAG', '가방'],
+  ['CLOTHING', '의류'],
+  ['ACCESSORY', '액세서리'],
+]);
+
+/** 이번 방문에서의 선호 컬러. 보기는 색 동그라미까지 붙은 `COLOR_OPTIONS` 그대로입니다. */
+export const PREFERRED_COLORS = toChoiceGroupOf(COLOR_OPTIONS);
+
+/** 이번 방문에서의 선호 스타일. */
+export const PREFERRED_STYLES = toChoiceGroup<PreferredStyle>([
+  ['CLASSIC_TIMELESS', '클래식'],
+  ['MINIMAL_SIMPLE', '미니멀 / 심플'],
+  ['LOGO_FORWARD', '로고 스타일'],
+  ['PATTERN_GRAPHIC', '패턴 / 그래픽'],
+  ['DISTINCTIVE', '개성'],
+  ['CASUAL', '캐주얼'],
+  ['FORMAL_REFINED', '세련됨'],
+  ['TRENDY', '트렌디'],
+  ['PRACTICAL', '실용적'],
+  [OTHER, '기타'],
+]);
+
+/** 무엇을 보고 사기로 했는지. */
+export const PURCHASE_CRITERIA = toChoiceGroup<PurchaseCriterion>([
+  ['DESIGN', '디자인'],
+  ['PRACTICALITY', '실용성'],
+  ['BRAND_IDENTITY', '브랜드 아이덴티티'],
+  ['RARITY', '희소성'],
+  ['PRICE', '가격'],
+  ['QUALITY_MATERIAL', '품질 / 소재'],
+  ['STORAGE_FUNCTIONALITY', '수납 / 기능성'],
+  ['SIZE', '사이즈'],
+  ['COLOR', '컬러'],
+  ['GIFT_SUITABILITY', '선물 적합성'],
+  ['TRAVEL_DAILY_USE', '일상 활용성'],
+  [OTHER, '기타'],
+]);
+
+/** 실제로 어떤 응대를 좋아했는지. */
+export const INTERACTION_PREFERENCES = toChoiceGroup<InteractionPreference>([
+  ['ACTIVE_RECOMMENDATION', '적극적인 추천'],
+  ['MODERATE_GUIDANCE', '적당한 안내'],
+  ['FREE_EXPLORATION', '자유로운 탐색'],
+  ['CONTEXT_DEPENDENT', '상황에 따라'],
+]);
+
+/** 제품 설명을 어느 정도로 듣고 싶어 했는지. */
+export const EXPLANATION_PREFERENCES = toChoiceGroup<ExplanationPreference>([
+  ['DETAILED', '상세한 설명 선호'],
+  ['KEY_POINTS_ONLY', '핵심만 설명'],
+  ['ON_DEMAND', '필요할 때 설명'],
+]);
+
+/** 구매를 어떻게 결정하는 편인지. 서버가 하나만 받습니다. */
+export const PURCHASE_DECISION_STYLES = toChoiceGroup<PurchaseDecisionStyle>([
+  ['QUICK', '빠르게 결정하는 편'],
+  ['COMPARE_FIRST', '비교 후 결정하는 편'],
+  ['DELIBERATE', '충분히 고민하는 편'],
+  ['CONTEXT_DEPENDENT', '상황에 따라 다름'],
+]);
+
 /**
- * Arc 의 구매정보 칸을 가리키는 열쇠.
- * 매장을 고를 때 국가 칸을 함께 채워야 해서 서로의 `id` 를 알아야 합니다.
+ * Arc 요청을 만들 때 값을 꺼내는 열쇠.
+ * 아래 단계 정의가 이 값을 그대로 쓰므로 폼과 요청이 어긋날 수 없습니다.
+ * 매장을 고를 때 국가 칸을 함께 채워야 해서 구매정보 칸끼리는 서로의 `id` 도 알아야 합니다.
  */
 export const ARC_FIELD_IDS = {
   purchaseDate: 'purchase-date',
   purchaseCountry: 'purchase-country',
   purchaseStore: 'purchase-store',
+  purchasedProducts: 'purchase-products',
+  preferredCategories: 'preferred-category',
+  preferredColors: 'preferred-color',
+  preferredStyles: 'preferred-style',
+  interestedProducts: 'interested-products',
+  purchaseCriteria: 'purchase-criteria',
+  interactionPreferences: 'preferred-service',
+  explanationPreferences: 'explanation-preference',
+  decisionStyle: 'decision-style',
+  observation: 'staff-note',
 } as const;
 
 /**
@@ -215,7 +311,7 @@ const ARC_STEPS: readonly RecordStep[] = [
       },
       {
         kind: 'products',
-        id: 'purchase-products',
+        id: ARC_FIELD_IDS.purchasedProducts,
         label: '구매 제품',
         placeholder: PRODUCT_PLACEHOLDER,
         required: true,
@@ -230,41 +326,26 @@ const ARC_STEPS: readonly RecordStep[] = [
         // 서버가 세 가지 중에서만 받아서(`BAG` `CLOTHING` `ACCESSORY`) 칩으로 고릅니다.
         // 자유 입력이던 때에는 무엇을 적어도 보낼 수 없는 값이었습니다.
         kind: 'chips',
-        id: 'preferred-category',
+        id: ARC_FIELD_IDS.preferredCategories,
         label: '이번 방문에서의 선호 제품군',
         multiple: true,
-        options: toOptions([
-          ['BAG', '가방'],
-          ['CLOTHING', '의류'],
-          ['ACCESSORY', '액세서리'],
-        ]),
+        options: PREFERRED_CATEGORIES.options,
       },
       {
         kind: 'chips',
-        id: 'preferred-color',
+        id: ARC_FIELD_IDS.preferredColors,
         label: '이번 방문에서의 선호 컬러',
         multiple: true,
-        options: COLOR_OPTIONS,
+        options: PREFERRED_COLORS.options,
         otherValue: OTHER,
         otherPlaceholder: OTHER_PLACEHOLDER,
       },
       {
         kind: 'chips',
-        id: 'preferred-style',
+        id: ARC_FIELD_IDS.preferredStyles,
         label: '이번 방문에서의 선호 스타일',
         multiple: true,
-        options: toOptions([
-          ['CLASSIC_TIMELESS', '클래식'],
-          ['MINIMAL_SIMPLE', '미니멀 / 심플'],
-          ['LOGO_FORWARD', '로고 스타일'],
-          ['PATTERN_GRAPHIC', '패턴 / 그래픽'],
-          ['DISTINCTIVE', '개성'],
-          ['CASUAL', '캐주얼'],
-          ['FORMAL_REFINED', '세련됨'],
-          ['TRENDY', '트렌디'],
-          ['PRACTICAL', '실용적'],
-          [OTHER, '기타'],
-        ]),
+        options: PREFERRED_STYLES.options,
         otherValue: OTHER,
         otherPlaceholder: OTHER_PLACEHOLDER,
       },
@@ -272,29 +353,16 @@ const ARC_STEPS: readonly RecordStep[] = [
         // 서버가 제품 식별자 목록으로 받아서 `구매 제품` 과 같은 묶음으로 그립니다.
         // 한 줄짜리 자유 입력이던 때에는 고른 제품을 가리킬 수 없었습니다.
         kind: 'products',
-        id: 'interested-products',
+        id: ARC_FIELD_IDS.interestedProducts,
         label: '이번 방문에서의 관심 제품',
         placeholder: PRODUCT_PLACEHOLDER,
       },
       {
         kind: 'chips',
-        id: 'purchase-criteria',
+        id: ARC_FIELD_IDS.purchaseCriteria,
         label: '이번 방문에서의 구매 기준',
         multiple: true,
-        options: toOptions([
-          ['DESIGN', '디자인'],
-          ['PRACTICALITY', '실용성'],
-          ['BRAND_IDENTITY', '브랜드 아이덴티티'],
-          ['RARITY', '희소성'],
-          ['PRICE', '가격'],
-          ['QUALITY_MATERIAL', '품질 / 소재'],
-          ['STORAGE_FUNCTIONALITY', '수납 / 기능성'],
-          ['SIZE', '사이즈'],
-          ['COLOR', '컬러'],
-          ['GIFT_SUITABILITY', '선물 적합성'],
-          ['TRAVEL_DAILY_USE', '일상 활용성'],
-          [OTHER, '기타'],
-        ]),
+        options: PURCHASE_CRITERIA.options,
         otherValue: OTHER,
         otherPlaceholder: OTHER_PLACEHOLDER,
       },
@@ -306,35 +374,21 @@ const ARC_STEPS: readonly RecordStep[] = [
     sections: [
       {
         kind: 'options',
-        id: 'preferred-service',
+        id: ARC_FIELD_IDS.interactionPreferences,
         label: '실제 선호 응대 방식',
-        options: toOptions([
-          ['ACTIVE_RECOMMENDATION', '적극적인 추천'],
-          ['MODERATE_GUIDANCE', '적당한 안내'],
-          ['FREE_EXPLORATION', '자유로운 탐색'],
-          ['CONTEXT_DEPENDENT', '상황에 따라'],
-        ]),
+        options: INTERACTION_PREFERENCES.options,
       },
       {
         kind: 'options',
-        id: 'explanation-preference',
+        id: ARC_FIELD_IDS.explanationPreferences,
         label: '제품 설명 선호',
-        options: toOptions([
-          ['DETAILED', '상세한 설명 선호'],
-          ['KEY_POINTS_ONLY', '핵심만 설명'],
-          ['ON_DEMAND', '필요할 때 설명'],
-        ]),
+        options: EXPLANATION_PREFERENCES.options,
       },
       {
         kind: 'options',
-        id: 'decision-style',
+        id: ARC_FIELD_IDS.decisionStyle,
         label: '구매 결정 방식',
-        options: toOptions([
-          ['QUICK', '빠르게 결정하는 편'],
-          ['COMPARE_FIRST', '비교 후 결정하는 편'],
-          ['DELIBERATE', '충분히 고민하는 편'],
-          ['CONTEXT_DEPENDENT', '상황에 따라 다름'],
-        ]),
+        options: PURCHASE_DECISION_STYLES.options,
       },
     ],
   },
@@ -344,7 +398,7 @@ const ARC_STEPS: readonly RecordStep[] = [
     sections: [
       {
         kind: 'note',
-        id: 'staff-note',
+        id: ARC_FIELD_IDS.observation,
         label: '고객 특이사항',
         description: '고객의 특이사항이나 다음 응대에 도움이 될 내용을 자유롭게 입력해주세요.',
         placeholder: NOTE_PLACEHOLDER,

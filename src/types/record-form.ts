@@ -153,16 +153,22 @@ export interface RecordProduct {
   name: string;
   /**
    * 고른 제품의 서버 식별자(`productVariantId`).
-   * 제품 검색 API 가 아직 없어 지금은 늘 비어 있고, 그래서 서버로 보낼 수 없습니다.
+   *
+   * 목록에서 골라야 채워집니다. 직원이 글자만 치고 고르지 않은 줄은 비어 있고,
+   * 서버가 가리킬 대상이 없어 요청에서 빠집니다.
    */
   variantId?: string;
-  /**
-   * 고른 제품에 딸린 옵션 줄(`Option : Black`).
-   * 제품 검색 API 가 아직 없어 지금은 늘 비어 있습니다.
-   */
+  /** 고른 제품에 딸린 옵션 줄(`Option : BLACK · M`). 고르기 전에는 비어 있습니다. */
   options: readonly string[];
   /** 이 제품에 대한 고객 반응 */
   reactions: readonly string[];
+}
+
+/** 목록에서 제품 한 줄을 골랐을 때 함께 정해지는 값. */
+export interface RecordProductSelection {
+  name: string;
+  variantId: string;
+  options: readonly string[];
 }
 
 /** 작성 중인 값 한 벌. 흐름마다 따로 들고 있습니다. */

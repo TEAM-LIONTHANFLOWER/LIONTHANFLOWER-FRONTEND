@@ -11,7 +11,7 @@ import {
 } from '@constants/record-form';
 import { staffVisitKeys } from '@hooks/use-staff-visits';
 import { api } from '@services/api';
-import { readChoices, readProducts } from '@stores/record-form-store';
+import { readChoices, readNote, readProducts } from '@stores/record-form-store';
 import type { RecordFormValues } from '@/types/record-form';
 import type { ProductEngagement, StaffVisitMemory, VisitMemoryInputSnapshot } from '@/types/staff';
 
@@ -20,12 +20,6 @@ export const staffRecordKeys = {
   visitMemory: (visitMemoryId: string) =>
     [...staffRecordKeys.all, 'visit-memory', visitMemoryId] as const,
 };
-
-/** 비어 있는 글은 보내지 않습니다. 서버에서 `적지 않음` 과 `빈 글` 이 갈립니다. */
-function readNote(values: RecordFormValues, fieldId: string): string | undefined {
-  const note = (values.texts[fieldId] ?? '').trim();
-  return note.length === 0 ? undefined : note;
-}
 
 /**
  * 담아 둔 제품 줄 → `제품 식별자 → 반응` 표.

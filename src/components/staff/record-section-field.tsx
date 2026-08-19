@@ -61,6 +61,7 @@ export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
   const setChoices = useRecordFormStore((state) => state.setChoices);
   const addProduct = useRecordFormStore((state) => state.addProduct);
   const setProductName = useRecordFormStore((state) => state.setProductName);
+  const selectProduct = useRecordFormStore((state) => state.selectProduct);
   const setProductReactions = useRecordFormStore((state) => state.setProductReactions);
 
   /**
@@ -206,6 +207,7 @@ export function RecordSectionField({ flow, section }: RecordSectionFieldProps) {
           section={section}
           products={products}
           onChangeName={(productId, name) => setProductName(flow, section.id, productId, name)}
+          onSelect={(productId, selection) => selectProduct(flow, section.id, productId, selection)}
           onChangeReactions={(productId, reactions) =>
             setProductReactions(flow, section.id, productId, reactions)
           }
