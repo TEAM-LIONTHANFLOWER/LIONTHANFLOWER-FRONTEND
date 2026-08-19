@@ -108,8 +108,12 @@ export function StudioCamera({
     setStatus('requesting');
 
     try {
+      // aspectRatio 를 프레임 비율(세로로 긴 0.46)로 강제하면 브라우저가 센서 화각을
+      // 그 비율에 맞추려고 세게 크롭해 화면이 과하게 확대되어 보입니다. 크롭은 이미
+      // 미리보기(objectFit: cover)와 촬영(drawVideoCover)에서 처리하므로 여기서는
+      // 요구하지 않습니다.
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', aspectRatio: STUDIO_FRAME_WIDTH / STUDIO_FRAME_HEIGHT },
+        video: { facingMode: 'user' },
         audio: false,
       });
 
