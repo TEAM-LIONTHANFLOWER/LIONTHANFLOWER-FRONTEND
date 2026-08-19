@@ -17,10 +17,10 @@ import {
   useRegenerateArc,
   useShareArc,
 } from '@hooks/use-staff-arcs';
-import { useCreateVisitMemory } from '@hooks/use-staff-records';
+import { useCreateVisitMemory, useRegenerateVisitMemory } from '@hooks/use-staff-records';
 import { useRecordFormStore } from '@stores/record-form-store';
 import type { RecordFlow } from '@/types/record-form';
-import type { StaffArcRevision } from '@/types/staff';
+import type { StaffArcRevision, StaffVisitMemory } from '@/types/staff';
 
 /** 단계 탭과 첫 입력 사이. Spacing 스케일에 16 과 24 사이 값이 없어 세 칸으로 둡니다. */
 const TABS_TO_SECTIONS = Spacing.three;
@@ -57,10 +57,12 @@ export default function StaffRecordFormScreen() {
     arcId,
     flow: requestedFlow,
     visitId,
+    visitMemoryId,
   } = useLocalSearchParams<{
     arcId?: string;
     flow?: string;
     visitId?: string;
+    visitMemoryId?: string;
   }>();
 
   const flow: RecordFlow = requestedFlow === 'memory' ? 'memory' : 'arc';
@@ -74,6 +76,11 @@ export default function StaffRecordFormScreen() {
     isPending: isCreatingMemory,
     isError: isMemoryError,
   } = useCreateVisitMemory();
+  const {
+    mutate: regenerateVisitMemory,
+    isPending: isRegeneratingMemory,
+    isError: isMemoryRegenerateError,
+  } = useRegenerateVisitMemory();
   const { mutate: createArc, isPending: isCreatingArc, isError: isArcError } = useCreateArc();
   const {
     mutate: regenerateArc,
@@ -85,8 +92,9 @@ export default function StaffRecordFormScreen() {
   // 서버가 무엇이 빠졌는지 알려주지 않아, 보내기 전에 앱이 먼저 걸러 이름을 적어 줍니다.
   const [missingField, setMissingField] = useState<string | undefined>(undefined);
 
-  const isPending = isCreatingMemory || isCreatingArc || isRegeneratingArc || isSharingArc;
-  const isError = isMemoryError || isArcError || isArcRegenerateError;
+  const isPending =
+    isCreatingMemory || isRegeneratingMemory || isCreatingArc || isRegeneratingArc || isSharingArc;
+  const isError = isMemoryError || isMemoryRegenerateError || isArcError || isArcRegenerateError;
 
   const step = steps[index];
   const isLast = index === steps.length - 1;
@@ -132,7 +140,9 @@ export default function StaffRecordFormScreen() {
    * 마지막 단계에서 `NEXT` 를 누르면 서버가 기록을 만듭니다.
    *
    * **Visit Memory** 는 이때 글까지 써서 돌아옵니다 — 완료 화면이 그 글을 보여주고,
-   * 거기서 `전송` 을 눌러야 비로소 고객에게 갑니다.
+   * 거기서 `전송` 을 눌러야 비로소 고객에게 갑니다. 완료 화면에서 `수정` 으로 돌아왔으면
+   * 새로 만들지 않고(`POST /api/staff/visits/{visitId}/visit-memories`) 있던 글을 고친
+   * 입력으로 다시 씁니다(`POST /api/staff/visit-memories/{visitMemoryId}/regenerations`).
    *
    * **Arc** 는 여기서 생성(`POST /api/staff/visits/{visitId}/arcs`, 완료 화면에서 `수정` 으로
    * 돌아왔으면 새 리비전 `POST /api/staff/arcs/{arcId}/revisions`)과
@@ -159,17 +169,21 @@ export default function StaffRecordFormScreen() {
     const values = useRecordFormStore.getState().values[flow];
 
     if (flow === 'memory') {
-      createVisitMemory(
-        { visitId, values },
-        {
-          onSuccess: (memory) => {
-            router.push({
-              pathname: '/staff/record-complete',
-              params: { flow, visitId, visitMemoryId: memory.visitMemoryId },
-            });
-          },
-        }
-      );
+      const onSaved = (memory: StaffVisitMemory) => {
+        router.push({
+          pathname: '/staff/record-complete',
+          params: { flow, visitId, visitMemoryId: memory.visitMemoryId },
+        });
+      };
+
+      // 완료 화면에서 `수정` 으로 돌아왔으면 이미 만든 Visit Memory 가 있습니다 — 하나 더
+      // 만드는 대신 그 글에 고친 입력을 얹어 다시 씁니다.
+      if (visitMemoryId !== undefined) {
+        regenerateVisitMemory({ visitMemoryId, values }, { onSuccess: onSaved });
+        return;
+      }
+
+      createVisitMemory({ visitId, values }, { onSuccess: onSaved });
       return;
     }
 
@@ -203,7 +217,19 @@ export default function StaffRecordFormScreen() {
     }
 
     createArc({ visitId, values }, { onSuccess: onSaved });
-  }, [arcId, createArc, createVisitMemory, flow, isLast, regenerateArc, router, shareArc, visitId]);
+  }, [
+    arcId,
+    createArc,
+    createVisitMemory,
+    flow,
+    isLast,
+    regenerateArc,
+    regenerateVisitMemory,
+    router,
+    shareArc,
+    visitId,
+    visitMemoryId,
+  ]);
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀

@@ -95,21 +95,23 @@ EXPO_PUBLIC_API_BASE_URL=https://mcmorbit.p-e.kr   # 경로에 /api 가 들어 �
 
 ## 붙은 것
 
-| 화면                                   | 엔드포인트                                                                        | 훅                           |
-| -------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------- |
-| `/login` 고객 로그인                   | `POST /api/customers/visits` → `PATCH /api/customers/visits/{visitId}/onboarding` | `useStartVisit()`            |
-| `/matching` 매칭 대기                  | `GET /api/customers/visits/{visitId}/matching`                                    | `useVisitMatching()`         |
-| `/arc` 고객 Arc                        | `GET /api/customers/arcs` + `GET /api/customers/arcs/{arcId}`                     | `useCustomerArcEntries()`    |
-| `/staff` 진입 세션 확인                | `GET /api/staff/me/profile`                                                       | `useStaffProfile()`          |
-| `/staff/login` 매장 검색               | `GET /api/stores`                                                                 | `useStoreSearch()`           |
-| `/staff/login` 직원 로그인             | `POST /api/staff/me/profile` → `GET /api/staff/me/profile`                        | `useRegisterStaffProfile()`  |
-| `/staff/dashboard` 직원 홈             | `GET /api/staff/visits`                                                           | `useStaffVisits()`           |
-| `/staff/dashboard` 응대 시작           | `POST /api/staff/visits/{visitId}/assignment`                                     | `useAssignVisit()`           |
-| `/staff/customer-detail` 프로필 면     | `GET /api/staff/visits` + `GET /api/stores`                                       | `useStaffVisits()`           |
-| `/staff/record-form` Visit Memory 작성 | `POST /api/staff/visits/{visitId}/visit-memories`                                 | `useCreateVisitMemory()`     |
-| `/staff/record-complete` 미리보기      | `GET /api/staff/visit-memories/{id}`                                              | `useStaffVisitMemory()`      |
-| `/staff/record-complete` 다시 생성     | `POST /api/staff/visit-memories/{id}/regenerations`                               | `useRegenerateVisitMemory()` |
-| `/staff/record-complete` 전송          | `POST /api/staff/visit-memories/{id}/share`                                       | `useShareVisitMemory()`      |
+| 화면                                   | 엔드포인트                                                                                     | 훅                                   |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `/login` 고객 로그인                   | `POST /api/customers/visits` → `PATCH /api/customers/visits/{visitId}/onboarding`              | `useStartVisit()`                    |
+| `/matching` 매칭 대기                  | `GET /api/customers/visits/{visitId}/matching`                                                 | `useVisitMatching()`                 |
+| `/arc` 고객 Arc                        | `GET /api/customers/arcs` + `GET /api/customers/arcs/{arcId}`                                  | `useCustomerArcEntries()`            |
+| `/staff` 진입 세션 확인                | `GET /api/staff/me/profile`                                                                    | `useStaffProfile()`                  |
+| `/staff/login` 매장 검색               | `GET /api/stores`                                                                              | `useStoreSearch()`                   |
+| `/staff/login` 직원 로그인             | `POST /api/staff/me/profile` → `GET /api/staff/me/profile`                                     | `useRegisterStaffProfile()`          |
+| `/staff/dashboard` 직원 홈             | `GET /api/staff/visits`                                                                        | `useStaffVisits()`                   |
+| `/staff/dashboard` 응대 시작           | `POST /api/staff/visits/{visitId}/assignment`                                                  | `useAssignVisit()`                   |
+| `/staff/customer-detail` 기록면        | `GET /api/staff/visits` + `GET /api/staff/arcs/{arcId}` + `GET /api/staff/visit-memories/{id}` | `useStaffVisits()` · `useStaffArc()` |
+| `/staff/customer-detail` 지난 Arc      | `GET /api/staff/visits` + `GET /api/staff/arcs/{arcId}`                                        | `usePreviousArcs()`                  |
+| `/staff/record-form` Visit Memory 작성 | `POST /api/staff/visits/{visitId}/visit-memories`                                              | `useCreateVisitMemory()`             |
+| `/staff/record-form` Visit Memory 수정 | `POST /api/staff/visit-memories/{id}/regenerations`                                            | `useRegenerateVisitMemory()`         |
+| `/staff/record-complete` 미리보기      | `GET /api/staff/visit-memories/{id}`                                                           | `useStaffVisitMemory()`              |
+| `/staff/record-complete` 다시 생성     | `POST /api/staff/visit-memories/{id}/regenerations`                                            | `useRegenerateVisitMemory()`         |
+| `/staff/record-complete` 전송          | `POST /api/staff/visit-memories/{id}/share`                                                    | `useShareVisitMemory()`              |
 
 로그인 두 개가 각각 두 번 호출인 이유는 서버가 그렇게 나눠 두었기 때문입니다.
 고객은 `진입(쿠키 발급 + visitId)` → `온보딩 저장`, 직원은 `프로필 등록(쿠키 발급)` → `프로필 조회(staffId 획득)`.

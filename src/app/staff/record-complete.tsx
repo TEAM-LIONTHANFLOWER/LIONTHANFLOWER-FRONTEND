@@ -61,8 +61,8 @@ const STATE_FONT_SIZE = 14;
  * 서버에 남아 있어 이 화면을 떠나도 사라지지 않습니다.
  *
  * `수정` 은 적은 값을 그대로 둔 채 작성 화면의 첫 단계로 되돌립니다 — 값이 스토어에 있어
- * 화면을 새로 열어도 남습니다. Arc 는 이때 `arcId` 를 함께 넘겨, 다시 마칠 때 새 Arc 가
- * 생기지 않고 있던 Arc 가 고쳐지게 합니다.
+ * 화면을 새로 열어도 남습니다. 이때 이미 만든 기록의 열쇠(`arcId` / `visitMemoryId`)를
+ * 함께 넘겨, 다시 마칠 때 기록이 새로 생기지 않고 있던 것이 고쳐지게 합니다.
  */
 export default function StaffRecordCompleteScreen() {
   const router = useRouter();
@@ -156,12 +156,22 @@ export default function StaffRecordCompleteScreen() {
         };
 
   const handleEdit = useCallback(() => {
-    // 이미 만든 Arc 를 들고 돌아갑니다 — 작성 화면이 이 열쇠를 보고 새로 만드는 대신 고쳐 씁니다.
-    router.replace({
-      pathname: '/staff/record-form',
-      params: currentArcId === null ? { flow, visitId } : { flow, visitId, arcId: currentArcId },
-    });
-  }, [currentArcId, flow, router, visitId]);
+    // 이미 만든 기록을 들고 돌아갑니다 — 작성 화면이 이 열쇠를 보고 새로 만드는 대신 고쳐 씁니다.
+    // Arc 에는 새 리비전이 얹히고, Visit Memory 는 고친 입력으로 글을 다시 씁니다.
+    const params: Record<string, string> = { flow };
+
+    if (visitId !== undefined) {
+      params.visitId = visitId;
+    }
+    if (currentArcId !== null) {
+      params.arcId = currentArcId;
+    }
+    if (memoryId !== null) {
+      params.visitMemoryId = memoryId;
+    }
+
+    router.replace({ pathname: '/staff/record-form', params });
+  }, [currentArcId, flow, memoryId, router, visitId]);
 
   const handleRegenerate = useCallback(() => {
     // 같은 입력으로 글만 새로 뽑습니다. 값은 부를 때 한 번만 꺼내면 되어 구독하지 않습니다.
