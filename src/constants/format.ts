@@ -5,7 +5,8 @@
  * 문자열을 그립니다. 고객·직원 양쪽 화면이 같은 표기를 써서 한곳에 모았습니다.
  */
 
-import type { LocalizedText } from '@/types/i18n';
+import { MESSAGES } from '@constants/messages';
+import type { LocalizedText, MessageKey } from '@/types/i18n';
 
 /** 영어 서수 접미사. 11·12·13 은 `th` 라 십의 자리를 먼저 봅니다. */
 function ordinalSuffix(count: number): string {
@@ -109,4 +110,21 @@ export function toClockTime(isoDate: string | undefined): string {
  */
 export function toSameText(line: string): LocalizedText {
   return { ko: line, en: line, zh: line, ja: line, ru: line };
+}
+
+/**
+ * `MESSAGES` 사전의 한 키 → 다섯 언어를 모두 담은 값.
+ *
+ * 화면 안에서는 `useTranslation()` 이 고객이 고른 언어 한 칸만 꺼내 주지만, 편지지처럼
+ * 언어와 무관하게 `LocalizedText` 통짜를 들고 있어야 하는 데이터 모델에 문구 사전 값을
+ * 끼워 넣을 때 씁니다.
+ */
+export function toLocalizedMessage(key: MessageKey): LocalizedText {
+  return {
+    ko: MESSAGES.ko[key],
+    en: MESSAGES.en[key],
+    zh: MESSAGES.zh[key],
+    ja: MESSAGES.ja[key],
+    ru: MESSAGES.ru[key],
+  };
 }

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { toLetterDate, toSameText } from '@constants/format';
+import { toLetterDate, toLocalizedMessage, toSameText } from '@constants/format';
 import { api } from '@services/api';
 import { useVisitStore } from '@stores/visit-store';
 import type { LetterContent } from '@/types/arc';
@@ -42,16 +42,16 @@ function latestVisitMemoryId(notifications: readonly NotificationView[]): string
   ).resourceId;
 }
 
-/** 아직 실을 내용이 없을 때 얹는 기본 문구. */
+/** 아직 실을 내용이 없을 때 얹는 기본 문구. 고객이 고른 언어로 보여야 해서 문구 사전에서 가져옵니다. */
 const DEFAULT_MOMENT_SECTIONS = [
   {
     id: 'moment',
     title: 'YOUR MCM MOMENT',
-    lines: ['You visited MCM Haus.', '오늘 MCM HAUS를 방문하셨습니다.'].map(toSameText),
+    lines: [toLocalizedMessage('visitMemory.defaultMoment')],
   },
 ];
 /** 내용과 별개로 편지지 맨 아래에 붙는 마무리 문구. `LetterSheet` 가 바닥에 고정해 그립니다. */
-const DEFAULT_CLOSING_LINE = toSameText("our MCM journey doesn't end here.");
+const DEFAULT_CLOSING_LINE = toLocalizedMessage('visitMemory.defaultClosing');
 
 /**
  * 상세 응답 → 편지지 한 장.
