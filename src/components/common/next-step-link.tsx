@@ -17,12 +17,14 @@ const ARROW_HEIGHT = 10;
 /** 눌리지 않을 때의 흐리기. 다른 비활성 버튼과 같은 값입니다. */
 const DISABLED_OPACITY = 0.4;
 
-const LABEL = 'NEXT';
+const DEFAULT_LABEL = 'NEXT';
 
 interface NextStepLinkProps {
   onPress: () => void;
   /** 스크린 리더가 읽을 이름. `NEXT` 만으로는 어디로 가는지 알 수 없어 따로 받습니다. */
   accessibilityLabel: string;
+  /** 눈에 보이는 글자. 시안마다 대소문자가 달라(`NEXT` / `Next`) 화면이 정합니다. */
+  label?: string;
   /** 보내는 중처럼 더 누르면 안 될 때. 흐려지고 눌리지 않습니다. */
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -36,6 +38,7 @@ interface NextStepLinkProps {
 export function NextStepLink({
   onPress,
   accessibilityLabel,
+  label = DEFAULT_LABEL,
   disabled = false,
   style,
 }: NextStepLinkProps) {
@@ -49,7 +52,7 @@ export function NextStepLink({
       onPress={onPress}
       style={[styles.link, disabled && styles.linkDisabled, style]}
     >
-      <Text style={styles.label}>{LABEL}</Text>
+      <Text style={styles.label}>{label}</Text>
       <Image source={arrowNext} style={styles.arrow} contentFit="contain" accessible={false} />
     </Pressable>
   );

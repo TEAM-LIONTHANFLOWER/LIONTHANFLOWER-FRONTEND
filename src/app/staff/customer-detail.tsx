@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -6,13 +7,14 @@ import { BackArrowButton } from '@components/common/back-arrow-button';
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { InitialSetupButton } from '@components/common/initial-setup-button';
+import { NextStepLink } from '@components/common/next-step-link';
 import { ScreenContainer } from '@components/common/screen-container';
 import { VisitMemoryLink } from '@components/common/visit-memory-link';
 import { MemoryCard } from '@components/staff/memory-card';
 import { VISIT_MEMORY_LETTER } from '@constants/arc';
 import { toSameText } from '@constants/format';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
-import { toArcCard, useStaffArc } from '@hooks/use-staff-arcs';
+import { toArcCard, usePreviousArcs, useStaffArc } from '@hooks/use-staff-arcs';
 import { useStaffVisitMemory } from '@hooks/use-staff-records';
 import { useStaffVisits } from '@hooks/use-staff-visits';
 import type { LetterContent } from '@/types/arc';
@@ -32,6 +34,11 @@ const DESCRIPTION = '오늘의 경험이 새로운 Arc로 기록됩니다.';
 const LOAD_FAILED = '고객 정보를 불러오지 못했습니다.';
 const NOT_FOUND = '지금 매장에 없는 고객입니다.';
 const NO_RECORD = '아직 이 방문의 기록이 없습니다.';
+
+const BACK_TO_LIST = '고객 목록으로 돌아가기';
+const BACK_TO_RECENT = '최근 Arc 로 돌아가기';
+const NEXT_LABEL = 'Next';
+const NEXT_TO_PREVIOUS = '이전 Arc 보기';
 
 const STATE_FONT_SIZE = 14;
 
@@ -61,11 +68,17 @@ function toVisitRecordCard(
 /**
  * 직원용 고객 상세 화면 — `/staff/customer-detail`
  *
- * `visitId` 가 가리키는 방문의 기록을 카드 한 장으로 보여줍니다.
+ * `visitId` 가 가리키는 방문의 기록으로 시작해, `Next` 로 그 고객의 지난 Arc 를 한 장씩
+ * 거슬러 봅니다. 첫 면에서 뒤로 가기 화살표를 누르면 화면을 벗어나고, 지난 Arc 를 보고
+ * 있으면 한 장 앞으로 되돌립니다 — 시안(2-1 arc 조회)에도 아래쪽 화살표는 `Next` 뿐입니다.
  *
  * 고객 한 명을 따로 조회하는 엔드포인트가 없어서, 직원 홈이 이미 받아 둔 방문 목록에서
  * 자기 고객을 찾아 시작합니다. 방문 하나가 자기 `arcId` `visitMemoryId` 를 함께 실어 오게
- * 되어(`VisitSummaryResponse`), 그 열쇠로 본문을 불러와 카드에 채웁니다.
+ * 되어(`VisitSummaryResponse`), 그 열쇠로 본문을 불러와 카드에 채웁니다. 지난 Arc 도 같은
+ * 목록에서 모읍니다 — 자세한 것과 그 한계는 `usePreviousArcs()` 참고.
+ *
+ * 지난 Arc 는 늦게 도착해도 첫 면을 막지 않습니다. 못 받아 온 Arc 는 그만큼 넘길 면이
+ * 줄어들 뿐이라, 로딩과 실패 안내는 방문 목록 것만 그립니다.
  *
  * 응대 방식과 언어는 카드에 다시 적지 않습니다 — 머리말의 기본설정 톱니가 그대로 들고 있습니다.
  *
@@ -85,8 +98,33 @@ export default function StaffCustomerDetailScreen() {
   const memory = useStaffVisitMemory(visit?.visitMemoryId ?? null);
   const memorySummary = memory.data?.generatedContent?.summary;
 
-  /** 이 화면이 그리는 카드 한 장. 방문을 아직 못 찾았으면 그릴 것이 없습니다. */
-  const card = visit === undefined ? undefined : toVisitRecordCard(visit, arc.data, memorySummary);
+  const previousArcs = usePreviousArcs(visit);
+
+  /** 넘겨 볼 카드들. 이번 방문의 기록이 맨 앞이고, 그 뒤로 지난 Arc 가 최신순으로 붙습니다. */
+  const cards: readonly MemoryCardContent[] =
+    visit === undefined
+      ? []
+      : [toVisitRecordCard(visit, arc.data, memorySummary), ...previousArcs.cards];
+
+  // 지난 Arc 가 하나씩 도착하면서 카드 수가 늘어납니다. 자리가 목록 밖으로 나가지 않게 붙잡습니다.
+  const [page, setPage] = useState(0);
+  const index = Math.min(page, Math.max(cards.length - 1, 0));
+  const card = cards[index];
+  const hasPrevious = index < cards.length - 1;
+
+  /** 첫 면에는 되돌아갈 Arc 가 없습니다. 그때만 화면을 벗어납니다. */
+  const handleBack = useCallback(() => {
+    if (index === 0) {
+      router.back();
+      return;
+    }
+
+    setPage(index - 1);
+  }, [index, router]);
+
+  const handleNext = useCallback(() => {
+    setPage(index + 1);
+  }, [index]);
 
   /**
    * 상단 줄의 `Visit Memory` 팝업.
@@ -129,7 +167,10 @@ export default function StaffCustomerDetailScreen() {
 
           {/* 시안은 뒤로 가기 화살표와 같은 줄 오른쪽 끝에 `Visit Memory` 를 겁니다. */}
           <View style={styles.toolbar}>
-            <BackArrowButton onPress={() => router.back()} label="고객 목록으로 돌아가기" />
+            <BackArrowButton
+              onPress={handleBack}
+              label={index === 0 ? BACK_TO_LIST : BACK_TO_RECENT}
+            />
             <VisitMemoryLink variant="pill" letter={letter} />
           </View>
 
@@ -151,6 +192,17 @@ export default function StaffCustomerDetailScreen() {
 
             {card === undefined ? null : <MemoryCard content={card} />}
           </View>
+
+          {/* 넘길 Arc 가 있을 때만 답니다. 마지막 면에서는 흐려집니다. */}
+          {cards.length > 1 ? (
+            <NextStepLink
+              onPress={handleNext}
+              label={NEXT_LABEL}
+              accessibilityLabel={NEXT_TO_PREVIOUS}
+              disabled={!hasPrevious}
+              style={styles.pager}
+            />
+          ) : null}
         </ScrollView>
       </ScreenContainer>
     </View>
@@ -182,6 +234,12 @@ const styles = StyleSheet.create({
   },
   card: {
     marginTop: TOOLBAR_TO_CARD,
+  },
+  // 시안은 카드 아래 13px 지점에서 `Next` 줄을 시작하고, 화살표 끝을 화면 오른쪽에서
+  // 38.5px 띄웁니다. 화면 좌우 여백이 24 라 여기서 16 을 더 밀어 그 자리에 맞춥니다.
+  pager: {
+    marginTop: Spacing.three,
+    paddingRight: Spacing.three,
   },
   state: {
     alignItems: 'center',
