@@ -55,7 +55,8 @@ npx wrangler pages deploy dist # 최초 실행 시 wrangler login 필요
 ```
 
 > 백엔드가 쿠키 인증이라 **웹은 서버의 CORS 허용 목록에 출처가 등록돼야** 동작합니다.
-> 지금은 본 배포만 등록돼 있습니다 — 자세한 것은 [docs/api-integration.md](./docs/api-integration.md) 참고.
+> 본 배포·`develop` 미리보기·로컬(`http://localhost:8081`) 셋 다 등록돼 있어 어디서 띄워도 API 가 붙습니다.
+> 자세한 것은 [docs/api-integration.md](./docs/api-integration.md) 참고.
 
 Cloudflare 대시보드에서 Git 연동으로 자동 배포할 경우:
 

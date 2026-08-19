@@ -1083,6 +1083,12 @@ components:
         arcCount:
           type: integer
           format: int64
+        matchedAt:
+          type: string
+          format: date-time
+        visitedAt:
+          type: string
+          format: date-time
     ApiResponseStaffProfileResponse:
       type: object
       properties:
@@ -1188,6 +1194,8 @@ components:
           enum:
             - FRAME_1
             - FRAME_2
+            - FRAME_3
+            - FRAME_4
         displayName:
           type: string
         overlayImageUrl:
@@ -1219,7 +1227,11 @@ components:
         arcNumber:
           type: integer
           format: int32
+        storeName:
+          type: string
         momentSummary:
+          type: string
+        momentToRemember:
           type: string
         representativeProduct:
           $ref: '#/components/schemas/ProductResponse'
