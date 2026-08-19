@@ -166,14 +166,24 @@ export function LetterSheet({ content, variant = 'arc', style }: LetterSheetProp
       ) : (
         <View style={styles.bodyMemory}>
           <View>
-            <Text style={styles.titleMemory}>{content.title}</Text>
-            {content.place === undefined ? null : <Text style={styles.meta}>{content.place}</Text>}
-            {content.issuedOn === undefined ? null : (
-              <Text style={styles.meta}>{content.issuedOn}</Text>
-            )}
+            <View>
+              <Text style={styles.titleMemory}>{content.title}</Text>
+              {content.place === undefined ? null : (
+                <Text style={styles.meta}>{content.place}</Text>
+              )}
+              {content.issuedOn === undefined ? null : (
+                <Text style={styles.meta}>{content.issuedOn}</Text>
+              )}
+            </View>
+
+            {sections}
           </View>
 
-          {sections}
+          {/* 내용이 얼마나 길든 항상 카드 바닥에 붙어야 해서 위 블록과 따로 두고
+              `bodyMemory` 의 `space-between` 으로 밀어냅니다. */}
+          {content.closingLine === undefined ? null : (
+            <Text style={styles.line}>{content.closingLine[locale]}</Text>
+          )}
         </View>
       )}
     </View>
@@ -232,8 +242,12 @@ const styles = StyleSheet.create({
   bodyMemory: {
     flex: 1,
     paddingTop: PADDING_TOP_MEMORY,
+    paddingBottom: PADDING_TOP_MEMORY,
     paddingLeft: PADDING_LEFT,
     paddingRight: PADDING_RIGHT_MEMORY,
+    // 위 블록(제목·매장·날짜·본문)은 위에서부터 흘리고, 마무리 문구가 있으면 이 gap 이
+    // 카드 바닥까지 밀어냅니다.
+    justifyContent: 'space-between',
     gap: SECTION_GAP_MEMORY,
   },
   titleMemory: {

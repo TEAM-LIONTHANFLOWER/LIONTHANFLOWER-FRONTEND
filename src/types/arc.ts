@@ -38,6 +38,11 @@ export interface LetterContent {
   /** 편지 머리의 날짜. 봉투와 달리 영문으로 적습니다 — `13 AUGUST 2026` */
   issuedOn?: string;
   sections: readonly LetterSection[];
+  /**
+   * 편지지 맨 아래에 붙는 한 줄 — 내용이 얼마나 길든 항상 카드 바닥에 붙습니다.
+   * `Visit Memory` 팝업이 기본 문구와 함께 보여주는 마무리 문장에 씁니다.
+   */
+  closingLine?: LocalizedText;
 }
 
 /**

@@ -48,7 +48,6 @@ export type MessageKey =
   | 'arc.empty'
   | 'arc.loadFailed'
   | 'arc.retry'
-  | 'visitMemory.empty'
   | 'visitMemory.loadFailed'
   | 'studio.description'
   | 'studio.previewDescription'
