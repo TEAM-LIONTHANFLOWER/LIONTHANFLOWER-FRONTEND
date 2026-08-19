@@ -4,14 +4,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 
+import { ActionPill } from '@components/common/action-pill';
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { WORDMARK_TOP } from '@components/common/brand-intro-header';
 import { BrandWordmark, WORDMARK_HEIGHT, WORDMARK_WIDTH } from '@components/common/brand-wordmark';
 import { OrbitLogo } from '@components/common/orbit-logo';
 import { ScreenContainer } from '@components/common/screen-container';
 import { FixedColors, Spacing } from '@constants/theme';
+import { isMatched, useVisitMatching } from '@hooks/use-customer-visit';
 import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
+import { useVisitId, useVisitStore } from '@stores/visit-store';
 import storeFront from '@assets/images/matching/store-front.jpg';
 import mcmSymbol from '@assets/images/splash/mcm-symbol.png';
 
@@ -31,12 +34,6 @@ const SYMBOL_BOTTOM = 50;
  */
 const SYMBOL_WIDTH = 45;
 const SYMBOL_HEIGHT = 41;
-
-/**
- * 데모용 매칭 대기 시간.
- * 배정 API 가 붙으면 이 타이머를 지우고 실제 배정 결과를 기다립니다.
- */
-const DEMO_MATCHING_DELAY_MS = 3000;
 
 /** 매칭이 끝난 뒤 MCM 마크가 홈의 워드마크 자리까지 옮겨 가는 시간. */
 const MARK_MOVE_DURATION_MS = 1000;
@@ -109,7 +106,8 @@ async function measureMarkFlight(
  * 고객 매칭 대기 화면 — `/matching`
  *
  * 정보 입력을 끝낸 고객이 직원이 배정되기를 기다리는 화면입니다.
- * 배정 결과를 받아올 API 가 아직 없어, 데모에서는 3 초 뒤 홈으로 넘어갑니다.
+ * `GET /api/customers/visits/{visitId}/matching` 을 짧은 간격으로 되물어(`useVisitMatching`)
+ * 직원이 `응대 시작` 을 누른 순간을 잡아내고, 그때 홈으로 넘어갑니다.
  *
  * 넘어갈 때는 화면을 그냥 바꾸지 않고, 화면 아래 MCM 마크가 홈의 워드마크 자리까지 옮겨 간
  * 뒤에 바꿉니다. 홈 머리말의 워드마크와 이 마크는 같은 그림이라, 자리를 옮기며 커지기만 하면
@@ -130,11 +128,35 @@ export default function CustomerMatchingScreen() {
   const [progress] = useState(() => new Animated.Value(0));
   const [flight, setFlight] = useState<MarkFlight | null>(null);
 
+  const visitId = useVisitId();
+  const setStatus = useVisitStore((state) => state.setStatus);
+  const { data: matching, isError, refetch } = useVisitMatching(visitId);
+  const matched = isMatched(matching);
+
+  // 로그인을 거치지 않고 이 화면에 들어오면 물어볼 방문이 없습니다.
+  // (세션이 메모리에만 있어 웹에서 새로 고치면 이렇게 됩니다.)
+  useEffect(() => {
+    if (visitId === null) {
+      router.replace('/login');
+    }
+  }, [router, visitId]);
+
+  // 배정되면 방문 상태가 `ACTIVE` 로 바뀝니다. 세션에도 그대로 옮겨 둡니다.
+  useEffect(() => {
+    if (matching) {
+      setStatus(matching.status);
+    }
+  }, [matching, setStatus]);
+
   // 매칭이 끝나면 마크가 갈 길을 재 둡니다. 이 값이 생기면 아래 효과가 이어서 움직입니다.
   useEffect(() => {
+    if (!matched) {
+      return;
+    }
+
     let cancelled = false;
 
-    const timer = setTimeout(async () => {
+    void (async () => {
       // 홈은 안전 영역 안쪽에서 좌우로 `Spacing.four` 띄운 자리에 머리말을 놓습니다.
       // (`app/(customer)/home.tsx` 의 `gutter` + `brand-intro-header.tsx` 의 `WORDMARK_TOP`)
       const landing = await measureMarkFlight(
@@ -155,13 +177,12 @@ export default function CustomerMatchingScreen() {
       }
 
       setFlight(landing);
-    }, DEMO_MATCHING_DELAY_MS);
+    })();
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, [insets.left, insets.top, router]);
+  }, [insets.left, insets.top, matched, router]);
 
   // 사본이 출발 자리에 놓인 다음에 움직입니다. 다 옮기고 나서야 홈으로 넘어갑니다.
   useEffect(() => {
@@ -222,9 +243,23 @@ export default function CustomerMatchingScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.messageSlot, { opacity: leavingOpacity }]}>
-          <Text style={styles.message} accessibilityLiveRegion="polite">
-            {t('matching.waiting')}
-          </Text>
+          {/*
+            되묻기가 실패하면 화면이 영영 기다리는 것처럼 보입니다. 무슨 일이 났는지 알리고
+            다시 물어볼 수단을 함께 둡니다. 서버가 내려주는 문구는 한국어뿐이라 여기서도
+            고객이 고른 언어의 안내를 대신 보여줍니다.
+          */}
+          {isError ? (
+            <View style={styles.failure}>
+              <Text style={styles.message} accessibilityRole="alert">
+                {t('matching.failed')}
+              </Text>
+              <ActionPill label={t('matching.retry')} tone="outline" onPress={() => refetch()} />
+            </View>
+          ) : (
+            <Text style={styles.message} accessibilityLiveRegion="polite">
+              {t('matching.waiting')}
+            </Text>
+          )}
         </Animated.View>
 
         <View style={styles.symbolSlot}>
@@ -311,6 +346,10 @@ const styles = StyleSheet.create({
     flex: MESSAGE_SLOT_FLEX,
     alignItems: 'center',
     justifyContent: 'flex-end',
+  },
+  failure: {
+    alignItems: 'center',
+    gap: Spacing.three,
   },
   message: {
     fontSize: 16,

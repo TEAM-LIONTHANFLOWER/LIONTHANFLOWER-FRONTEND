@@ -42,7 +42,12 @@ yarn-error.*
 .wrangler/
 
 # 로컬 작업 노트 (공유하지 않음) — docs/README.md 참고
-docs/
+docs/*
+# 단, 서버 계약 문서는 팀이 함께 봐야 하므로 추적합니다.
+# (`docs/` 가 아니라 `docs/*` 인 이유 — 디렉터리째 제외하면 git 이 안으로 들어가지 않아
+#  아래 예외가 무시됩니다.)
+!docs/openapi.yaml
+!docs/api-integration.md
 
 # generated native folders
 /ios

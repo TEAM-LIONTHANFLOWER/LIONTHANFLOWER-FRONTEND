@@ -1,88 +1,13 @@
 /**
- * 직원 화면 데모 데이터.
- * 값은 시안(1-1 Home / 2-1 Arc 조회 / 2-1 방문기록 조회)의 문구를 그대로 옮긴 것입니다.
+ * 직원 화면에서 아직 서버가 내려주지 않는 부분.
+ * 값은 시안(2-1 Arc 조회 / 2-1 방문기록 조회)의 문구를 그대로 옮긴 것입니다.
  *
- * 매장 방문 목록은 원래 서버에서 오는 값입니다. 아직 API 가 없어 고정값으로 두었고,
- * 엔드포인트가 생기면 `@hooks` 의 쿼리 훅으로 옮기고 이 파일은 지웁니다.
+ * 방문 목록(`VISIT_DAYS`)은 `GET /api/staff/visits` 로 옮겨 갔습니다.
+ * 여기 남은 카드 두 면은 고객 한 명의 프로필과 그날 기록을 조회하는 엔드포인트가 없어
+ * 고정값 그대로입니다.
  */
 
-import type { MemoryCardContent, VisitDay } from '@/types/visit';
-
-/**
- * 시안에는 고객이 모두 `Ethan` 으로 그려져 있습니다.
- * 자리 채우기용 이름이라 그대로 두되, 식별자만 카드마다 다르게 두었습니다.
- */
-export const VISIT_DAYS: readonly VisitDay[] = [
-  {
-    date: '2026.08.12',
-    visits: [
-      {
-        id: 'visit-with-1',
-        name: 'Ethan',
-        languages: ['한국어', 'English'],
-        arcLabel: '1st Arc',
-        request: '다양한 컬러를 보고싶어요',
-        mode: 'with',
-        status: 'in-progress',
-        startedAt: '08:24',
-      },
-      {
-        id: 'visit-with-2',
-        name: 'Ethan',
-        languages: ['한국어', 'English'],
-        arcLabel: '2nd Arc',
-        request: '다양한 컬러를 보고싶어요',
-        mode: 'with',
-        status: 'waiting',
-      },
-      {
-        id: 'visit-with-3',
-        name: 'Ethan',
-        languages: ['한국어', 'English'],
-        arcLabel: '1st Arc',
-        request: '다양한 컬러를 보고싶어요',
-        mode: 'with',
-        status: 'done',
-      },
-      {
-        id: 'visit-solo-1',
-        name: 'Ethan',
-        languages: ['한국어', 'English'],
-        arcLabel: '1st Arc',
-        request: '다양한 컬러를 보고싶어요',
-        mode: 'solo',
-        status: 'in-progress',
-      },
-      {
-        id: 'visit-solo-2',
-        name: 'Ethan',
-        languages: ['한국어', 'English'],
-        arcLabel: '2nd Arc',
-        request: '다양한 컬러를 보고싶어요',
-        mode: 'solo',
-        status: 'done',
-      },
-      {
-        id: 'visit-solo-3',
-        name: 'Ethan',
-        languages: ['한국어', 'English'],
-        arcLabel: '1st Arc',
-        request: '다양한 컬러를 보고싶어요',
-        mode: 'solo',
-        status: 'done',
-      },
-    ],
-    arcs: [],
-  },
-  {
-    date: '2026.08.11',
-    visits: [],
-    arcs: [
-      { id: 'arc-1', title: 'Ethan’s 1st Arc', store: 'MCM Haus', date: '2026.08.11' },
-      { id: 'arc-2', title: 'Ethan’s 1st Arc', store: 'MCM Haus', date: '2026.08.11' },
-    ],
-  },
-] as const;
+import type { MemoryCardContent } from '@/types/visit';
 
 /** 고객이 어떤 사람인지 한눈에 보여주는 프로필 면. */
 export const CUSTOMER_PROFILE_CARD: MemoryCardContent = {

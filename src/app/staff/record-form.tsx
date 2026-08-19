@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Easing, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BrandBackdrop } from '@components/common/brand-backdrop';
@@ -9,7 +9,15 @@ import { ScreenContainer } from '@components/common/screen-container';
 import { StepTabs } from '@components/common/step-tabs';
 import { RecordSectionField } from '@components/staff/record-section-field';
 import { RECORD_FLOW_COPY, RECORD_FORM_DESCRIPTION, RECORD_STEPS } from '@constants/record-form';
-import { Spacing } from '@constants/theme';
+import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
+import {
+  findMissingArcField,
+  toArcSnapshot,
+  useCreateArc,
+  useShareArc,
+} from '@hooks/use-staff-arcs';
+import { useCreateVisitMemory } from '@hooks/use-staff-records';
+import { useRecordFormStore } from '@stores/record-form-store';
 import type { RecordFlow } from '@/types/record-form';
 
 /** 단계 탭과 첫 입력 사이. Spacing 스케일에 16 과 24 사이 값이 없어 세 칸으로 둡니다. */
@@ -21,6 +29,14 @@ const TABS_TO_SECTIONS = Spacing.three;
  */
 const STEP_SLIDE = 24;
 const STEP_DURATION_MS = 280;
+
+/** 직원 화면은 번역 대상이 아니라 문구를 한국어로 직접 적습니다. */
+const SUBMIT_FAILED = '기록을 만들지 못했습니다. 잠시 후 다시 시도해주세요.';
+const NO_VISIT = '어느 고객의 기록인지 알 수 없습니다. 직원 홈에서 다시 들어와주세요.';
+/** 서버가 빈 값을 받지 않는 칸을 비워 둔 채 마치려 할 때. */
+const toMissingFieldMessage = (label: string) => `${label} 칸을 채워주세요.`;
+
+const ERROR_FONT_SIZE = 14;
 
 /**
  * 직원용 기록 작성 화면 — `/staff/record-form`
@@ -35,13 +51,30 @@ const STEP_DURATION_MS = 280;
  */
 export default function StaffRecordFormScreen() {
   const router = useRouter();
-  const { flow: requestedFlow } = useLocalSearchParams<{ flow?: string }>();
+  const { flow: requestedFlow, visitId } = useLocalSearchParams<{
+    flow?: string;
+    visitId?: string;
+  }>();
 
   const flow: RecordFlow = requestedFlow === 'memory' ? 'memory' : 'arc';
   const steps = RECORD_STEPS[flow];
   const copy = RECORD_FLOW_COPY[flow];
 
   const [index, setIndex] = useState(0);
+
+  const {
+    mutate: createVisitMemory,
+    isPending: isCreatingMemory,
+    isError: isMemoryError,
+  } = useCreateVisitMemory();
+  const { mutate: createArc, isPending: isCreatingArc, isError: isArcError } = useCreateArc();
+  const { mutate: shareArc, isPending: isSharingArc } = useShareArc();
+
+  // 서버가 무엇이 빠졌는지 알려주지 않아, 보내기 전에 앱이 먼저 걸러 이름을 적어 줍니다.
+  const [missingField, setMissingField] = useState<string | undefined>(undefined);
+
+  const isPending = isCreatingMemory || isCreatingArc || isSharingArc;
+  const isError = isMemoryError || isArcError;
 
   const step = steps[index];
   const isLast = index === steps.length - 1;
@@ -83,14 +116,77 @@ export default function StaffRecordFormScreen() {
     [steps]
   );
 
+  /**
+   * 마지막 단계에서 `NEXT` 를 누르면 서버가 기록을 만듭니다.
+   *
+   * **Visit Memory** 는 이때 글까지 써서 돌아옵니다 — 완료 화면이 그 글을 보여주고,
+   * 거기서 `전송` 을 눌러야 비로소 고객에게 갑니다.
+   *
+   * **Arc** 는 여기서 생성(`POST /api/staff/visits/{visitId}/arcs`)과
+   * 전송(`POST /api/staff/arcs/{arcId}/revisions/{revisionId}/share`)을 이어서 부릅니다.
+   * 완료 화면은 이미 고객에게 간 Arc 를 보여주는 자리이고, 그래서 그 화면의 마지막
+   * 버튼이 전송이 아니라 `저장` 입니다.
+   *
+   * 편지를 아직 쓰는 중이면(`GENERATING`) 여기서 보낼 수 없어 완료 화면으로 넘깁니다 —
+   * 다 써지는 것을 지켜보다 보내는 일은 그 화면이 이어받습니다. 전송이 실패했을 때도
+   * 마찬가지로 넘깁니다. 여기서 붙잡아 두면 다시 눌렀을 때 Arc 가 한 벌 더 생깁니다.
+   */
   const handleNext = useCallback(() => {
-    if (isLast) {
-      router.push({ pathname: '/staff/record-complete', params: { flow } });
+    if (!isLast) {
+      setIndex((previous) => previous + 1);
       return;
     }
 
-    setIndex((previous) => previous + 1);
-  }, [flow, isLast, router]);
+    if (visitId === undefined) {
+      return;
+    }
+
+    // 값은 보낼 때 한 번만 꺼냅니다. 구독하면 글자를 칠 때마다 이 화면이 통째로 다시 그려집니다 —
+    // 묶음마다 자기 값만 구독하는 `RecordSectionField` 의 이점이 사라집니다.
+    const values = useRecordFormStore.getState().values[flow];
+
+    if (flow === 'memory') {
+      createVisitMemory(
+        { visitId, values },
+        {
+          onSuccess: (memory) => {
+            router.push({
+              pathname: '/staff/record-complete',
+              params: { flow, visitId, visitMemoryId: memory.visitMemoryId },
+            });
+          },
+        }
+      );
+      return;
+    }
+
+    const missing = findMissingArcField(toArcSnapshot(values));
+    setMissingField(missing);
+
+    if (missing !== undefined) {
+      return;
+    }
+
+    createArc(
+      { visitId, values },
+      {
+        onSuccess: (arc) => {
+          const goToComplete = () =>
+            router.push({
+              pathname: '/staff/record-complete',
+              params: { flow, visitId, arcId: arc.arcId },
+            });
+
+          if (arc.revisionStatus !== 'READY') {
+            goToComplete();
+            return;
+          }
+
+          shareArc({ arcId: arc.arcId, revisionId: arc.revisionId }, { onSettled: goToComplete });
+        },
+      }
+    );
+  }, [createArc, createVisitMemory, flow, isLast, router, shareArc, visitId]);
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
@@ -131,8 +227,27 @@ export default function StaffRecordFormScreen() {
             ))}
           </Animated.View>
 
+          {isLast && visitId === undefined ? (
+            <Text style={styles.error} accessibilityRole="alert">
+              {NO_VISIT}
+            </Text>
+          ) : null}
+
+          {missingField === undefined ? null : (
+            <Text style={styles.error} accessibilityRole="alert">
+              {toMissingFieldMessage(missingField)}
+            </Text>
+          )}
+
+          {isError ? (
+            <Text style={styles.error} accessibilityRole="alert">
+              {SUBMIT_FAILED}
+            </Text>
+          ) : null}
+
           <NextStepLink
             accessibilityLabel={isLast ? `${copy.title} 마치기` : '다음 단계'}
+            disabled={isPending}
             onPress={handleNext}
             style={styles.next}
           />
@@ -163,5 +278,12 @@ const styles = StyleSheet.create({
   },
   next: {
     marginTop: Spacing.five,
+  },
+  error: {
+    fontFamily: FontFamily.sans,
+    fontSize: ERROR_FONT_SIZE,
+    lineHeight: ERROR_FONT_SIZE * LineHeightRatio.base,
+    color: FixedColors.errorOnDark,
+    marginTop: Spacing.four,
   },
 });

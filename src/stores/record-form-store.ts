@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 
-import type { RecordFlow, RecordFormValues, RecordProduct } from '@/types/record-form';
+import type {
+  RecordFlow,
+  RecordFormValues,
+  RecordProduct,
+  RecordProductSelection,
+} from '@/types/record-form';
 
 /**
  * 직원이 작성 중인 기록의 값.
@@ -32,7 +37,20 @@ interface RecordFormState {
   setChoices: (flow: RecordFlow, sectionId: string, values: readonly string[]) => void;
   /** 제품 줄을 하나 더 답니다. */
   addProduct: (flow: RecordFlow, sectionId: string) => void;
+  /**
+   * 제품 칸에 글자를 칩니다.
+   *
+   * 고른 뒤에 다시 고쳐 쓰기 시작하면 그 줄은 더 이상 고른 제품이 아니므로
+   * 식별자와 옵션 줄을 함께 비웁니다 — 이름만 남은 줄은 요청에서 빠집니다.
+   */
   setProductName: (flow: RecordFlow, sectionId: string, productId: string, name: string) => void;
+  /** 목록에서 제품 한 줄을 고릅니다. 이름·식별자·옵션이 한꺼번에 정해집니다. */
+  selectProduct: (
+    flow: RecordFlow,
+    sectionId: string,
+    productId: string,
+    selection: RecordProductSelection
+  ) => void;
   setProductReactions: (
     flow: RecordFlow,
     sectionId: string,
@@ -79,6 +97,15 @@ export function readProducts(
   return products === undefined || products.length === 0 ? BLANK_PRODUCTS : products;
 }
 
+/**
+ * 자유 입력 한 줄. **비어 있으면 `undefined` 입니다.**
+ * 서버에서 `적지 않음` 과 `빈 글` 이 갈려서, 안 적은 칸은 키째 빼고 보냅니다.
+ */
+export function readNote(values: RecordFormValues, fieldId: string): string | undefined {
+  const note = (values.texts[fieldId] ?? '').trim();
+  return note.length === 0 ? undefined : note;
+}
+
 /** 묶음에서 고른 보기. 아직 고른 것이 없으면 빈 목록입니다. */
 export function readChoices(values: RecordFormValues, sectionId: string): readonly string[] {
   return values.choices[sectionId] ?? NO_CHOICES;
@@ -123,7 +150,24 @@ export const useRecordFormStore = create<RecordFormState>((set) => ({
   setProductName: (flow, sectionId, productId, name) =>
     set((state) =>
       updateFlow(state, flow, (values) =>
-        updateProduct(values, sectionId, productId, (product) => ({ ...product, name }))
+        updateProduct(values, sectionId, productId, (product) => ({
+          ...product,
+          name,
+          variantId: undefined,
+          options: [],
+        }))
+      )
+    ),
+
+  selectProduct: (flow, sectionId, productId, selection) =>
+    set((state) =>
+      updateFlow(state, flow, (values) =>
+        updateProduct(values, sectionId, productId, (product) => ({
+          ...product,
+          name: selection.name,
+          variantId: selection.variantId,
+          options: selection.options,
+        }))
       )
     ),
 

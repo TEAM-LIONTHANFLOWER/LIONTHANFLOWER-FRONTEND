@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
+import type { StoreVisit } from '@/types/visit';
 import { ActionPill } from '@components/common/action-pill';
 import { RecordCard } from '@components/staff/record-card';
-import type { StoreVisit } from '@/types/visit';
 
 /** 시안이 언어 목록을 이 문자로 이어 붙입니다. */
 const LANGUAGE_SEPARATOR = ' · ';
@@ -58,7 +58,7 @@ export function VisitCard({
     actions = (
       <>
         <ActionPill label="Arc 생성하기" onPress={onCreateArc} fill />
-        <ActionPill label="Visit Memory 저장" onPress={onSaveMemory} fill />
+        <ActionPill label="Visit Memory 저장" onPress={onSaveMemory} tone="light" fill />
       </>
     );
   } else if (visit.status === 'waiting') {
