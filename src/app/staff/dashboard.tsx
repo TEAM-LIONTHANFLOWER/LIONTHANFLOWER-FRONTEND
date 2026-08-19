@@ -1,26 +1,173 @@
-import { StyleSheet, Text } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
+import { ActionPill } from '@components/common/action-pill';
+import { BrandBackdrop } from '@components/common/brand-backdrop';
+import { BrandIntroHeader } from '@components/common/brand-intro-header';
+import { PillTabs, type PillTabOption } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
-import { useThemeColors } from '@hooks/use-theme-colors';
+import { DateSection } from '@components/staff/date-section';
+import { VisitCard } from '@components/staff/visit-card';
+import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
+import { toVisitDays, useAssignVisit, useStaffVisits } from '@hooks/use-staff-visits';
+import type { RecordFlow } from '@/types/record-form';
+import type { VisitMode } from '@/types/visit';
 
-/** 직원 대시보드 화면 — `/staff/dashboard` */
+/** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
+const TABS_TO_LIST = 13;
+const DAY_GAP = 25;
+
+/** 직원 화면은 번역 대상이 아니라 문구를 한국어로 직접 적습니다. */
+const DESCRIPTION = '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.';
+const LOAD_FAILED = '방문 목록을 불러오지 못했습니다.';
+const EMPTY_WITH = '지금 응대할 고객이 없습니다.';
+const EMPTY_SOLO = '혼자 둘러보는 고객이 없습니다.';
+
+const STATE_FONT_SIZE = 14;
+
+const MODE_TABS: readonly PillTabOption<VisitMode>[] = [
+  { value: 'with', label: 'With' },
+  { value: 'solo', label: 'Solo' },
+];
+
+/** 직원 홈 화면 — `/staff/dashboard` */
 export default function StaffDashboardScreen() {
-  const colors = useThemeColors();
+  const router = useRouter();
+  const [mode, setMode] = useState<VisitMode>('with');
+
+  const { data: visits, isPending, isError, refetch } = useStaffVisits();
+  const { mutate: assignVisit } = useAssignVisit();
+
+  /**
+   * 고객 상세는 그 방문의 기록을 카드 한 장으로 보여주는 화면입니다.
+   * 어느 고객인지만 넘기면 됩니다 — 상세 화면은 이 `visitId` 로 방문 목록에서 자기 고객을 찾습니다.
+   */
+  const openDetail = useCallback(
+    (visitId: string) => {
+      router.push({ pathname: '/staff/customer-detail', params: { visitId } });
+    },
+    [router]
+  );
+
+  /** 방문 하나를 기록하러 갑니다. 구매했으면 Arc, 아니면 Visit Memory 를 씁니다. */
+  const openRecordForm = useCallback(
+    (visitId: string, flow: RecordFlow) => {
+      router.push({ pathname: '/staff/record-form', params: { visitId, flow } });
+    },
+    [router]
+  );
+
+  /**
+   * 응대를 시작하면 서버가 이 직원을 담당자로 배정합니다.
+   * 배정이 끝나면 목록이 다시 읽히면서 카드의 상태와 버튼이 바뀝니다.
+   */
+  const startService = useCallback(
+    (visitId: string) => {
+      assignVisit(visitId, {
+        onSuccess: () => openDetail(visitId),
+      });
+    },
+    [assignVisit, openDetail]
+  );
+
+  const visibleVisits = (visits ?? []).filter((visit) => visit.mode === mode);
+  // 탭을 고른 뒤에 묶습니다. With 와 Solo 는 각자의 날짜만 머리글로 답니다.
+  const days = toVisitDays(visibleVisits);
 
   return (
-    <ScreenContainer>
-      <Text style={[styles.title, { color: colors.text }]}>Hello World</Text>
-      <Text style={[styles.route, { color: colors.textSecondary }]}>/staff/dashboard</Text>
-    </ScreenContainer>
+    // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
+    // 노치와 홈 인디케이터 자리에 색이 끊깁니다. 자세한 이유는 `screen-container.tsx` 참고.
+    <View style={styles.root}>
+      {/* 직원도 앱에서 처음 만나는 화면이라 고객 홈과 같은 조명을 켭니다. */}
+      <BrandBackdrop showLight />
+
+      <ScreenContainer backgroundColor="transparent" style={styles.stage}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <BrandIntroHeader description={DESCRIPTION} />
+
+          <PillTabs
+            label="고객을 나누는 기준"
+            options={MODE_TABS}
+            value={mode}
+            onChange={setMode}
+            style={styles.tabs}
+          />
+
+          <View style={styles.days}>
+            {isPending ? (
+              <ActivityIndicator color={FixedColors.onDark} style={styles.state} />
+            ) : null}
+
+            {isError ? (
+              <View style={styles.state}>
+                <Text style={styles.error} accessibilityRole="alert">
+                  {LOAD_FAILED}
+                </Text>
+                <ActionPill label="다시 시도" tone="outline" onPress={() => refetch()} />
+              </View>
+            ) : null}
+
+            {isPending || isError || visibleVisits.length > 0 ? null : (
+              <Text style={styles.empty}>{mode === 'with' ? EMPTY_WITH : EMPTY_SOLO}</Text>
+            )}
+
+            {days.map((day) => (
+              <DateSection key={day.date} date={day.date}>
+                {day.visits.map((visit) => (
+                  <VisitCard
+                    key={visit.id}
+                    visit={visit}
+                    onOpen={() => openDetail(visit.id)}
+                    onCreateArc={() => openRecordForm(visit.id, 'arc')}
+                    onSaveMemory={() => openRecordForm(visit.id, 'memory')}
+                    onStartService={() => startService(visit.id)}
+                  />
+                ))}
+              </DateSection>
+            ))}
+          </View>
+        </ScrollView>
+      </ScreenContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
+  root: {
+    flex: 1,
   },
-  route: {
-    fontSize: 14,
+  // 세로 여백과 간격은 스크롤 콘텐츠가 직접 들고 있습니다.
+  stage: {
+    paddingVertical: 0,
+    gap: 0,
+  },
+  content: {
+    paddingBottom: Spacing.four,
+  },
+  tabs: {
+    marginTop: Spacing.four,
+  },
+  days: {
+    marginTop: TABS_TO_LIST,
+    gap: DAY_GAP,
+  },
+  state: {
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  error: {
+    fontFamily: FontFamily.sans,
+    fontSize: STATE_FONT_SIZE,
+    lineHeight: STATE_FONT_SIZE * LineHeightRatio.base,
+    color: FixedColors.errorOnDark,
+    textAlign: 'center',
+  },
+  empty: {
+    fontFamily: FontFamily.sans,
+    fontSize: STATE_FONT_SIZE,
+    lineHeight: STATE_FONT_SIZE * LineHeightRatio.base,
+    color: FixedColors.onDark,
+    textAlign: 'center',
   },
 });
