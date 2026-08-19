@@ -1,0 +1,1256 @@
+openapi: 3.1.0
+info:
+  title: MCM Orbit API
+  version: 0.1.0
+  description: |-
+    2026-08-19 https://mcmorbit.p-e.kr/v3/api-docs 에서 받아 YAML 로 옮긴 것입니다.
+    원본은 springdoc 이 자동 생성하며, 이 파일은 그 스냅숏입니다 — 서버가 바뀌면 다시 받아 덮어씁니다.
+
+    두 가지는 원본에 없어 손으로 채웠습니다.
+    - servers: 원본에는 http 주소 한 줄뿐이라 실제 배포·로컬 주소로 바꿨습니다.
+    - securitySchemes: 인증이 쿠키(customer_token / staffToken)인데 원본에 스킴 정의가 없어 추가했습니다.
+      원본은 쿠키를 엔드포인트마다 in: cookie 파라미터로 적어 두었고, 그 형태는 그대로 남겨 두었습니다.
+    - ApiErrorResponse: springdoc 이 200 응답만 적어 두어 실패 응답의 모양이 빠져 있었습니다.
+      실제 응답을 확인해 스키마로 옮겼습니다 — 클라이언트가 이 모양에 기대고 있습니다.
+servers:
+  - url: https://mcmorbit.p-e.kr
+    description: 배포 서버 (앱이 EXPO_PUBLIC_API_BASE_URL 로 바라보는 곳)
+  - url: http://localhost:8080
+    description: 로컬 백엔드
+paths:
+  /api/staff/visits/{visitId}/visit-memories:
+    post:
+      tags:
+        - staff-visit-memory-controller
+      summary: Visit Memory 생성
+      description: 직원 입력을 바탕으로 Visit Memory 생성을 시작합니다.
+      operationId: create
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffVisitMemoryGenerationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffVisitMemoryResponse'
+  /api/staff/visits/{visitId}/assignment:
+    post:
+      tags:
+        - staff-visit-controller
+      summary: 직원 추천 고객 응대 시작
+      description: 대기 중인 직원 추천 고객에게 응대를 시작하고 현재 직원을 담당자로 배정합니다.
+      operationId: assignVisit
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffVisitAssignmentResponse'
+  /api/staff/visits/{visitId}/arcs:
+    post:
+      tags:
+        - staff-arc-controller
+      summary: Arc 생성
+      description: 직원 입력을 바탕으로 OpenAI Arc 생성을 시작합니다.
+      operationId: createArc
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffArcGenerationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffArcRevisionResponse'
+  /api/staff/visit-memories/{visitMemoryId}/share:
+    post:
+      tags:
+        - staff-visit-memory-controller
+      summary: Visit Memory 전송
+      description: 직원이 READY Visit Memory를 고객에게 공유하고 알림을 생성합니다.
+      operationId: share
+      parameters:
+        - name: visitMemoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffVisitMemoryResponse'
+  /api/staff/visit-memories/{visitMemoryId}/regenerations:
+    post:
+      tags:
+        - staff-visit-memory-controller
+      summary: Visit Memory 재생성
+      description: 기존 또는 수정된 입력으로 Visit Memory를 다시 생성합니다.
+      operationId: regenerate
+      parameters:
+        - name: visitMemoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffVisitMemoryGenerationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffVisitMemoryResponse'
+  /api/staff/me/profile:
+    get:
+      tags:
+        - staff-profile-controller
+      summary: 직원 프로필 조회
+      description: staffToken 쿠키로 인증된 직원의 프로필을 조회합니다.
+      operationId: getMyProfile
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffProfileResponse'
+    post:
+      tags:
+        - staff-profile-controller
+      summary: 직원 프로필 등록
+      description: 근무 매장과 구사 언어를 등록하고 직원 인증 쿠키를 발급합니다.
+      operationId: register
+      parameters:
+        - name: staffToken
+          in: cookie
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffProfileRegisterRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseObject'
+  /api/staff/arcs/{arcId}/revisions:
+    post:
+      tags:
+        - staff-arc-controller
+      summary: Arc 재생성
+      description: 기존 또는 수정된 입력으로 새로운 Arc 리비전을 생성합니다.
+      operationId: regenerate_1
+      parameters:
+        - name: arcId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffArcGenerationRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffArcRevisionResponse'
+  /api/staff/arcs/{arcId}/revisions/{revisionId}/share:
+    post:
+      tags:
+        - staff-arc-controller
+      summary: Arc 전송
+      description: 직원이 선택한 READY Arc 리비전을 고객에게 공유합니다.
+      operationId: share_1
+      parameters:
+        - name: arcId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: revisionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffArcRevisionResponse'
+  /api/customers/visits:
+    post:
+      tags:
+        - customer-visit-controller
+      summary: 고객 서비스 진입
+      description: 익명 고객을 식별하거나 생성하고 새로운 ONBOARDING 방문을 생성합니다.
+      operationId: enter
+      parameters:
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseEntryResponse'
+  /api/customers/arcs/{arcId}/finalize:
+    post:
+      tags:
+        - customer-arc-controller
+      summary: 고객 Arc 최종 저장
+      description: 고객이 공유된 Arc를 최종 저장하고 방문을 완료합니다.
+      operationId: finalizeArc
+      parameters:
+        - name: arcId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseArcFinalizationResponse'
+  /api/customers/visits/{visitId}/onboarding:
+    patch:
+      tags:
+        - customer-visit-controller
+      summary: 고객 온보딩 진행
+      description: 고객의 온보딩 정보를 저장하고 방문 상태를 서비스 진행 상태로 전환합니다.
+      operationId: progressOnboarding
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardingRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseOnboardingResponse'
+  /api/customers/notifications/{notificationId}/read:
+    patch:
+      tags:
+        - customer-notification-controller
+      summary: 고객 알림 읽음 처리
+      description: 고객 본인의 알림을 읽음 상태로 변경합니다.
+      operationId: markRead
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseNotificationView'
+  /api/staff/visits:
+    get:
+      tags:
+        - staff-visit-controller
+      summary: 현재 방문 고객 목록 조회
+      description: 직원이 현재 방문 중인 고객 목록을 조회합니다.
+      operationId: getCurrentVisits
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffVisitListResponse'
+  /api/staff/visit-memories/{visitMemoryId}:
+    get:
+      tags:
+        - staff-visit-memory-controller
+      summary: 직원 Visit Memory 미리보기
+      description: 직원이 현재 Visit Memory 입력과 생성 결과를 확인합니다.
+      operationId: getPreview
+      parameters:
+        - name: visitMemoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffVisitMemoryResponse'
+  /api/staff/arcs/{arcId}:
+    get:
+      tags:
+        - staff-arc-controller
+      summary: 직원 Arc 미리보기
+      description: 직원이 생성 중이거나 생성된 Arc 리비전을 확인합니다.
+      operationId: getPreview_1
+      parameters:
+        - name: arcId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseStaffArcRevisionResponse'
+  /api/customers/visit-memories/{visitMemoryId}:
+    get:
+      tags:
+        - customer-visit-memory-controller
+      summary: 고객 Visit Memory 상세 조회
+      description: 고객 본인의 최종 저장된 Visit Memory를 조회합니다.
+      operationId: getMemory
+      parameters:
+        - name: visitMemoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseVisitMemoryDetail'
+  /api/customers/studio/frames:
+    get:
+      tags:
+        - customer-studio-frame-controller
+      summary: MCM Studio 프레임 목록 조회
+      description: 웹 Canvas 합성에 사용할 수 있도록 설정된 투명 PNG 프레임 목록을 반환합니다.
+      operationId: getFrames
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListFrameResponse'
+  /api/customers/notifications:
+    get:
+      tags:
+        - customer-notification-controller
+      summary: 고객 알림 목록 조회
+      description: 고객 본인의 읽음·안 읽음 알림을 최신순으로 조회합니다.
+      operationId: getNotifications
+      parameters:
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListNotificationView'
+  /api/customers/arcs:
+    get:
+      tags:
+        - customer-arc-controller
+      summary: 고객 Arc 목록 조회
+      description: 고객에게 공유되거나 최종 저장된 Arc 전체를 최신순으로 조회합니다.
+      operationId: getArcs
+      parameters:
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseListArcListItemResponse'
+  /api/customers/arcs/{arcId}:
+    get:
+      tags:
+        - customer-arc-controller
+      summary: 고객 Arc 상세 조회
+      description: 고객 본인의 공개 Arc와 전체 구매 제품을 조회합니다.
+      operationId: getArc
+      parameters:
+        - name: arcId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: customer_token
+          in: cookie
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiResponseArcDetailResponse'
+components:
+  schemas:
+    StaffVisitMemoryGenerationRequest:
+      type: object
+      properties:
+        inputSnapshot:
+          $ref: '#/components/schemas/VisitMemoryInputSnapshot'
+    VisitMemoryInputSnapshot:
+      type: object
+      properties:
+        productEngagements:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              enum:
+                - VIEWED_WITH_INTEREST
+                - COMPARED
+                - TRIED_OR_INSPECTED
+                - ASKED_STAFF
+                - VIEWED_LONG
+                - CONSIDERED_PURCHASE
+            uniqueItems: true
+        interestPoints:
+          type: array
+          items:
+            type: string
+            enum:
+              - DESIGN
+              - COLOR
+              - MATERIAL_QUALITY
+              - PRACTICALITY
+              - STORAGE_FUNCTIONALITY
+              - SIZE
+              - BRAND_IDENTITY
+              - PRICE
+              - RARITY_LIMITED
+              - GIFT_SUITABILITY
+              - TRAVEL_DAILY_USE
+              - OTHER
+          uniqueItems: true
+        interestPointOther:
+          type: string
+        noPurchaseReasons:
+          type: array
+          items:
+            type: string
+            enum:
+              - CONSIDERING_PURCHASE
+              - NEED_COMPARE
+              - NEED_MORE_TIME
+              - CONSIDER_PRICE
+              - DESIRED_PRODUCT_OR_COLOR_NOT_FOUND
+              - TRAVEL_SCHEDULE
+              - INSUFFICIENT_TIME
+              - CONSULT_COMPANION
+              - CONSULT_GIFT_RECIPIENT
+              - BUDGET
+              - PLAN_REVISIT
+              - BROWSING_ONLY
+              - OTHER
+          uniqueItems: true
+        noPurchaseReasonOther:
+          type: string
+        nextVisitMemo:
+          type: string
+    ApiResponseStaffVisitMemoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/StaffVisitMemoryResponse'
+    StaffVisitMemoryResponse:
+      type: object
+      properties:
+        visitMemoryId:
+          type: string
+          format: uuid
+        visitId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - GENERATING
+            - READY
+            - FINALIZED
+            - FAILED
+        inputSnapshot:
+          $ref: '#/components/schemas/VisitMemoryInputSnapshot'
+        generatedContent:
+          $ref: '#/components/schemas/VisitMemoryGeneratedContent'
+        failureCode:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        finalizedAt:
+          type: string
+          format: date-time
+    VisitMemoryGeneratedContent:
+      type: object
+      properties:
+        summary:
+          type: string
+    ApiResponseStaffVisitAssignmentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/StaffVisitAssignmentResponse'
+    StaffVisitAssignmentResponse:
+      type: object
+      properties:
+        visitId:
+          type: string
+          format: uuid
+        staffId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - ONBOARDING
+            - WAITING_FOR_STAFF
+            - ACTIVE
+            - ARC_IN_PROGRESS
+            - VISIT_MEMORY_IN_PROGRESS
+            - COMPLETED
+            - CANCELED
+        matchedAt:
+          type: string
+          format: date-time
+    ArcInputSnapshot:
+      type: object
+      properties:
+        purchaseDate:
+          type: string
+          format: date
+        purchaseCountry:
+          type: string
+        purchaseStore:
+          type: string
+        purchasedProductVariantIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        preferredCategories:
+          type: array
+          items:
+            type: string
+            enum:
+              - BAG
+              - CLOTHING
+              - ACCESSORY
+          uniqueItems: true
+        preferredColors:
+          type: array
+          items:
+            type: string
+            enum:
+              - BLACK
+              - WHITE
+              - BROWN_BEIGE
+              - GRAY
+              - NAVY_BLUE
+              - RED
+              - PINK
+              - GREEN
+              - YELLOW
+              - METALLIC
+              - MULTI_COLOR
+              - OTHER
+          uniqueItems: true
+        preferredColorOther:
+          type: string
+        preferredStyles:
+          type: array
+          items:
+            type: string
+            enum:
+              - CLASSIC_TIMELESS
+              - MINIMAL_SIMPLE
+              - LOGO_FORWARD
+              - PATTERN_GRAPHIC
+              - DISTINCTIVE
+              - CASUAL
+              - FORMAL_REFINED
+              - TRENDY
+              - PRACTICAL
+              - OTHER
+          uniqueItems: true
+        preferredStyleOther:
+          type: string
+        interestedProductVariantIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        purchaseCriteria:
+          type: array
+          items:
+            type: string
+            enum:
+              - DESIGN
+              - PRACTICALITY
+              - BRAND_IDENTITY
+              - RARITY
+              - PRICE
+              - QUALITY_MATERIAL
+              - STORAGE_FUNCTIONALITY
+              - SIZE
+              - COLOR
+              - GIFT_SUITABILITY
+              - TRAVEL_DAILY_USE
+              - OTHER
+          uniqueItems: true
+        purchaseCriterionOther:
+          type: string
+        interactionPreferences:
+          type: array
+          items:
+            type: string
+            enum:
+              - ACTIVE_RECOMMENDATION
+              - MODERATE_GUIDANCE
+              - FREE_EXPLORATION
+              - CONTEXT_DEPENDENT
+          uniqueItems: true
+        explanationPreferences:
+          type: array
+          items:
+            type: string
+            enum:
+              - DETAILED
+              - KEY_POINTS_ONLY
+              - ON_DEMAND
+          uniqueItems: true
+        purchaseDecisionStyle:
+          type: string
+          enum:
+            - QUICK
+            - COMPARE_FIRST
+            - DELIBERATE
+            - CONTEXT_DEPENDENT
+        staffObservation:
+          type: string
+    StaffArcGenerationRequest:
+      type: object
+      properties:
+        inputSnapshot:
+          $ref: '#/components/schemas/ArcInputSnapshot'
+    ApiResponseStaffArcRevisionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/StaffArcRevisionResponse'
+    ArcGeneratedContent:
+      type: object
+      properties:
+        momentSummary:
+          type: string
+        preferences:
+          type: array
+          items:
+            type: string
+        momentToRemember:
+          type: string
+    StaffArcRevisionResponse:
+      type: object
+      properties:
+        arcId:
+          type: string
+          format: uuid
+        revisionId:
+          type: string
+          format: uuid
+        revisionNumber:
+          type: integer
+          format: int32
+        arcStatus:
+          type: string
+          enum:
+            - DRAFT
+            - SHARED
+            - FINALIZED
+        revisionStatus:
+          type: string
+          enum:
+            - GENERATING
+            - READY
+            - FAILED
+        inputSnapshot:
+          $ref: '#/components/schemas/ArcInputSnapshot'
+        generatedContent:
+          $ref: '#/components/schemas/ArcGeneratedContent'
+        failureCode:
+          type: string
+        sharedAt:
+          type: string
+          format: date-time
+    StaffProfileRegisterRequest:
+      type: object
+      properties:
+        storeId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        languages:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          minItems: 1
+          uniqueItems: true
+      required:
+        - languages
+        - name
+        - storeId
+    ApiResponseObject:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data: {}
+    ApiResponseEntryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/EntryResponse'
+    EntryResponse:
+      type: object
+      properties:
+        visitId:
+          type: string
+          format: uuid
+        customerName:
+          type: string
+        status:
+          type: string
+          enum:
+            - ONBOARDING
+            - WAITING_FOR_STAFF
+            - ACTIVE
+            - ARC_IN_PROGRESS
+            - VISIT_MEMORY_IN_PROGRESS
+            - COMPLETED
+            - CANCELED
+    ApiResponseArcFinalizationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/ArcFinalizationResponse'
+    ArcFinalizationResponse:
+      type: object
+      properties:
+        arcId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SHARED
+            - FINALIZED
+        finalizedAt:
+          type: string
+          format: date-time
+    OnboardingRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        serviceLanguage:
+          type: string
+          enum:
+            - EN
+            - ZH
+            - JA
+            - RU
+        interactionStyle:
+          type: string
+          enum:
+            - STAFF_RECOMMENDATION
+            - SELF_GUIDED
+        additionalRequest:
+          type: string
+          maxLength: 1000
+          minLength: 0
+      required:
+        - interactionStyle
+        - name
+        - serviceLanguage
+    ApiResponseOnboardingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/OnboardingResponse'
+    OnboardingResponse:
+      type: object
+      properties:
+        visitId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - ONBOARDING
+            - WAITING_FOR_STAFF
+            - ACTIVE
+            - ARC_IN_PROGRESS
+            - VISIT_MEMORY_IN_PROGRESS
+            - COMPLETED
+            - CANCELED
+    ApiResponseNotificationView:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/NotificationView'
+    NotificationView:
+      type: object
+      properties:
+        notificationId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum:
+            - VISIT_MEMORY
+        resourceId:
+          type: string
+          format: uuid
+        message:
+          type: string
+        read:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    ApiResponseStaffVisitListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/StaffVisitListResponse'
+    StaffVisitListResponse:
+      type: object
+      properties:
+        visits:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisitSummaryResponse'
+    VisitSummaryResponse:
+      type: object
+      properties:
+        visitId:
+          type: string
+          format: uuid
+        customerName:
+          type: string
+        status:
+          type: string
+          enum:
+            - ONBOARDING
+            - WAITING_FOR_STAFF
+            - ACTIVE
+            - ARC_IN_PROGRESS
+            - VISIT_MEMORY_IN_PROGRESS
+            - COMPLETED
+            - CANCELED
+        serviceLanguage:
+          type: string
+          enum:
+            - EN
+            - ZH
+            - JA
+            - RU
+        interactionStyle:
+          type: string
+          enum:
+            - STAFF_RECOMMENDATION
+            - SELF_GUIDED
+        staffId:
+          type: string
+          format: uuid
+        additionalRequest:
+          type: string
+        arcCount:
+          type: integer
+          format: int64
+    ApiResponseStaffProfileResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/StaffProfileResponse'
+    StaffProfileResponse:
+      type: object
+      properties:
+        staffId:
+          type: string
+          format: uuid
+        storeId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+            enum:
+              - EN
+              - ZH
+              - JA
+              - RU
+          uniqueItems: true
+        createdAt:
+          type: string
+          format: date-time
+    ApiResponseVisitMemoryDetail:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/VisitMemoryDetail'
+    VisitMemoryDetail:
+      type: object
+      properties:
+        visitMemoryId:
+          type: string
+          format: uuid
+        visitId:
+          type: string
+          format: uuid
+        storeName:
+          type: string
+        countryCode:
+          type: string
+        summary:
+          type: string
+        finalizedAt:
+          type: string
+          format: date-time
+    ApiResponseListFrameResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FrameResponse'
+    FrameResponse:
+      type: object
+      properties:
+        frameType:
+          type: string
+          enum:
+            - FRAME_1
+            - FRAME_2
+        displayName:
+          type: string
+        overlayImageUrl:
+          type: string
+    ApiResponseListNotificationView:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationView'
+    ApiResponseListArcListItemResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArcListItemResponse'
+    ArcListItemResponse:
+      type: object
+      properties:
+        arcId:
+          type: string
+          format: uuid
+        arcNumber:
+          type: integer
+          format: int32
+        momentSummary:
+          type: string
+        representativeProduct:
+          $ref: '#/components/schemas/ProductResponse'
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SHARED
+            - FINALIZED
+        sharedAt:
+          type: string
+          format: date-time
+        finalizedAt:
+          type: string
+          format: date-time
+    ProductResponse:
+      type: object
+      properties:
+        productVariantId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        color:
+          type: string
+          enum:
+            - BLACK
+            - WHITE
+            - BEIGE
+            - BROWN
+            - GRAY
+            - RED
+            - PINK
+            - ORANGE
+            - YELLOW
+            - GREEN
+            - BLUE
+            - PURPLE
+            - MULTI_COLOR
+        option:
+          type: string
+          enum:
+            - XS
+            - S
+            - M
+            - L
+            - ONE_SIZE
+    ApiResponseArcDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/ArcDetailResponse'
+    ArcDetailResponse:
+      type: object
+      properties:
+        arcId:
+          type: string
+          format: uuid
+        arcNumber:
+          type: integer
+          format: int32
+        customerName:
+          type: string
+        storeName:
+          type: string
+        countryCode:
+          type: string
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - SHARED
+            - FINALIZED
+        sharedAt:
+          type: string
+          format: date-time
+        finalizedAt:
+          type: string
+          format: date-time
+        momentSummary:
+          type: string
+        preferences:
+          type: array
+          items:
+            type: string
+        momentToRemember:
+          type: string
+        purchasedProducts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductResponse'
+    ApiErrorResponse:
+      type: object
+      description: 모든 실패 응답이 이 모양으로 옵니다. 예) 401 →
+        {"success":false,"error":{"code":"COMMON-401","message":"인증이 필요합니다.","fieldErrors":[]}}
+      properties:
+        success:
+          type: boolean
+          examples:
+            - false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: 도메인 접두사 + HTTP 상태. COMMON-401, STAFF-401, COMMON-500 등
+              examples:
+                - COMMON-401
+            message:
+              type: string
+              description: 한국어 안내 문구. 언어가 하나뿐이라 다국어 화면에서는 그대로 쓰지 않습니다.
+            fieldErrors:
+              type: array
+              items:
+                $ref: '#/components/schemas/ApiFieldError'
+    ApiFieldError:
+      type: object
+      description: 검증 실패(400)일 때 어떤 필드가 문제였는지.
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+  securitySchemes:
+    customerCookie:
+      type: apiKey
+      in: cookie
+      name: customer_token
+      description: POST /api/customers/visits 가 심어 주는 고객 식별 쿠키
+    staffCookie:
+      type: apiKey
+      in: cookie
+      name: staffToken
+      description: POST /api/staff/me/profile 이 심어 주는 직원 인증 쿠키

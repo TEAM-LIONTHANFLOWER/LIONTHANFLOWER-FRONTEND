@@ -8,12 +8,14 @@ import { OutlinedSelectField } from '@components/common/outlined-select-field';
 import { OutlinedTextField } from '@components/common/outlined-text-field';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StartJourneyButton } from '@components/common/start-journey-button';
-import { SUPPORTED_LANGUAGES } from '@constants/languages';
-import { SERVICE_STYLES } from '@constants/onboarding';
+import { SERVICE_LANGUAGE_BY_LOCALE, SUPPORTED_LANGUAGES } from '@constants/languages';
+import { INTERACTION_STYLE_BY_SERVICE_STYLE, SERVICE_STYLES } from '@constants/onboarding';
 import { FixedColors, Spacing } from '@constants/theme';
+import { useStartVisit } from '@hooks/use-customer-visit';
 import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 import { useLocaleStore } from '@stores/locale-store';
+import { useVisitStore } from '@stores/visit-store';
 import type { ServiceStyleCode } from '@/types/onboarding';
 
 /**
@@ -41,6 +43,10 @@ export default function CustomerLoginScreen() {
   const setLanguage = useLocaleStore((state) => state.setLocale);
   const { t } = useTranslation();
 
+  // 서버가 열어 준 방문은 로그인 이후 화면들이 계속 참조하므로 전역 상태에 둡니다.
+  const startVisit = useVisitStore((state) => state.startVisit);
+  const { mutate: startJourney, isPending, isError } = useStartVisit();
+
   const [name, setName] = useState('');
   const [serviceStyle, setServiceStyle] = useState<ServiceStyleCode>('recommendation');
   const [request, setRequest] = useState('');
@@ -56,9 +62,25 @@ export default function CustomerLoginScreen() {
   const canStart = name.trim().length > 0;
 
   const handleStart = useCallback(() => {
-    // 혼자 보겠다고 한 고객은 직원을 배정하지 않으므로 매칭 대기를 건너뛰고 바로 홈으로 갑니다.
-    router.replace(serviceStyle === 'self-guided' ? '/home' : '/matching');
-  }, [router, serviceStyle]);
+    const additionalRequest = request.trim();
+
+    startJourney(
+      {
+        name: name.trim(),
+        serviceLanguage: SERVICE_LANGUAGE_BY_LOCALE[language],
+        interactionStyle: INTERACTION_STYLE_BY_SERVICE_STYLE[serviceStyle],
+        // 빈 문자열 대신 아예 빼서 보냅니다. 서버에서 `요청 없음` 과 `빈 요청` 이 갈립니다.
+        additionalRequest: additionalRequest.length === 0 ? undefined : additionalRequest,
+      },
+      {
+        onSuccess: (session) => {
+          startVisit(session);
+          // 혼자 보겠다고 한 고객은 직원을 배정하지 않으므로 매칭 대기를 건너뛰고 바로 홈으로 갑니다.
+          router.replace(serviceStyle === 'self-guided' ? '/home' : '/matching');
+        },
+      }
+    );
+  }, [language, name, request, router, serviceStyle, startJourney, startVisit]);
 
   return (
     <ScreenContainer backgroundColor={FixedColors.splashBackground} style={styles.stage}>
@@ -102,9 +124,24 @@ export default function CustomerLoginScreen() {
           />
         </View>
 
+        {/*
+          서버가 내려주는 오류 문구는 한국어 한 가지뿐이라 그대로 보여 주면 다른 언어를 고른
+          고객이 읽지 못합니다. 그래서 화면에는 고객이 고른 언어의 안내를 띄웁니다.
+        */}
+        {isError ? (
+          <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite">
+            {t('login.startFailed')}
+          </Text>
+        ) : null}
+
         <View style={styles.spacer} />
 
-        <StartJourneyButton onPress={handleStart} disabled={!canStart} style={styles.action} />
+        {/* 보내는 중에는 같은 방문이 두 번 열리지 않도록 버튼을 잠급니다. */}
+        <StartJourneyButton
+          onPress={handleStart}
+          disabled={!canStart || isPending}
+          style={styles.action}
+        />
       </ScrollView>
     </ScreenContainer>
   );
@@ -133,6 +170,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: '500',
     color: FixedColors.onDark,
+  },
+  error: {
+    marginTop: Spacing.three,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+    color: FixedColors.errorOnDark,
   },
   spacer: {
     flexGrow: 1,

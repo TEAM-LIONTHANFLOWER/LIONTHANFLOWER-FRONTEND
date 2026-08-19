@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Easing,
   Pressable,
@@ -12,6 +13,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 
+import { ActionPill } from '@components/common/action-pill';
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { InitialSetupButton } from '@components/common/initial-setup-button';
@@ -20,8 +22,8 @@ import { ScreenContainer } from '@components/common/screen-container';
 import { VisitMemoryLink } from '@components/common/visit-memory-link';
 import { ArcEnvelope, ENVELOPE_HEIGHT } from '@components/customer/arc-envelope';
 import { ArcLetterReveal } from '@components/customer/arc-letter-reveal';
-import { ARC_ENTRIES } from '@constants/arc';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
+import { useCustomerArcEntries } from '@hooks/use-customer-arcs';
 import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useTranslation } from '@hooks/use-translation';
 
@@ -103,6 +105,8 @@ export default function CustomerArcScreen() {
   const { t } = useTranslation();
   useReportActiveTab('arc');
 
+  const { entries, isPending, isError, refetch } = useCustomerArcEntries();
+
   const [index, setIndex] = useState(0);
   /** 봉투를 열어 편지를 꺼냈는지. 편지를 다시 누르면 봉투로 돌아옵니다. */
   const [isLetterOpen, setIsLetterOpen] = useState(false);
@@ -115,7 +119,9 @@ export default function CustomerArcScreen() {
   const [scrollX] = useState(() => new Animated.Value(0));
   const [enter] = useState(() => new Animated.Value(0));
 
-  const entry = ARC_ENTRIES[index];
+  const entry = entries[index];
+  /** 목록을 받은 뒤에야 봉투를 그립니다. 그 전에는 로딩·오류·빈 상태 중 하나가 자리를 지킵니다. */
+  const hasEntries = !isPending && !isError && entry !== undefined;
 
   useEffect(() => {
     const animation = Animated.timing(enter, {
@@ -141,11 +147,11 @@ export default function CustomerArcScreen() {
 
       const next = Math.round(nativeEvent.contentOffset.x / pageWidth);
 
-      if (next >= 0 && next < ARC_ENTRIES.length) {
+      if (next >= 0 && next < entries.length) {
         setIndex(next);
       }
     },
-    [pageWidth]
+    [entries.length, pageWidth]
   );
 
   const goTo = useCallback(
@@ -169,9 +175,9 @@ export default function CustomerArcScreen() {
    * 넘기는 도중 가운데가 바뀌는 순간 앞뒤가 한 번 뒤집힙니다 — 겹침 순서는
    * 애니메이션으로 이어 줄 수 없어서, 두 봉투가 가장 많이 겹쳐 있는 지점에서 바꿉니다.
    */
-  const drawOrder = ARC_ENTRIES.map((_, position) => position).sort(
-    (a, b) => Math.abs(b - index) - Math.abs(a - index)
-  );
+  const drawOrder = entries
+    .map((_, position) => position)
+    .sort((a, b) => Math.abs(b - index) - Math.abs(a - index));
 
   const headerStyle = {
     opacity: enter.interpolate({ inputRange: [0, 0.6], outputRange: [0, 1], extrapolate: 'clamp' }),
@@ -229,11 +235,28 @@ export default function CustomerArcScreen() {
 
           {/* 더미에 누운 봉투가 화면 가장자리까지 밀려 나가야 해서 이 줄만 좌우 여백 바깥에 둡니다. */}
           <Animated.View style={[styles.cardStage, cardStyle]} onLayout={handleStageLayout}>
-            {entry === undefined ? (
+            {isPending ? (
+              <View style={styles.emptySlot}>
+                <ActivityIndicator color={FixedColors.onDark} />
+              </View>
+            ) : null}
+
+            {isError ? (
+              <View style={[styles.emptySlot, styles.errorSlot]}>
+                <Text style={styles.empty} accessibilityRole="alert">
+                  {t('arc.loadFailed')}
+                </Text>
+                <ActionPill label={t('arc.retry')} tone="outline" onPress={() => refetch()} />
+              </View>
+            ) : null}
+
+            {isPending || isError || entry !== undefined ? null : (
               <View style={styles.emptySlot}>
                 <Text style={styles.empty}>{t('arc.empty')}</Text>
               </View>
-            ) : (
+            )}
+
+            {!hasEntries ? null : (
               <>
                 {/*
                   보이는 봉투. 스크롤 위치에 따라 더미와 가운데 사이를 오갑니다.
@@ -250,7 +273,7 @@ export default function CustomerArcScreen() {
                   {pageWidth === 0
                     ? null
                     : drawOrder.map((position) => {
-                        const item = ARC_ENTRIES[position];
+                        const item = entries[position];
 
                         if (item === undefined) {
                           return null;
@@ -349,7 +372,7 @@ export default function CustomerArcScreen() {
                 >
                   {pageWidth === 0
                     ? null
-                    : ARC_ENTRIES.map((item, position) => (
+                    : entries.map((item, position) => (
                         // 넘기는 도중 옆 봉투를 눌렀다면 그 장으로 옮겨 놓고 엽니다.
                         <View key={item.id} style={[styles.gutter, { width: pageWidth }]}>
                           <Pressable
@@ -376,9 +399,9 @@ export default function CustomerArcScreen() {
             )}
           </Animated.View>
 
-          {ARC_ENTRIES.length < 2 ? null : (
+          {entries.length < 2 ? null : (
             <PageIndicator
-              count={ARC_ENTRIES.length}
+              count={entries.length}
               activeIndex={index}
               onSelect={goTo}
               style={styles.indicator}
@@ -455,6 +478,11 @@ const styles = StyleSheet.create({
   emptySlot: {
     flex: 1,
     justifyContent: 'center',
+  },
+  // 안내 문구 아래에 다시 시도 버튼이 한 줄 더 붙습니다.
+  errorSlot: {
+    alignItems: 'center',
+    gap: Spacing.four,
   },
   empty: {
     fontFamily: FontFamily.sans,

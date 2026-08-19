@@ -6,7 +6,7 @@ import envelopeFlap from '@assets/images/arc/envelope-flap-front.svg';
 import envelopeLeather from '@assets/images/arc/envelope-leather.png';
 import waxSeal from '@assets/images/arc/wax-seal.png';
 import mcmWordmark from '@assets/images/home/mcm-wordmark.png';
-import type { ArcEntry } from '@/types/arc';
+import type { ArcEnvelopeInfo } from '@/types/arc';
 
 /** 시안(2-1 Arc)의 봉투 치수. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
 export const ENVELOPE_HEIGHT = 441;
@@ -68,7 +68,7 @@ const FLAP_OPEN_ANGLE = '-118deg';
 const FLAP_PERSPECTIVE = 900;
 
 interface ArcEnvelopeProps {
-  entry: ArcEntry;
+  entry: ArcEnvelopeInfo;
   /**
    * 뒤에 비스듬히 겹쳐 보이는 봉투로 그립니다.
    * 겉면이 한 톤 어두워지고 글씨를 읽을 일이 없어 보조기기에서도 숨깁니다.

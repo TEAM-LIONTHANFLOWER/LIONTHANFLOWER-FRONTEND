@@ -1,16 +1,17 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
+import { ActionPill } from '@components/common/action-pill';
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { PillTabs, type PillTabOption } from '@components/common/pill-tabs';
 import { ScreenContainer } from '@components/common/screen-container';
-import { ArcRecordCard } from '@components/staff/arc-record-card';
 import { DateSection } from '@components/staff/date-section';
 import { VisitCard } from '@components/staff/visit-card';
-import { Spacing } from '@constants/theme';
-import { VISIT_DAYS } from '@constants/visit';
+import { toDotDate } from '@constants/format';
+import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
+import { useAssignVisit, useStaffVisits } from '@hooks/use-staff-visits';
 import type { RecordFlow } from '@/types/record-form';
 import type { MemoryPage, VisitMode } from '@/types/visit';
 
@@ -18,7 +19,13 @@ import type { MemoryPage, VisitMode } from '@/types/visit';
 const TABS_TO_LIST = 13;
 const DAY_GAP = 25;
 
+/** 직원 화면은 번역 대상이 아니라 문구를 한국어로 직접 적습니다. */
 const DESCRIPTION = '오늘의 취향과 여정을 담은 브랜드 경험을 만나보세요.';
+const LOAD_FAILED = '방문 목록을 불러오지 못했습니다.';
+const EMPTY_WITH = '지금 응대할 고객이 없습니다.';
+const EMPTY_SOLO = '혼자 둘러보는 고객이 없습니다.';
+
+const STATE_FONT_SIZE = 14;
 
 const MODE_TABS: readonly PillTabOption<VisitMode>[] = [
   { value: 'with', label: 'With' },
@@ -30,13 +37,12 @@ export default function StaffDashboardScreen() {
   const router = useRouter();
   const [mode, setMode] = useState<VisitMode>('with');
 
+  const { data: visits, isPending, isError, refetch } = useStaffVisits();
+  const { mutate: assignVisit } = useAssignVisit();
+
   /**
    * 고객 상세는 프로필(Arc)과 방문 기록 두 면을 넘겨 보는 화면입니다.
    * 어느 면을 먼저 열지 액션마다 다르게 넘깁니다.
-   *
-   * 응대 시작은 원래 서버에 쓰기 요청을 보내야 하는 동작인데 아직 API 가 없습니다.
-   * 지금은 해당 내용을 볼 수 있는 면을 열어 두고, 엔드포인트가 생기면
-   * 여기에서 `useMutation` 을 부릅니다.
    */
   const openDetail = useCallback(
     (page: MemoryPage) => {
@@ -52,6 +58,23 @@ export default function StaffDashboardScreen() {
     },
     [router]
   );
+
+  /**
+   * 응대를 시작하면 서버가 이 직원을 담당자로 배정합니다.
+   * 배정이 끝나면 목록이 다시 읽히면서 카드의 상태와 버튼이 바뀝니다.
+   */
+  const startService = useCallback(
+    (visitId: string) => {
+      assignVisit(visitId, {
+        onSuccess: () => openDetail('arc'),
+      });
+    },
+    [assignVisit, openDetail]
+  );
+
+  // 서버는 지금 매장에 들어와 있는 고객만 내려줍니다. 그래서 날짜 묶음은 오늘 하루뿐입니다.
+  const today = toDotDate(new Date().toISOString());
+  const visibleVisits = (visits ?? []).filter((visit) => visit.mode === mode);
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
@@ -73,33 +96,37 @@ export default function StaffDashboardScreen() {
           />
 
           <View style={styles.days}>
-            {VISIT_DAYS.map((day) => {
-              const visits = day.visits.filter((visit) => visit.mode === mode);
+            {isPending ? (
+              <ActivityIndicator color={FixedColors.onDark} style={styles.state} />
+            ) : null}
 
-              // 탭을 바꾸면 고객이 한 명도 없는 날이 생깁니다. 그런 날은 날짜 줄까지 접습니다.
-              if (visits.length === 0 && day.arcs.length === 0) {
-                return null;
-              }
+            {isError ? (
+              <View style={styles.state}>
+                <Text style={styles.error} accessibilityRole="alert">
+                  {LOAD_FAILED}
+                </Text>
+                <ActionPill label="다시 시도" tone="outline" onPress={() => refetch()} />
+              </View>
+            ) : null}
 
-              return (
-                <DateSection key={day.date} date={day.date}>
-                  {visits.map((visit) => (
-                    <VisitCard
-                      key={visit.id}
-                      visit={visit}
-                      onOpen={() => openDetail('arc')}
-                      onCreateArc={() => openRecordForm('arc')}
-                      onSaveMemory={() => openRecordForm('memory')}
-                      onStartService={() => openDetail('arc')}
-                    />
-                  ))}
+            {isPending || isError || visibleVisits.length > 0 ? null : (
+              <Text style={styles.empty}>{mode === 'with' ? EMPTY_WITH : EMPTY_SOLO}</Text>
+            )}
 
-                  {day.arcs.map((arc) => (
-                    <ArcRecordCard key={arc.id} arc={arc} onOpen={() => openDetail('memory')} />
-                  ))}
-                </DateSection>
-              );
-            })}
+            {visibleVisits.length === 0 ? null : (
+              <DateSection date={today}>
+                {visibleVisits.map((visit) => (
+                  <VisitCard
+                    key={visit.id}
+                    visit={visit}
+                    onOpen={() => openDetail('arc')}
+                    onCreateArc={() => openRecordForm('arc')}
+                    onSaveMemory={() => openRecordForm('memory')}
+                    onStartService={() => startService(visit.id)}
+                  />
+                ))}
+              </DateSection>
+            )}
           </View>
         </ScrollView>
       </ScreenContainer>
@@ -125,5 +152,23 @@ const styles = StyleSheet.create({
   days: {
     marginTop: TABS_TO_LIST,
     gap: DAY_GAP,
+  },
+  state: {
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  error: {
+    fontFamily: FontFamily.sans,
+    fontSize: STATE_FONT_SIZE,
+    lineHeight: STATE_FONT_SIZE * LineHeightRatio.base,
+    color: FixedColors.errorOnDark,
+    textAlign: 'center',
+  },
+  empty: {
+    fontFamily: FontFamily.sans,
+    fontSize: STATE_FONT_SIZE,
+    lineHeight: STATE_FONT_SIZE * LineHeightRatio.base,
+    color: FixedColors.onDark,
+    textAlign: 'center',
   },
 });

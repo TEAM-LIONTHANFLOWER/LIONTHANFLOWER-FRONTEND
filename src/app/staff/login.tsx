@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ChoiceChips } from '@components/common/choice-chips';
@@ -7,8 +7,11 @@ import { OrbitLogo } from '@components/common/orbit-logo';
 import { OutlinedTextField } from '@components/common/outlined-text-field';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StartJourneyButton } from '@components/common/start-journey-button';
-import { SUPPORTED_LANGUAGES } from '@constants/languages';
+import { DEFAULT_STORE_ID } from '@constants/config';
+import { SUPPORTED_LANGUAGES, toServiceLanguages } from '@constants/languages';
 import { FixedColors, Spacing } from '@constants/theme';
+import { useRegisterStaffProfile } from '@hooks/use-staff-profile';
+import { useStaffStore } from '@stores/staff-store';
 import searchIcon from '@assets/images/login/search.svg';
 import type { LocaleCode } from '@/types/i18n';
 
@@ -21,9 +24,17 @@ const LOGO_TO_FORM = 58;
 /** 입력과 버튼 사이 최소 간격. 화면이 남으면 버튼이 아래로 더 밀립니다. */
 const FORM_TO_ACTION = 88;
 
+/** 직원 화면은 번역 대상이 아니라 문구를 한국어로 직접 적습니다. */
+const STORE_ID_MISSING =
+  '근무 매장을 지정할 수 없습니다. 매장 조회 API 가 없어 EXPO_PUBLIC_DEFAULT_STORE_ID 를 채워야 로그인할 수 있습니다.';
+const SIGN_IN_FAILED = '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.';
+
 /** 직원 정보 입력 화면 — `/staff/login` */
 export default function StaffLoginScreen() {
   const router = useRouter();
+
+  const signIn = useStaffStore((state) => state.signIn);
+  const { mutate: registerProfile, isPending, isError } = useRegisterStaffProfile();
 
   const [store, setStore] = useState('MCM HAUS');
   // 고객과 달리 직원은 `응대 가능한 언어` 를 고르는 것이라 여러 개를 켤 수 있습니다.
@@ -34,11 +45,26 @@ export default function StaffLoginScreen() {
     value: option.code,
     label: option.label,
   }));
-  const canStart = store.trim().length > 0 && languages.length > 0 && name.trim().length > 0;
+  // 매장 UUID 가 없으면 서버가 요청을 받지 않으므로 아예 보내지 않습니다.
+  const hasStoreId = DEFAULT_STORE_ID.length > 0;
+  const canStart =
+    hasStoreId && store.trim().length > 0 && languages.length > 0 && name.trim().length > 0;
 
   const handleStart = useCallback(() => {
-    router.replace('/staff/dashboard');
-  }, [router]);
+    registerProfile(
+      {
+        storeId: DEFAULT_STORE_ID,
+        name: name.trim(),
+        languages: toServiceLanguages(languages),
+      },
+      {
+        onSuccess: (profile) => {
+          signIn(profile);
+          router.replace('/staff/dashboard');
+        },
+      }
+    );
+  }, [languages, name, registerProfile, router, signIn]);
 
   return (
     <ScreenContainer backgroundColor={FixedColors.splashBackground} style={styles.stage}>
@@ -51,6 +77,10 @@ export default function StaffLoginScreen() {
         <OrbitLogo style={styles.logo} />
 
         <View style={styles.form}>
+          {/*
+            매장은 아직 이름으로만 받습니다. 서버가 요구하는 UUID 는 이 칸이 아니라
+            설정값에서 오므로, 여기 적은 이름은 서버에 전달되지 않습니다.
+          */}
           <OutlinedTextField
             label="Working At"
             required
@@ -76,9 +106,20 @@ export default function StaffLoginScreen() {
           />
         </View>
 
+        {hasStoreId && !isError ? null : (
+          <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite">
+            {hasStoreId ? SIGN_IN_FAILED : STORE_ID_MISSING}
+          </Text>
+        )}
+
         <View style={styles.spacer} />
 
-        <StartJourneyButton onPress={handleStart} disabled={!canStart} style={styles.action} />
+        {/* 보내는 중에는 프로필이 두 번 만들어지지 않도록 버튼을 잠급니다. */}
+        <StartJourneyButton
+          onPress={handleStart}
+          disabled={!canStart || isPending}
+          style={styles.action}
+        />
       </ScrollView>
     </ScreenContainer>
   );
@@ -101,6 +142,13 @@ const styles = StyleSheet.create({
   form: {
     marginTop: LOGO_TO_FORM,
     gap: Spacing.five,
+  },
+  error: {
+    marginTop: Spacing.three,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+    color: FixedColors.errorOnDark,
   },
   spacer: {
     flexGrow: 1,

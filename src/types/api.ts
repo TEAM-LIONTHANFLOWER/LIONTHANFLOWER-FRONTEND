@@ -16,8 +16,32 @@ export interface ApiRequestOptions {
   signal?: AbortSignal;
 }
 
-/** 서버가 실패 응답에서 내려주는 공통 에러 바디 */
-export interface ApiErrorBody {
+/**
+ * 서버 공통 응답 봉투.
+ *
+ * 이 서버는 성공·실패를 가리지 않고 모든 응답을 `{ success, data }` 로 한 겹 감싸서 내려줍니다.
+ * 화면과 쿼리 훅은 이 봉투를 몰라도 되도록 `@services/api` 가 벗겨서 `data` 만 돌려줍니다.
+ */
+export interface ApiEnvelope<T> {
+  success: boolean;
+  data?: T;
+}
+
+/** 검증에 실패한 필드 하나. 서버가 `error.fieldErrors` 에 담아 보냅니다. */
+export interface ApiFieldError {
+  field?: string;
   message?: string;
-  code?: string;
+}
+
+/**
+ * 서버가 실패 응답에서 내려주는 공통 에러 바디.
+ * 예) `{"success":false,"error":{"code":"COMMON-401","message":"인증이 필요합니다.","fieldErrors":[]}}`
+ */
+export interface ApiErrorBody {
+  success?: boolean;
+  error?: {
+    code?: string;
+    message?: string;
+    fieldErrors?: ApiFieldError[];
+  };
 }

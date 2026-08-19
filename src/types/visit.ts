@@ -52,3 +52,62 @@ export interface MemoryCardContent {
   title: string;
   lines: readonly string[];
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 서버 API 도메인
+ *
+ * 위쪽은 화면이 그리는 모양이고, 아래는 `/api/customers/visits` 계열이 주고받는 값입니다.
+ * enum 값은 서버가 쓰는 이름을 그대로 둡니다 — 화면 쪽 표기와 섞이지 않게 하기 위해서입니다.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** 방문 한 건이 어디까지 진행됐는지. */
+export type VisitStatus =
+  | 'ONBOARDING'
+  | 'WAITING_FOR_STAFF'
+  | 'ACTIVE'
+  | 'ARC_IN_PROGRESS'
+  | 'VISIT_MEMORY_IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELED';
+
+/**
+ * 직원이 고객을 응대할 언어.
+ * 서버 목록에 한국어가 없습니다 — 표시 언어에서 이 값으로 옮기는 규칙은
+ * `@constants/languages` 의 `SERVICE_LANGUAGE_BY_LOCALE` 에 있습니다.
+ */
+export type ServiceLanguage = 'EN' | 'ZH' | 'JA' | 'RU';
+
+/** 고객이 고른 접객 방식. 화면 쪽 `ServiceStyleCode` 에 대응합니다. */
+export type InteractionStyle = 'STAFF_RECOMMENDATION' | 'SELF_GUIDED';
+
+/** `POST /api/customers/visits` 응답. 쿠키로 고객을 식별하고 새 방문을 엽니다. */
+export interface VisitEntry {
+  visitId: string;
+  /** 다시 찾아온 고객이면 지난 방문에서 받은 이름이 담겨 옵니다. 처음이면 비어 있습니다. */
+  customerName?: string;
+  status: VisitStatus;
+}
+
+/** `PATCH /api/customers/visits/{visitId}/onboarding` 요청 바디. */
+export interface OnboardingSubmission {
+  name: string;
+  serviceLanguage: ServiceLanguage;
+  interactionStyle: InteractionStyle;
+  additionalRequest?: string;
+}
+
+/** 위 요청의 응답. */
+export interface VisitOnboardingResult {
+  visitId: string;
+  status: VisitStatus;
+}
+
+/**
+ * 진입과 온보딩을 모두 마친 고객의 방문 세션.
+ * 로그인 이후 화면들이 `visitId` 로 자기 방문을 가리킵니다.
+ */
+export interface CustomerVisitSession {
+  visitId: string;
+  customerName: string;
+  status: VisitStatus;
+}
