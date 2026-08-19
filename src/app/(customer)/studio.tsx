@@ -1,16 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Animated, Easing, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  Easing,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
-import type { StudioFrameId, StudioGenerationStatus } from '@/types/studio';
+import type { StudioCapture, StudioFrame } from '@/types/studio';
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
 import { InitialSetupButton } from '@components/common/initial-setup-button';
 import { ScreenContainer } from '@components/common/screen-container';
 import { StudioFrameCarousel } from '@components/customer/studio-frame-carousel';
 import { StudioFrameStage } from '@components/customer/studio-frame-stage';
-import { Spacing } from '@constants/theme';
+import { FixedColors, Spacing, Typography } from '@constants/theme';
 import { useReportActiveTab } from '@hooks/use-report-active-tab';
+import { useStudioFrames } from '@hooks/use-studio-frames';
 import { useTranslation } from '@hooks/use-translation';
+import { downloadStudioCapture } from '@services/studio-capture';
 
 /** 떠 있는 내비게이션이 화면 아래에서 차지하는 높이. `(customer)/_layout.tsx` 의
  * `NAV_AREA_HEIGHT` 와 같은 값이어야 합니다 — 내비게이션은 거기서 그립니다. */
@@ -18,9 +29,6 @@ const NAV_AREA_HEIGHT = 118;
 
 /** 안내 문구와 프레임 캐러셀 사이. 시안의 세로 리듬이라 Spacing 스케일에 없는 값입니다. */
 const DESCRIPTION_TO_FRAMES = 23;
-
-/** 셔터를 누른 뒤 생성이 끝난 것으로 치기까지의 대기 시간. */
-const GENERATION_DURATION_MS = 3000;
 
 /** 화면이 열릴 때 프레임 캐러셀이 아래에서 떠오르는 시간과 거리. Arc 진입 애니메이션과 같은 값입니다. */
 const FRAMES_ENTER_DURATION_MS = 720;
@@ -32,20 +40,28 @@ const TITLE = 'MCM Studio';
 export default function CustomerStudioScreen() {
   const { t } = useTranslation();
   useReportActiveTab('studio');
-  const [selectedFrameId, setSelectedFrameId] = useState<StudioFrameId | null>(null);
-  const [generationStatus, setGenerationStatus] = useState<StudioGenerationStatus>('idle');
+  const { data: frames, isPending, isError, refetch } = useStudioFrames();
+
+  const [selectedFrame, setSelectedFrame] = useState<StudioFrame | null>(null);
+  const [capture, setCapture] = useState<StudioCapture | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  // 화면을 벗어날 때 아직 저장하지 않은 objectURL 이 남아 있으면 해제합니다.
+  const captureRef = useRef<StudioCapture | null>(null);
+  useEffect(() => {
+    captureRef.current = capture;
+  }, [capture]);
+  useEffect(
+    () => () => {
+      if (captureRef.current) {
+        URL.revokeObjectURL(captureRef.current.previewUrl);
+      }
+    },
+    []
+  );
 
   // 지연 초기화로 한 번만 만들고, 이후에는 애니메이션으로만 값을 바꿉니다.
   const [framesEnter] = useState(() => new Animated.Value(0));
-
-  useEffect(() => {
-    if (generationStatus !== 'generating') {
-      return;
-    }
-
-    const timer = setTimeout(() => setGenerationStatus('complete'), GENERATION_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [generationStatus]);
 
   useEffect(() => {
     const animation = Animated.timing(framesEnter, {
@@ -72,8 +88,27 @@ export default function CustomerStudioScreen() {
   };
 
   const handleReturnToFrames = useCallback(() => {
-    setSelectedFrameId(null);
-    setGenerationStatus('idle');
+    setCapture((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.previewUrl);
+      }
+      return null;
+    });
+    setSelectedFrame(null);
+  }, []);
+
+  const handleSave = useCallback(() => {
+    if (capture) {
+      downloadStudioCapture(capture);
+    }
+    handleReturnToFrames();
+  }, [capture, handleReturnToFrames]);
+
+  const handleCaptureStart = useCallback(() => setIsCapturing(true), []);
+  const handleCaptureError = useCallback(() => setIsCapturing(false), []);
+  const handleCapture = useCallback((next: StudioCapture) => {
+    setIsCapturing(false);
+    setCapture(next);
   }, []);
 
   return (
@@ -89,10 +124,10 @@ export default function CustomerStudioScreen() {
             <BrandIntroHeader
               title={TITLE}
               description={
-                selectedFrameId
-                  ? generationStatus === 'complete'
+                selectedFrame
+                  ? capture
                     ? t('studio.complete')
-                    : generationStatus === 'generating'
+                    : isCapturing
                       ? t('studio.generating')
                       : t('studio.previewDescription')
                   : t('studio.description')
@@ -103,19 +138,39 @@ export default function CustomerStudioScreen() {
             />
           </View>
 
-          {selectedFrameId ? (
+          {selectedFrame ? (
             <StudioFrameStage
-              frameId={selectedFrameId}
-              status={generationStatus}
-              onPressNext={() => setGenerationStatus('generating')}
-              onReturnToFrames={handleReturnToFrames}
+              frame={selectedFrame}
+              capture={capture}
+              onCaptureStart={handleCaptureStart}
+              onCapture={handleCapture}
+              onCaptureError={handleCaptureError}
+              onSave={handleSave}
+              onDelete={handleReturnToFrames}
               style={styles.frames}
             />
+          ) : isPending ? (
+            <View style={styles.statusBox}>
+              <ActivityIndicator color={FixedColors.onDark} />
+            </View>
+          ) : isError ? (
+            <View style={styles.statusBox}>
+              <Text style={styles.statusText}>{t('studio.framesError')}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('studio.retry')}
+                onPress={() => refetch()}
+                style={styles.retryButton}
+              >
+                <Text style={styles.retryText}>{t('studio.retry')}</Text>
+              </Pressable>
+            </View>
           ) : (
             <Animated.View style={framesStyle}>
               <StudioFrameCarousel
-                selectedFrameId={selectedFrameId}
-                onSelect={setSelectedFrameId}
+                frames={frames}
+                selectedFrameType={null}
+                onSelect={setSelectedFrame}
                 style={styles.frames}
               />
             </Animated.View>
@@ -144,5 +199,26 @@ const styles = StyleSheet.create({
   },
   frames: {
     marginTop: DESCRIPTION_TO_FRAMES,
+  },
+  statusBox: {
+    marginTop: DESCRIPTION_TO_FRAMES,
+    alignItems: 'center',
+    gap: Spacing.three,
+    paddingHorizontal: Spacing.four,
+  },
+  statusText: {
+    ...Typography.bodyKo14,
+    color: FixedColors.onDark,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.two,
+    borderRadius: 999,
+    backgroundColor: FixedColors.optionSurface,
+  },
+  retryText: {
+    ...Typography.bodyKo14,
+    color: FixedColors.onDark,
   },
 });
