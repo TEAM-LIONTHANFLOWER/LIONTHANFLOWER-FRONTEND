@@ -100,6 +100,7 @@ EXPO_PUBLIC_API_BASE_URL=https://mcmorbit.p-e.kr   # 경로에 /api 가 들어 �
 | `/login` 고객 로그인                   | `POST /api/customers/visits` → `PATCH /api/customers/visits/{visitId}/onboarding` | `useStartVisit()`            |
 | `/matching` 매칭 대기                  | `GET /api/customers/visits/{visitId}/matching`                                    | `useVisitMatching()`         |
 | `/arc` 고객 Arc                        | `GET /api/customers/arcs` + `GET /api/customers/arcs/{arcId}`                     | `useCustomerArcEntries()`    |
+| `/staff` 진입 세션 확인                | `GET /api/staff/me/profile`                                                       | `useStaffProfile()`          |
 | `/staff/login` 매장 검색               | `GET /api/stores`                                                                 | `useStoreSearch()`           |
 | `/staff/login` 직원 로그인             | `POST /api/staff/me/profile` → `GET /api/staff/me/profile`                        | `useRegisterStaffProfile()`  |
 | `/staff/dashboard` 직원 홈             | `GET /api/staff/visits`                                                           | `useStaffVisits()`           |
@@ -117,6 +118,18 @@ EXPO_PUBLIC_API_BASE_URL=https://mcmorbit.p-e.kr   # 경로에 /api 가 들어 �
 > 등록 요청(`POST /api/staff/me/profile`)이 프로필 본문까지 함께 돌려줍니다. 다만 스펙에는
 > 아직 응답이 `Object` 로만 적혀 있고 `createdAt` 도 `null` 로 오므로, 조회를 한 번 더 하는 지금 형태를
 > 유지합니다. 스펙에 응답 모양이 명시되면 그때 한 번으로 줄입니다.
+
+### `/staff` 진입에서 로그인을 건너뛰는 조건
+
+진입 화면은 스플래시가 도는 동안 `GET /api/staff/me/profile` 을 한 번 부릅니다.
+통하면 `staffToken` 쿠키가 아직 살아 있다는 뜻이라 로그인을 건너뛰고 `/staff/dashboard` 로 갑니다.
+쿠키 값은 앱이 읽을 수 없어서, 이 조회가 토큰이 있는지 확인하는 유일한 방법입니다.
+
+받아 온 프로필은 그 자리에서 `staff-store` 에 넣습니다 — 로그인 화면이 하던 일이고,
+`/staff/customer-detail` 같은 뒤 화면이 `storeId` 를 여기서 읽기 때문입니다.
+
+401 이면 로그인으로 보냅니다. 온보딩을 봤는지는 메모리에만 있어 앱을 껐다 켜면 지워지므로,
+쿠키를 먼저 확인해 이미 일하던 직원에게 온보딩이 다시 뜨지 않게 합니다.
 
 ### 직원 홈의 시각과 날짜
 
@@ -162,10 +175,9 @@ React Query 가 서버 데이터를 들고, Zustand 에는 **내가 누구인지
 
 ### 만들어 뒀지만 아직 부를 자리가 없는 훅
 
-| 훅                  | 엔드포인트                                  | 왜 안 부르나                                                                                                                                                                                           |
-| ------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `useFinalizeArc()`  | `POST /api/customers/arcs/{arcId}/finalize` | 직원 완료 화면의 마지막 버튼이 `저장` 으로 바뀌어 이 호출이 놓일 자리는 정해졌습니다. 다만 이 API 는 `customer_token` 을 요구해 **직원 화면에서 그대로 부를 수 없습니다** — 고객 쪽에서 눌러야 합니다. |
-| `useStaffProfile()` | `GET /api/staff/me/profile`                 | 로그인 때 이미 읽어 캐시에 심어 둡니다. 다른 직원 화면이 프로필을 쓰게 되면 여기서 읽습니다.                                                                                                           |
+| 훅                 | 엔드포인트                                  | 왜 안 부르나                                                                                                                                                                                           |
+| ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `useFinalizeArc()` | `POST /api/customers/arcs/{arcId}/finalize` | 직원 완료 화면의 마지막 버튼이 `저장` 으로 바뀌어 이 호출이 놓일 자리는 정해졌습니다. 다만 이 API 는 `customer_token` 을 요구해 **직원 화면에서 그대로 부를 수 없습니다** — 고객 쪽에서 눌러야 합니다. |
 
 ---
 

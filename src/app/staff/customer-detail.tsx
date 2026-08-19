@@ -1,4 +1,3 @@
-import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -15,15 +14,19 @@ import { toSameText } from '@constants/format';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
 import { toArcCard, useStaffArc } from '@hooks/use-staff-arcs';
 import { useStaffVisitMemory } from '@hooks/use-staff-records';
-import { toCustomerProfileCard, useStaffVisits } from '@hooks/use-staff-visits';
-import { useStoreSearch } from '@hooks/use-stores';
-import { useStaffStore } from '@stores/staff-store';
+import { useStaffVisits } from '@hooks/use-staff-visits';
 import type { LetterContent } from '@/types/arc';
 import type { StaffArcRevision } from '@/types/staff';
 import type { MemoryCardContent, StoreVisit } from '@/types/visit';
 
 /** 상단 줄과 카드 사이. Spacing 스케일에 16 과 24 사이 값이 없어 따로 둡니다. */
 const TOOLBAR_TO_CARD = 20;
+
+/**
+ * 시안(2-1 arc 조회, 393 폭)에서 톱니가 워드마크 위쪽 끝보다 내려와 걸린 거리 — 워드마크 y45, 톱니 y65.
+ * Spacing 스케일에 없는 값이라 이름을 붙여 둡니다.
+ */
+const SETTINGS_TOP = 20;
 
 const DESCRIPTION = '오늘의 경험이 새로운 Arc로 기록됩니다.';
 const LOAD_FAILED = '고객 정보를 불러오지 못했습니다.';
@@ -58,28 +61,22 @@ function toVisitRecordCard(
 /**
  * 직원용 고객 상세 화면 — `/staff/customer-detail`
  *
- * 고객 프로필과 방문 기록을 카드 한 장씩 좌우로 넘겨 봅니다.
- * `visitId` 로 어느 고객인지, `page` 로 어느 면부터 열지 정합니다.
- * 어느 쪽이든 값이 없거나 모르는 값이면 첫 면부터 엽니다.
+ * `visitId` 가 가리키는 방문의 기록을 카드 한 장으로 보여줍니다.
  *
- * 프로필 면은 직원 홈이 이미 받아 둔 방문 목록에서 그대로 그립니다 — 고객 한 명을
- * 따로 조회하는 엔드포인트가 없어서인데, 목록에 필요한 값이 다 있어 아쉬울 것이 없습니다.
- * 방문 기록 면도 그 목록에서 시작합니다. 방문 하나가 자기 `arcId` `visitMemoryId` 를 함께
- * 실어 오게 되어(`VisitSummaryResponse`), 그 열쇠로 본문을 불러와 카드에 채웁니다.
+ * 고객 한 명을 따로 조회하는 엔드포인트가 없어서, 직원 홈이 이미 받아 둔 방문 목록에서
+ * 자기 고객을 찾아 시작합니다. 방문 하나가 자기 `arcId` `visitMemoryId` 를 함께 실어 오게
+ * 되어(`VisitSummaryResponse`), 그 열쇠로 본문을 불러와 카드에 채웁니다.
  *
- * 머리말과 상단 줄의 구성은 고객 Arc 화면(`(customer)/arc.tsx`)과 같습니다 —
- * `Visit Memory` 는 워드마크 옆, 뒤로 가기 화살표는 알약 탭이 있어야 할 자리입니다.
+ * 응대 방식과 언어는 카드에 다시 적지 않습니다 — 머리말의 기본설정 톱니가 그대로 들고 있습니다.
+ *
+ * 머리말과 상단 줄의 구성은 시안(2-1 arc 조회)을 그대로 따릅니다 — 기본설정 톱니는
+ * 워드마크 오른쪽 끝에, `Visit Memory` 는 뒤로 가기 화살표와 같은 줄 오른쪽 끝에 걸립니다.
  */
 export default function StaffCustomerDetailScreen() {
   const router = useRouter();
-  const { page, visitId } = useLocalSearchParams<{ page?: string; visitId?: string }>();
+  const { visitId } = useLocalSearchParams<{ visitId?: string }>();
 
   const { data: visits, isPending, isError, refetch } = useStaffVisits();
-
-  // 근무 매장은 직원 자신의 프로필에 있습니다. 이름은 매장 목록에서 찾아 붙입니다.
-  const storeId = useStaffStore((state) => state.profile?.storeId);
-  const { data: stores } = useStoreSearch('');
-  const storeName = stores?.find((store) => store.storeId === storeId)?.name;
 
   const visit = visits?.find((candidate) => candidate.id === visitId);
 
@@ -88,16 +85,11 @@ export default function StaffCustomerDetailScreen() {
   const memory = useStaffVisitMemory(visit?.visitMemoryId ?? null);
   const memorySummary = memory.data?.generatedContent?.summary;
 
-  const cards: readonly MemoryCardContent[] =
-    visit === undefined
-      ? []
-      : [
-          toCustomerProfileCard(visit, storeName),
-          toVisitRecordCard(visit, arc.data, memorySummary),
-        ];
+  /** 이 화면이 그리는 카드 한 장. 방문을 아직 못 찾았으면 그릴 것이 없습니다. */
+  const card = visit === undefined ? undefined : toVisitRecordCard(visit, arc.data, memorySummary);
 
   /**
-   * 머리말의 `Visit Memory` 팝업.
+   * 상단 줄의 `Visit Memory` 팝업.
    * 이 방문의 글을 받아 왔으면 그것을 열고, 아직 없으면 시안의 예시를 그대로 보여줍니다.
    */
   const letter: LetterContent =
@@ -107,27 +99,6 @@ export default function StaffCustomerDetailScreen() {
           title: `${visit.name}’s Visit Memory`,
           sections: [{ id: 'summary', lines: [toSameText(memorySummary)] }],
         };
-
-  // 카드는 방문을 받아야 만들어지므로 첫 면은 쿼리에서 바로 읽습니다.
-  // 목록을 기다렸다 정하면 그 사이에 자리가 0 으로 굳어 `page=memory` 로 들어와도 앞면이 열립니다.
-  const [index, setIndex] = useState(page === 'memory' ? 1 : 0);
-
-  const card = cards[index];
-  const isLast = index === cards.length - 1;
-
-  const handlePrevious = useCallback(() => {
-    // 첫 면에는 넘길 이전 면이 없습니다. 그때는 상단 줄의 화살표와 같이 화면을 벗어납니다.
-    if (index === 0) {
-      router.back();
-      return;
-    }
-
-    setIndex(index - 1);
-  }, [index, router]);
-
-  const handleNext = useCallback(() => {
-    setIndex((previous) => Math.min(previous + 1, cards.length - 1));
-  }, [cards.length]);
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
@@ -139,21 +110,27 @@ export default function StaffCustomerDetailScreen() {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <BrandIntroHeader
             description={DESCRIPTION}
-            accessory={<VisitMemoryLink letter={letter} />}
+            // 시안은 워드마크 오른쪽 끝에 톱니 하나만 겁니다.
+            accessory={
+              <InitialSetupButton
+                iconOnly
+                style={styles.settings}
+                setup={
+                  visit === undefined
+                    ? undefined
+                    : {
+                        interactionStyle: visit.interactionStyle,
+                        serviceLanguage: visit.serviceLanguage,
+                      }
+                }
+              />
+            }
           />
 
+          {/* 시안은 뒤로 가기 화살표와 같은 줄 오른쪽 끝에 `Visit Memory` 를 겁니다. */}
           <View style={styles.toolbar}>
             <BackArrowButton onPress={() => router.back()} label="고객 목록으로 돌아가기" />
-            <InitialSetupButton
-              setup={
-                visit === undefined
-                  ? undefined
-                  : {
-                      interactionStyle: visit.interactionStyle,
-                      serviceLanguage: visit.serviceLanguage,
-                    }
-              }
-            />
+            <VisitMemoryLink variant="pill" letter={letter} />
           </View>
 
           <View style={styles.card}>
@@ -172,13 +149,7 @@ export default function StaffCustomerDetailScreen() {
               <Text style={styles.empty}>{NOT_FOUND}</Text>
             )}
 
-            {card === undefined ? null : (
-              <MemoryCard
-                content={card}
-                onPrevious={handlePrevious}
-                onNext={isLast ? undefined : handleNext}
-              />
-            )}
+            {card === undefined ? null : <MemoryCard content={card} />}
           </View>
         </ScrollView>
       </ScreenContainer>
@@ -198,12 +169,16 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: Spacing.four,
   },
+  settings: {
+    marginTop: SETTINGS_TOP,
+  },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: Spacing.two,
-    marginTop: Spacing.four,
+    // 시안의 상단 줄은 안내 문구 바로 아래(y214)입니다.
+    marginTop: Spacing.three,
   },
   card: {
     marginTop: TOOLBAR_TO_CARD,

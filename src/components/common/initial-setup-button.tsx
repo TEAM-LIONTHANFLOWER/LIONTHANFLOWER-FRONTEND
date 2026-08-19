@@ -37,7 +37,7 @@ const LABEL = 'Initial setup';
 /** 아직 방문이 시작되지 않아 보여줄 값이 없을 때. */
 const UNKNOWN = '—';
 
-/** 아이콘만 놓을 때의 크기. 시안(2-1 Arc)의 톱니 아이콘과 같은 값입니다. */
+/** 아이콘만 놓을 때의 크기. 시안(2-1 arc 조회)의 톱니 아이콘과 같은 값입니다. */
 const ICON_SIZE = 29;
 /** 아이콘이 29 라 최소 터치 영역 44 를 채우려면 사방으로 8 씩 더 필요합니다. */
 const ICON_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;
@@ -51,7 +51,8 @@ export interface InitialSetup {
 interface InitialSetupButtonProps {
   /**
    * 라벨 없이 톱니 아이콘만 놓습니다.
-   * 카드 한 장이 화면을 채우는 Arc 화면은 머리말 줄에 글자를 더 얹지 않습니다.
+   * 카드 한 장이 화면을 채우는 화면 — 고객 Arc·Studio 와 직원 고객 상세 — 은
+   * 머리말 줄에 글자를 더 얹지 않고 톱니만 오른쪽 끝에 겁니다.
    */
   iconOnly?: boolean;
   /**

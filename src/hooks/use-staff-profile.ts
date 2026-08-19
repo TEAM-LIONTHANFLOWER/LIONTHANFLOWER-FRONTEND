@@ -13,6 +13,9 @@ export const staffKeys = {
  *
  * 인증은 `staffToken` 쿠키가 들고 있어서 이 훅에 넘길 값이 없습니다.
  * 쿠키가 없으면 401 이 나고, 4xx 는 재시도하지 않으므로 곧바로 실패로 끝납니다.
+ *
+ * 진입 화면(`/staff`)이 이 성질을 그대로 세션 확인에 씁니다 — 쿠키 값을 앱이 읽을 수 없어,
+ * 이 조회가 통하는지 보는 것이 토큰이 살아 있는지 아는 유일한 방법입니다.
  */
 export function useStaffProfile() {
   return useQuery({
