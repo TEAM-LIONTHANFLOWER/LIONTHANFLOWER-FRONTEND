@@ -1,7 +1,10 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import type { LetterContent } from '@/types/arc';
+import type { RecordFlow } from '@/types/record-form';
+import type { MemoryCardContent } from '@/types/visit';
 import { ActionPill } from '@components/common/action-pill';
 import { BrandBackdrop } from '@components/common/brand-backdrop';
 import { BrandIntroHeader } from '@components/common/brand-intro-header';
@@ -25,9 +28,6 @@ import {
 } from '@hooks/use-staff-records';
 import { useStaffVisits } from '@hooks/use-staff-visits';
 import { useRecordFormStore } from '@stores/record-form-store';
-import type { LetterContent } from '@/types/arc';
-import type { RecordFlow } from '@/types/record-form';
-import type { MemoryCardContent } from '@/types/visit';
 
 /** 상단 줄과 카드 사이, 카드와 버튼 사이. Spacing 스케일에 16 과 24 사이 값이 없어 따로 둡니다. */
 const CARD_GAP = 20;
@@ -61,7 +61,8 @@ const STATE_FONT_SIZE = 14;
  * 서버에 남아 있어 이 화면을 떠나도 사라지지 않습니다.
  *
  * `수정` 은 적은 값을 그대로 둔 채 작성 화면의 첫 단계로 되돌립니다 — 값이 스토어에 있어
- * 화면을 새로 열어도 남습니다.
+ * 화면을 새로 열어도 남습니다. Arc 는 이때 `arcId` 를 함께 넘겨, 다시 마칠 때 새 Arc 가
+ * 생기지 않고 있던 Arc 가 고쳐지게 합니다.
  */
 export default function StaffRecordCompleteScreen() {
   const router = useRouter();
@@ -155,8 +156,12 @@ export default function StaffRecordCompleteScreen() {
         };
 
   const handleEdit = useCallback(() => {
-    router.replace({ pathname: '/staff/record-form', params: { flow, visitId } });
-  }, [flow, router, visitId]);
+    // 이미 만든 Arc 를 들고 돌아갑니다 — 작성 화면이 이 열쇠를 보고 새로 만드는 대신 고쳐 씁니다.
+    router.replace({
+      pathname: '/staff/record-form',
+      params: currentArcId === null ? { flow, visitId } : { flow, visitId, arcId: currentArcId },
+    });
+  }, [currentArcId, flow, router, visitId]);
 
   const handleRegenerate = useCallback(() => {
     // 같은 입력으로 글만 새로 뽑습니다. 값은 부를 때 한 번만 꺼내면 되어 구독하지 않습니다.

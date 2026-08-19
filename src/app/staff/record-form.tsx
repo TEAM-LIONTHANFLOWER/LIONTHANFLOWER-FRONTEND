@@ -14,11 +14,13 @@ import {
   findMissingArcField,
   toArcSnapshot,
   useCreateArc,
+  useRegenerateArc,
   useShareArc,
 } from '@hooks/use-staff-arcs';
 import { useCreateVisitMemory } from '@hooks/use-staff-records';
 import { useRecordFormStore } from '@stores/record-form-store';
 import type { RecordFlow } from '@/types/record-form';
+import type { StaffArcRevision } from '@/types/staff';
 
 /** 단계 탭과 첫 입력 사이. Spacing 스케일에 16 과 24 사이 값이 없어 세 칸으로 둡니다. */
 const TABS_TO_SECTIONS = Spacing.three;
@@ -51,7 +53,12 @@ const ERROR_FONT_SIZE = 14;
  */
 export default function StaffRecordFormScreen() {
   const router = useRouter();
-  const { flow: requestedFlow, visitId } = useLocalSearchParams<{
+  const {
+    arcId,
+    flow: requestedFlow,
+    visitId,
+  } = useLocalSearchParams<{
+    arcId?: string;
     flow?: string;
     visitId?: string;
   }>();
@@ -68,13 +75,18 @@ export default function StaffRecordFormScreen() {
     isError: isMemoryError,
   } = useCreateVisitMemory();
   const { mutate: createArc, isPending: isCreatingArc, isError: isArcError } = useCreateArc();
+  const {
+    mutate: regenerateArc,
+    isPending: isRegeneratingArc,
+    isError: isArcRegenerateError,
+  } = useRegenerateArc();
   const { mutate: shareArc, isPending: isSharingArc } = useShareArc();
 
   // 서버가 무엇이 빠졌는지 알려주지 않아, 보내기 전에 앱이 먼저 걸러 이름을 적어 줍니다.
   const [missingField, setMissingField] = useState<string | undefined>(undefined);
 
-  const isPending = isCreatingMemory || isCreatingArc || isSharingArc;
-  const isError = isMemoryError || isArcError;
+  const isPending = isCreatingMemory || isCreatingArc || isRegeneratingArc || isSharingArc;
+  const isError = isMemoryError || isArcError || isArcRegenerateError;
 
   const step = steps[index];
   const isLast = index === steps.length - 1;
@@ -122,7 +134,8 @@ export default function StaffRecordFormScreen() {
    * **Visit Memory** 는 이때 글까지 써서 돌아옵니다 — 완료 화면이 그 글을 보여주고,
    * 거기서 `전송` 을 눌러야 비로소 고객에게 갑니다.
    *
-   * **Arc** 는 여기서 생성(`POST /api/staff/visits/{visitId}/arcs`)과
+   * **Arc** 는 여기서 생성(`POST /api/staff/visits/{visitId}/arcs`, 완료 화면에서 `수정` 으로
+   * 돌아왔으면 새 리비전 `POST /api/staff/arcs/{arcId}/revisions`)과
    * 전송(`POST /api/staff/arcs/{arcId}/revisions/{revisionId}/share`)을 이어서 부릅니다.
    * 완료 화면은 이미 고객에게 간 Arc 를 보여주는 자리이고, 그래서 그 화면의 마지막
    * 버튼이 전송이 아니라 `저장` 입니다.
@@ -167,26 +180,30 @@ export default function StaffRecordFormScreen() {
       return;
     }
 
-    createArc(
-      { visitId, values },
-      {
-        onSuccess: (arc) => {
-          const goToComplete = () =>
-            router.push({
-              pathname: '/staff/record-complete',
-              params: { flow, visitId, arcId: arc.arcId },
-            });
+    const onSaved = (arc: StaffArcRevision) => {
+      const goToComplete = () =>
+        router.push({
+          pathname: '/staff/record-complete',
+          params: { flow, visitId, arcId: arc.arcId },
+        });
 
-          if (arc.revisionStatus !== 'READY') {
-            goToComplete();
-            return;
-          }
-
-          shareArc({ arcId: arc.arcId, revisionId: arc.revisionId }, { onSettled: goToComplete });
-        },
+      if (arc.revisionStatus !== 'READY') {
+        goToComplete();
+        return;
       }
-    );
-  }, [createArc, createVisitMemory, flow, isLast, router, shareArc, visitId]);
+
+      shareArc({ arcId: arc.arcId, revisionId: arc.revisionId }, { onSettled: goToComplete });
+    };
+
+    // 완료 화면에서 `수정` 으로 돌아왔으면 이미 만든 Arc 가 있습니다 — 새 Arc 를 만드는 대신
+    // 그 Arc 에 새 리비전을 얹습니다.
+    if (arcId !== undefined) {
+      regenerateArc({ arcId, values }, { onSuccess: onSaved });
+      return;
+    }
+
+    createArc({ visitId, values }, { onSuccess: onSaved });
+  }, [arcId, createArc, createVisitMemory, flow, isLast, regenerateArc, router, shareArc, visitId]);
 
   return (
     // 배경은 `ScreenContainer` 바깥에 둡니다. 안에 넣으면 안전 영역 안쪽에 갇혀
