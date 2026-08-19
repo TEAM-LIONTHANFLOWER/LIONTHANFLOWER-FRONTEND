@@ -147,8 +147,11 @@ export function StudioCamera({
       const canvas = document.createElement('canvas');
       // 오버레이 SVG 의 naturalWidth/Height 는 디자인 상의 CSS 픽셀 값(211×458)이라,
       // 그대로 캔버스 해상도로 쓰면 고밀도 화면(devicePixelRatio > 1)에서 확대되어
-      // 화질이 떨어집니다. 배율만큼 캔버스를 키워 실제 픽셀 밀도에 맞춥니다.
-      const pixelRatio = window.devicePixelRatio || 1;
+      // 화질이 떨어집니다. devicePixelRatio 만 쓰면 데스크톱(대부분 1배)에서는 여전히
+      // 211×458px 짜리 저해상도 파일이 나오므로, 화면 배율과 무관하게 최소 배율을
+      // 강제해 둡니다.
+      const MIN_CAPTURE_SCALE = 3;
+      const pixelRatio = Math.max(window.devicePixelRatio || 1, MIN_CAPTURE_SCALE);
       canvas.width = (overlayImage.naturalWidth || STUDIO_FRAME_WIDTH) * pixelRatio;
       canvas.height = (overlayImage.naturalHeight || STUDIO_FRAME_HEIGHT) * pixelRatio;
 
