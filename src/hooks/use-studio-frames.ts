@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@services/api';
-import type { StudioFrameListResponse } from '@/types/studio';
+import type { StudioFrame } from '@/types/studio';
 
 export const studioKeys = {
   all: ['studio'] as const,
@@ -12,7 +12,6 @@ export const studioKeys = {
 export function useStudioFrames() {
   return useQuery({
     queryKey: studioKeys.frames(),
-    queryFn: () => api.get<StudioFrameListResponse>('/api/customers/studio/frames'),
-    select: (response) => response.data,
+    queryFn: () => api.get<StudioFrame[]>('/api/customers/studio/frames'),
   });
 }
