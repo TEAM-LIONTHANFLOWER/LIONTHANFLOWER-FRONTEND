@@ -12,7 +12,7 @@ import { VisitCard } from '@components/staff/visit-card';
 import { FixedColors, FontFamily, LineHeightRatio, Spacing } from '@constants/theme';
 import { toVisitDays, useAssignVisit, useStaffVisits } from '@hooks/use-staff-visits';
 import type { RecordFlow } from '@/types/record-form';
-import type { MemoryPage, VisitMode } from '@/types/visit';
+import type { VisitMode } from '@/types/visit';
 
 /** 시안(393 폭)의 세로 리듬. Spacing 스케일에 없는 값이라 이름을 붙여 둡니다. */
 const TABS_TO_LIST = 13;
@@ -40,13 +40,12 @@ export default function StaffDashboardScreen() {
   const { mutate: assignVisit } = useAssignVisit();
 
   /**
-   * 고객 상세는 프로필(Arc)과 방문 기록 두 면을 넘겨 보는 화면입니다.
-   * 어느 고객인지(`visitId`)와 어느 면을 먼저 열지(`page`)를 함께 넘깁니다 —
-   * 상세 화면은 이 `visitId` 로 방문 목록에서 자기 고객을 찾습니다.
+   * 고객 상세는 그 방문의 기록을 카드 한 장으로 보여주는 화면입니다.
+   * 어느 고객인지만 넘기면 됩니다 — 상세 화면은 이 `visitId` 로 방문 목록에서 자기 고객을 찾습니다.
    */
   const openDetail = useCallback(
-    (visitId: string, page: MemoryPage) => {
-      router.push({ pathname: '/staff/customer-detail', params: { visitId, page } });
+    (visitId: string) => {
+      router.push({ pathname: '/staff/customer-detail', params: { visitId } });
     },
     [router]
   );
@@ -66,7 +65,7 @@ export default function StaffDashboardScreen() {
   const startService = useCallback(
     (visitId: string) => {
       assignVisit(visitId, {
-        onSuccess: () => openDetail(visitId, 'arc'),
+        onSuccess: () => openDetail(visitId),
       });
     },
     [assignVisit, openDetail]
@@ -119,7 +118,7 @@ export default function StaffDashboardScreen() {
                   <VisitCard
                     key={visit.id}
                     visit={visit}
-                    onOpen={() => openDetail(visit.id, 'arc')}
+                    onOpen={() => openDetail(visit.id)}
                     onCreateArc={() => openRecordForm(visit.id, 'arc')}
                     onSaveMemory={() => openRecordForm(visit.id, 'memory')}
                     onStartService={() => startService(visit.id)}

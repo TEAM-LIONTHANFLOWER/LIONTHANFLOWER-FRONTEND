@@ -23,19 +23,23 @@ const PREVIOUS_ARROW_WIDTH = 28;
 
 interface MemoryCardProps {
   content: MemoryCardContent;
-  /** 이전 면으로 넘깁니다. */
-  onPrevious: () => void;
+  /** 이전 면으로 넘깁니다. 넘길 면이 없으면 비워 둡니다. */
+  onPrevious?: () => void;
   /** 다음 면으로 넘깁니다. 마지막 면이면 비워 두고, 그러면 버튼이 흐려집니다. */
   onNext?: () => void;
 }
 
 /**
- * 좌우로 넘겨 보는 크림색 기록 카드.
- * 직원이 고객 프로필과 방문 기록을 한 장씩 넘겨 봅니다.
+ * 크림색 기록 카드.
+ *
+ * 여러 면을 넘겨 볼 때만 아래에 화살표 줄이 붙습니다. 한 면짜리 화면은 둘 다 비워
+ * 두는데, 시안의 카드(2-1 arc 조회)도 본문만 담고 화살표는 담지 않습니다.
  *
  * 화살표 그림은 오른쪽을 가리키는 한 벌뿐이라, 이전 버튼은 좌우로 뒤집어 씁니다.
  */
 export function MemoryCard({ content, onPrevious, onNext }: MemoryCardProps) {
+  const hasPager = onPrevious !== undefined || onNext !== undefined;
+
   return (
     <View style={styles.card}>
       <View style={styles.body}>
@@ -49,44 +53,49 @@ export function MemoryCard({ content, onPrevious, onNext }: MemoryCardProps) {
         ))}
       </View>
 
-      <View style={styles.footer}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="이전"
-          onPress={onPrevious}
-          style={styles.previousButton}
-        >
-          <Image
-            source={arrowPrevious}
-            style={styles.previousArrow}
-            contentFit="contain"
-            accessible={false}
-          />
-        </Pressable>
+      {!hasPager ? null : (
+        <View style={styles.footer}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="이전"
+            accessibilityState={{ disabled: onPrevious === undefined }}
+            disabled={onPrevious === undefined}
+            onPress={onPrevious}
+            style={[styles.previousButton, onPrevious === undefined && styles.buttonDisabled]}
+          >
+            <Image
+              source={arrowPrevious}
+              style={styles.previousArrow}
+              contentFit="contain"
+              accessible={false}
+            />
+          </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="다음"
-          accessibilityState={{ disabled: onNext === undefined }}
-          disabled={onNext === undefined}
-          onPress={onNext}
-          style={[styles.nextButton, onNext === undefined && styles.nextButtonDisabled]}
-        >
-          <Text style={styles.nextLabel}>Next</Text>
-          <Image
-            source={arrowNext}
-            style={styles.nextArrow}
-            contentFit="contain"
-            accessible={false}
-          />
-        </Pressable>
-      </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="다음"
+            accessibilityState={{ disabled: onNext === undefined }}
+            disabled={onNext === undefined}
+            onPress={onNext}
+            style={[styles.nextButton, onNext === undefined && styles.buttonDisabled]}
+          >
+            <Text style={styles.nextLabel}>Next</Text>
+            <Image
+              source={arrowNext}
+              style={styles.nextArrow}
+              contentFit="contain"
+              accessible={false}
+            />
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   // 본문이 짧아도 화살표가 늘 카드 맨 아래에 오도록 최소 높이를 잡고 위아래로 벌립니다.
+  // 화살표 줄이 없으면 본문만 위에 남고 아래가 비어, 시안의 카드와 같아집니다.
   card: {
     minHeight: CARD_MIN_HEIGHT,
     justifyContent: 'space-between',
@@ -130,7 +139,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.three,
   },
-  nextButtonDisabled: {
+  buttonDisabled: {
     opacity: 0.4,
   },
   nextLabel: {
