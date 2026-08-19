@@ -505,13 +505,18 @@ Arc 는 그 방문에 딸려 만들어집니다(`POST /api/staff/visits/{visitId
 {
   "frameType": "FRAME_1",
   "displayName": "MCM Frame 1",
-  "overlayImageUrl": "/mcm-studio/Frame_1.png"
+  "overlayImageUrl": "/mcm-studio/Frame_1.svg"
 }
 ```
 
 그런데 그 `overlayImageUrl` 을 받으러 가면 네 개 모두 **403** 입니다. 본문도 CORS 안내도 없이
 끊깁니다 — `/api` 밖의 경로가 통째로 막혀 있는 것으로 보입니다. 쿠키를 실어도 같습니다.
 이미지가 열려야 `/studio` 를 서버 프레임으로 옮길 수 있습니다.
+
+> **업데이트** — 서버가 `overlayImageUrl` 을 PNG 에서 SVG 로 이미 바꿔 내려주고 있습니다
+> (Swagger 설명도 "SVG 프레임 목록을 반환합니다" 로 바뀌었습니다). 프런트도
+> `public/mcm-studio/Frame_1~4.svg` 로 자산을 맞춰 뒀으니, 403 만 풀리면 경로 쪽은
+> 더 손댈 것 없이 그대로 맞습니다.
 
 ### 풀린 것 (지난 기록)
 
