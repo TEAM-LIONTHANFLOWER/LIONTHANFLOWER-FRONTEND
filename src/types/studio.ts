@@ -6,7 +6,7 @@ export interface StudioFrame {
   /** 서버가 관리하는 프레임 종류. 새 프레임이 늘어날 수 있어 고정 유니온으로 두지 않습니다. */
   frameType: string;
   displayName: string;
-  /** 카메라 위에 얹고, 촬영 시 Canvas 합성에도 그대로 쓰는 투명 PNG 주소. */
+  /** 카메라 위에 얹고, 촬영 시 Canvas 합성에도 그대로 쓰는 투명 오버레이(SVG) 주소. */
   overlayImageUrl: string;
 }
 

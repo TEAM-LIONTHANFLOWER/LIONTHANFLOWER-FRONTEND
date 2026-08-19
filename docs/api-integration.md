@@ -95,21 +95,23 @@ EXPO_PUBLIC_API_BASE_URL=https://mcmorbit.p-e.kr   # 경로에 /api 가 들어 �
 
 ## 붙은 것
 
-| 화면                                   | 엔드포인트                                                                        | 훅                           |
-| -------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------- |
-| `/login` 고객 로그인                   | `POST /api/customers/visits` → `PATCH /api/customers/visits/{visitId}/onboarding` | `useStartVisit()`            |
-| `/matching` 매칭 대기                  | `GET /api/customers/visits/{visitId}/matching`                                    | `useVisitMatching()`         |
-| `/arc` 고객 Arc                        | `GET /api/customers/arcs` + `GET /api/customers/arcs/{arcId}`                     | `useCustomerArcEntries()`    |
-| `/staff` 진입 세션 확인                | `GET /api/staff/me/profile`                                                       | `useStaffProfile()`          |
-| `/staff/login` 매장 검색               | `GET /api/stores`                                                                 | `useStoreSearch()`           |
-| `/staff/login` 직원 로그인             | `POST /api/staff/me/profile` → `GET /api/staff/me/profile`                        | `useRegisterStaffProfile()`  |
-| `/staff/dashboard` 직원 홈             | `GET /api/staff/visits`                                                           | `useStaffVisits()`           |
-| `/staff/dashboard` 응대 시작           | `POST /api/staff/visits/{visitId}/assignment`                                     | `useAssignVisit()`           |
-| `/staff/customer-detail` 프로필 면     | `GET /api/staff/visits` + `GET /api/stores`                                       | `useStaffVisits()`           |
-| `/staff/record-form` Visit Memory 작성 | `POST /api/staff/visits/{visitId}/visit-memories`                                 | `useCreateVisitMemory()`     |
-| `/staff/record-complete` 미리보기      | `GET /api/staff/visit-memories/{id}`                                              | `useStaffVisitMemory()`      |
-| `/staff/record-complete` 다시 생성     | `POST /api/staff/visit-memories/{id}/regenerations`                               | `useRegenerateVisitMemory()` |
-| `/staff/record-complete` 전송          | `POST /api/staff/visit-memories/{id}/share`                                       | `useShareVisitMemory()`      |
+| 화면                                   | 엔드포인트                                                                                     | 훅                                   |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `/login` 고객 로그인                   | `POST /api/customers/visits` → `PATCH /api/customers/visits/{visitId}/onboarding`              | `useStartVisit()`                    |
+| `/matching` 매칭 대기                  | `GET /api/customers/visits/{visitId}/matching`                                                 | `useVisitMatching()`                 |
+| `/arc` 고객 Arc                        | `GET /api/customers/arcs` + `GET /api/customers/arcs/{arcId}`                                  | `useCustomerArcEntries()`            |
+| `/staff` 진입 세션 확인                | `GET /api/staff/me/profile`                                                                    | `useStaffProfile()`                  |
+| `/staff/login` 매장 검색               | `GET /api/stores`                                                                              | `useStoreSearch()`                   |
+| `/staff/login` 직원 로그인             | `POST /api/staff/me/profile` → `GET /api/staff/me/profile`                                     | `useRegisterStaffProfile()`          |
+| `/staff/dashboard` 직원 홈             | `GET /api/staff/visits`                                                                        | `useStaffVisits()`                   |
+| `/staff/dashboard` 응대 시작           | `POST /api/staff/visits/{visitId}/assignment`                                                  | `useAssignVisit()`                   |
+| `/staff/customer-detail` 기록면        | `GET /api/staff/visits` + `GET /api/staff/arcs/{arcId}` + `GET /api/staff/visit-memories/{id}` | `useStaffVisits()` · `useStaffArc()` |
+| `/staff/customer-detail` 지난 Arc      | `GET /api/staff/visits` + `GET /api/staff/arcs/{arcId}`                                        | `usePreviousArcs()`                  |
+| `/staff/record-form` Visit Memory 작성 | `POST /api/staff/visits/{visitId}/visit-memories`                                              | `useCreateVisitMemory()`             |
+| `/staff/record-form` Visit Memory 수정 | `POST /api/staff/visit-memories/{id}/regenerations`                                            | `useRegenerateVisitMemory()`         |
+| `/staff/record-complete` 미리보기      | `GET /api/staff/visit-memories/{id}`                                                           | `useStaffVisitMemory()`              |
+| `/staff/record-complete` 다시 생성     | `POST /api/staff/visit-memories/{id}/regenerations`                                            | `useRegenerateVisitMemory()`         |
+| `/staff/record-complete` 전송          | `POST /api/staff/visit-memories/{id}/share`                                                    | `useShareVisitMemory()`              |
 
 로그인 두 개가 각각 두 번 호출인 이유는 서버가 그렇게 나눠 두었기 때문입니다.
 고객은 `진입(쿠키 발급 + visitId)` → `온보딩 저장`, 직원은 `프로필 등록(쿠키 발급)` → `프로필 조회(staffId 획득)`.
@@ -193,12 +195,42 @@ React Query 가 서버 데이터를 들고, Zustand 에는 **내가 누구인지
 
 ## 안 붙은 것 — 화면은 있는데 엔드포인트가 없음
 
-| 화면                             | 지금 상태                 | 없는 것                                                                                                                                   |
-| -------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `/home` 고객 홈                  | `@constants/home` 고정값  | 브랜드 콘텐츠(`Now On`, `About MCM`, `MCM Myself`)를 내려주는 엔드포인트가 스펙에 하나도 없습니다.                                        |
-| `/staff/dashboard` 지난 Arc 기록 | **줄이 사라졌습니다**     | `GET /api/staff/visits` 는 _현재 방문 중인_ 고객만 줍니다. 지난 날짜의 Arc 기록을 받을 엔드포인트가 없어 `ArcRecordCard` 섹션을 뺐습니다. |
-| `/staff/customer-detail` 기록면  | `@constants/visit` 고정값 | 방문에 딸린 Arc / Visit Memory 의 **id 를 알아낼 엔드포인트가 없습니다.** 생성 응답에만 있고 되찾을 길이 없습니다 — "막힌 것" 2-2 참고.   |
-| `/studio`                        | 로컬 데모                 | 매거진 생성 API 가 없습니다. 프레임 목록만 있고, 셔터를 누른 뒤 무엇을 만드는지에 해당하는 엔드포인트가 없습니다.                         |
+| 화면                              | 지금 상태                  | 없는 것                                                                                                                                   |
+| --------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `/home` 고객 홈                   | `@constants/home` 고정값   | 브랜드 콘텐츠(`Now On`, `About MCM`, `MCM Myself`)를 내려주는 엔드포인트가 스펙에 하나도 없습니다.                                        |
+| `/staff/dashboard` 지난 Arc 기록  | **줄이 사라졌습니다**      | `GET /api/staff/visits` 는 _현재 방문 중인_ 고객만 줍니다. 지난 날짜의 Arc 기록을 받을 엔드포인트가 없어 `ArcRecordCard` 섹션을 뺐습니다. |
+| `/staff/customer-detail` 지난 Arc | **방문 목록에서 모읍니다** | 한 고객의 Arc 목록을 내려주는 엔드포인트가 없습니다. 아래 "지난 Arc 를 어떻게 모으는가" 참고.                                             |
+| `/studio`                         | 로컬 데모                  | 매거진 생성 API 가 없습니다. 프레임 목록만 있고, 셔터를 누른 뒤 무엇을 만드는지에 해당하는 엔드포인트가 없습니다.                         |
+
+---
+
+### 지난 Arc 를 어떻게 모으는가
+
+`/staff/customer-detail` 은 `Next` 로 그 고객의 지난 Arc 를 한 장씩 거슬러 봅니다(이슈 #45).
+그런데 **한 고객의 Arc 목록을 직원에게 내려주는 엔드포인트가 없습니다.**
+`GET /api/customers/arcs` 는 `customer_token` 을 요구해 직원 화면에서 부를 수 없고,
+`GET /api/staff/arcs/{arcId}` 는 id 를 이미 알고 있어야 부릅니다.
+
+그래서 지금은 **이미 받아 둔 방문 목록에서 모읍니다** (`usePreviousArcs()`).
+
+1. `GET /api/staff/visits` 응답에서 지금 보고 있는 고객과 **이름이 같고** `arcId` 를 가진 방문을 골라냅니다.
+2. 방문한 날(`visitedAt`) 기준 최신순으로 세우고, 각 `arcId` 를 `GET /api/staff/arcs/{arcId}` 로 불러 카드를 채웁니다.
+3. 제목의 서수는 지금 보는 방문의 `arcCount` 에서 하나씩 거슬러 셈니다 — `StaffArcRevision` 에 Arc 번호가 없습니다.
+
+**한계가 둘 있습니다.**
+
+- `GET /api/staff/visits` 는 _현재 방문 중인_ 고객만 줍니다. 지난 방문이 거기 남지 않는다면
+  모을 것이 없어 카드가 한 장이고, 그럴 때는 `Next` 가 아예 보이지 않습니다.
+- `VisitSummaryResponse` 에 **고객 식별자가 없어 이름으로 맞춥니다.** 같은 이름의 다른 고객이
+  같은 매장에 있으면 섞일 수 있습니다.
+
+**서버에 부탁할 것** — 아래 둘 중 하나면 위 우회가 통째로 없어집니다.
+
+- `GET /api/staff/visits/{visitId}/arcs` — 그 방문의 고객이 쌓아 온 Arc 목록
+  (`arcId` · `arcNumber` · `sharedAt` · `storeName` 정도면 충분합니다)
+- 또는 `VisitSummaryResponse` 에 `customerId` 추가 + `GET /api/staff/customers/{customerId}/arcs`
+
+붙이는 자리는 `usePreviousArcs()` 한 곳입니다. 화면과 페이징은 그대로 둡니다.
 
 ---
 
@@ -505,13 +537,18 @@ Arc 는 그 방문에 딸려 만들어집니다(`POST /api/staff/visits/{visitId
 {
   "frameType": "FRAME_1",
   "displayName": "MCM Frame 1",
-  "overlayImageUrl": "/mcm-studio/Frame_1.png"
+  "overlayImageUrl": "/mcm-studio/Frame_1.svg"
 }
 ```
 
 그런데 그 `overlayImageUrl` 을 받으러 가면 네 개 모두 **403** 입니다. 본문도 CORS 안내도 없이
 끊깁니다 — `/api` 밖의 경로가 통째로 막혀 있는 것으로 보입니다. 쿠키를 실어도 같습니다.
 이미지가 열려야 `/studio` 를 서버 프레임으로 옮길 수 있습니다.
+
+> **업데이트** — 서버가 `overlayImageUrl` 을 PNG 에서 SVG 로 이미 바꿔 내려주고 있습니다
+> (Swagger 설명도 "SVG 프레임 목록을 반환합니다" 로 바뀌었습니다). 프런트도
+> `public/mcm-studio/Frame_1~4.svg` 로 자산을 맞춰 뒀으니, 403 만 풀리면 경로 쪽은
+> 더 손댈 것 없이 그대로 맞습니다.
 
 ### 풀린 것 (지난 기록)
 

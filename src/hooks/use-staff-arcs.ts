@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   ARC_FIELD_IDS,
@@ -11,12 +11,13 @@ import {
   PURCHASE_DECISION_STYLES,
   toOtherFieldId,
 } from '@constants/record-form';
-import { staffVisitKeys } from '@hooks/use-staff-visits';
+import { toOrdinal } from '@constants/format';
+import { staffVisitKeys, useStaffVisits } from '@hooks/use-staff-visits';
 import { api } from '@services/api';
 import { readChoices, readNote, readProducts } from '@stores/record-form-store';
 import type { RecordFormValues } from '@/types/record-form';
 import type { ArcInputSnapshot, StaffArcRevision } from '@/types/staff';
-import type { MemoryCardContent } from '@/types/visit';
+import type { MemoryCardContent, StoreVisit } from '@/types/visit';
 
 export const staffArcKeys = {
   all: ['staff-arcs'] as const,
@@ -235,4 +236,80 @@ export function toArcCard(arc: StaffArcRevision, title: string): MemoryCardConte
   }
 
   return { page: 'memory', title, lines };
+}
+
+/** `Ethan’s 2nd Arc`. 번호를 셈할 수 없으면 서수를 빼고 `Ethan’s Arc` 로 둡니다. */
+function toArcTitle(name: string, arcNumber: number): string {
+  return arcNumber < 1 ? `${name}\u2019s Arc` : `${name}\u2019s ${toOrdinal(arcNumber)} Arc`;
+}
+
+/**
+ * 같은 고객이 남긴 지난 방문 중 Arc 가 딸린 것 — 최근 방문이 앞에 옵니다.
+ *
+ * **고객을 이름으로 맞춥니다.** `VisitSummaryResponse` 에 고객 식별자가 없어 이름 말고는
+ * 같은 사람인지 알 방법이 없습니다. 같은 이름의 다른 고객이 같은 매장에 있으면 섞입니다 —
+ * 지난 Arc 를 내려주는 엔드포인트가 생기면 이 함수째 걷어냅니다
+ * (`docs/api-integration.md` 의 "화면은 있는데 엔드포인트가 없음" 참고).
+ *
+ * `visitedOn` 은 `YYYY.MM.DD` 라 자리 수가 고정이고, 문자열 비교가 곧 날짜 비교입니다.
+ */
+export function toPreviousArcVisits(
+  visits: readonly StoreVisit[] | undefined,
+  current: StoreVisit | undefined
+): readonly StoreVisit[] {
+  if (current === undefined) {
+    return [];
+  }
+
+  return (visits ?? [])
+    .filter(
+      (candidate) =>
+        candidate.id !== current.id &&
+        candidate.name === current.name &&
+        candidate.arcId !== undefined
+    )
+    .sort((left, right) => right.visitedOn.localeCompare(left.visitedOn));
+}
+
+/**
+ * 이 고객의 지난 Arc 카드들 — 최근 것이 앞에 옵니다. 고객 상세가 `Next` 로 넘겨 봅니다.
+ *
+ * 방문 하나가 자기 `arcId` 를 실어 오므로 방문 목록이 곧 Arc 목록입니다. 본문은 방문에
+ * 실려 오지 않아 Arc 를 하나씩 따로 불러 채웁니다 — 방문 횟수만큼만 쌓여 몇 건 되지 않고,
+ * `staleTime` 동안 캐시에 남아 면을 오갈 때 다시 요청되지 않습니다.
+ *
+ * **제목의 서수는 지금 보고 있는 방문에서 하나씩 거슬러 셉니다.** 서버가 Arc 번호를
+ * 내려주지 않아(`StaffArcRevision` 에 없습니다) 카드 제목과 같은 규칙(`arcLabel`)을 씁니다 —
+ * 받아 온 목록이 최신부터 끊김 없이 이어진다고 보는 것입니다.
+ */
+export function usePreviousArcs(current: StoreVisit | undefined) {
+  const { data: visits } = useStaffVisits();
+
+  const previous = toPreviousArcVisits(visits, current);
+  // 지금 방문이 Arc 를 남겼으면 그 번호가 최신이므로 한 칸 앞에서 시작합니다.
+  // 아직 안 남겼으면(Visit Memory 만 썼거나 빈 방문이면) 지난 것 중 최근이 곧 최신입니다.
+  const newestNumber = Math.max(current?.arcCount ?? 1, 1) - (current?.arcId === undefined ? 0 : 1);
+
+  const entries = previous.map((visit, index) => ({
+    arcId: visit.arcId ?? '',
+    title: toArcTitle(visit.name, newestNumber - index),
+  }));
+
+  return useQueries({
+    queries: entries.map((entry) => ({
+      queryKey: staffArcKeys.detail(entry.arcId),
+      queryFn: () => api.get<StaffArcRevision>(`/api/staff/arcs/${entry.arcId}`),
+    })),
+    combine: (results) => ({
+      cards: results.flatMap((result, index) => {
+        const entry = entries[index];
+
+        return result.data === undefined || entry === undefined
+          ? []
+          : [toArcCard(result.data, entry.title)];
+      }),
+      isPending: results.some((result) => result.isPending),
+      isError: results.some((result) => result.isError),
+    }),
+  });
 }

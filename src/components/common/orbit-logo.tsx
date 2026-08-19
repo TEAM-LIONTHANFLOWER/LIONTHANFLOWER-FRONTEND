@@ -1,7 +1,7 @@
 import { StyleSheet, type ImageStyle, type StyleProp } from 'react-native';
 import { Image } from 'expo-image';
 
-import mcmOrbitLogo from '@assets/images/splash/mcm-orbit-logo.png';
+import mcmOrbitLogo from '@assets/images/splash/mcm-orbit-logo.svg';
 
 /** 시안이 정한 락업 크기. */
 export const ORBIT_LOGO_WIDTH = 109.25;

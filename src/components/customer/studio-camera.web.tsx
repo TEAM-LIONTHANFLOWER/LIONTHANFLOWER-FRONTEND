@@ -1,8 +1,8 @@
 /**
  * 프레임을 고른 뒤의 실시간 카메라 촬영.
  *
- * getUserMedia 로 받은 영상을 <video> 로 보여주고, 고른 프레임의 투명 PNG 를 그 위에 얹어
- * 미리보기를 만듭니다. 셔터를 누르면 Canvas 에 영상 한 프레임과 PNG 를 순서대로 그려
+ * getUserMedia 로 받은 영상을 <video> 로 보여주고, 고른 프레임의 투명 오버레이(SVG)를 그 위에
+ * 얹어 미리보기를 만듭니다. 셔터를 누르면 Canvas 에 영상 한 프레임과 오버레이를 순서대로 그려
  * 합성한 뒤 PNG Blob 으로 만들어 상위 컴포넌트에 넘깁니다.
  */
 import { Image } from 'expo-image';
@@ -41,6 +41,9 @@ const videoStyle: CSSProperties = {
   height: '100%',
   objectFit: 'cover',
   backgroundColor: '#000000',
+  // 전면 카메라 원본은 거울과 달리 좌우가 안 뒤집혀 있어, 사용자가 보기엔 오히려
+  // 반전된 것처럼 느껴집니다. 미리보기를 거울처럼 보이게 뒤집습니다.
+  transform: 'scaleX(-1)',
 };
 
 /** 화면에 보이는 비율(dw×dh)에 맞춰 영상 가운데를 잘라 채웁니다 — CSS `object-fit: cover` 와 같은 계산입니다. */
@@ -142,16 +145,26 @@ export function StudioCamera({
     try {
       const overlayImage = await loadOverlayImage(frame.overlayImageUrl);
       const canvas = document.createElement('canvas');
-      canvas.width = overlayImage.naturalWidth || STUDIO_FRAME_WIDTH;
-      canvas.height = overlayImage.naturalHeight || STUDIO_FRAME_HEIGHT;
+      // 오버레이 SVG 의 naturalWidth/Height 는 디자인 상의 CSS 픽셀 값(211×458)이라,
+      // 그대로 캔버스 해상도로 쓰면 고밀도 화면(devicePixelRatio > 1)에서 확대되어
+      // 화질이 떨어집니다. 배율만큼 캔버스를 키워 실제 픽셀 밀도에 맞춥니다.
+      const pixelRatio = window.devicePixelRatio || 1;
+      canvas.width = (overlayImage.naturalWidth || STUDIO_FRAME_WIDTH) * pixelRatio;
+      canvas.height = (overlayImage.naturalHeight || STUDIO_FRAME_HEIGHT) * pixelRatio;
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         throw new Error('canvas context unavailable');
       }
 
-      // 순서가 중요합니다 — 사진을 먼저 그리고, 그 위에 투명 PNG 프레임을 겹칩니다.
+      // 순서가 중요합니다 — 사진을 먼저 그리고, 그 위에 투명 오버레이 프레임을 겹칩니다.
+      // 사진은 미리보기와 같은 거울 방향으로 저장해야 사용자가 본 그대로 나옵니다.
+      // 오버레이의 로고·글자는 뒤집히면 안 되므로, 좌우 반전은 사진을 그리는 동안만 적용합니다.
+      ctx.save();
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
       drawVideoCover(ctx, video, canvas.width, canvas.height);
+      ctx.restore();
       ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height);
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
