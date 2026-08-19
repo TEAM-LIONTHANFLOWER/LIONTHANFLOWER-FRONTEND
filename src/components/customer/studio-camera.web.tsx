@@ -145,8 +145,12 @@ export function StudioCamera({
     try {
       const overlayImage = await loadOverlayImage(frame.overlayImageUrl);
       const canvas = document.createElement('canvas');
-      canvas.width = overlayImage.naturalWidth || STUDIO_FRAME_WIDTH;
-      canvas.height = overlayImage.naturalHeight || STUDIO_FRAME_HEIGHT;
+      // 오버레이 SVG 의 naturalWidth/Height 는 디자인 상의 CSS 픽셀 값(211×458)이라,
+      // 그대로 캔버스 해상도로 쓰면 고밀도 화면(devicePixelRatio > 1)에서 확대되어
+      // 화질이 떨어집니다. 배율만큼 캔버스를 키워 실제 픽셀 밀도에 맞춥니다.
+      const pixelRatio = window.devicePixelRatio || 1;
+      canvas.width = (overlayImage.naturalWidth || STUDIO_FRAME_WIDTH) * pixelRatio;
+      canvas.height = (overlayImage.naturalHeight || STUDIO_FRAME_HEIGHT) * pixelRatio;
 
       const ctx = canvas.getContext('2d');
       if (!ctx) {
