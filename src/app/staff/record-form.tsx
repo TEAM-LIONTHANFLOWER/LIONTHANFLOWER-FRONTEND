@@ -102,8 +102,11 @@ export default function StaffRecordFormScreen() {
    * Visit Memory 는 이때 글까지 써서 돌아옵니다 — 완료 화면이 그 글을 보여주고,
    * 거기서 `전송` 을 눌러야 비로소 고객에게 갑니다.
    *
-   * Arc 는 아직 생성이 막혀 있어(제품 식별자를 구할 방법이 없습니다) 서버를 부르지 않고
-   * 완료 화면으로만 넘어갑니다. `docs/api-integration.md` 의 "막힌 것" 2 참고.
+   * Arc 는 생성이 풀리면 이 버튼에서 생성(`POST /api/staff/visits/{visitId}/arcs`)과 전송
+   * (`POST /api/staff/arcs/{arcId}/revisions/{revisionId}/share`)을 이어서 부릅니다 — 완료 화면은
+   * 이미 고객에게 간 Arc 를 보여주는 자리입니다. 지금은 생성이 막혀 있어(제품 식별자를 구할
+   * 방법이 없습니다) 서버를 부르지 않고 완료 화면으로만 넘어갑니다.
+   * `docs/api-integration.md` 의 "막힌 것" 2 참고.
    */
   const handleNext = useCallback(() => {
     if (!isLast) {

@@ -442,12 +442,12 @@ interface RecordFlowCopy {
   title: string;
   /** 완료 화면에서 작성한 내용을 다시 여는 버튼 */
   editLabel: string;
-  /** 완료 화면에서 고객에게 보내는 버튼 */
+  /** 완료 화면을 마치는 버튼. Visit Memory 는 고객에게 보내고, Arc 는 고객의 최종 저장으로 넘깁니다. */
   submitLabel: string;
 }
 
 export const RECORD_FLOW_COPY: Record<RecordFlow, RecordFlowCopy> = {
-  arc: { title: 'Arc 작성', editLabel: 'Arc 수정', submitLabel: 'Arc 전송' },
+  arc: { title: 'Arc 작성', editLabel: 'Arc 수정', submitLabel: '저장' },
   memory: { title: 'Visit Memory 작성', editLabel: '방문기록 수정', submitLabel: '방문기록 전송' },
 };
 
