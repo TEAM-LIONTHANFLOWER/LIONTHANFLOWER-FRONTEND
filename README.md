@@ -122,10 +122,10 @@ npm run web
 
 ## 웹 배포 (Cloudflare)
 
-| 주소                                                                        | 무엇                      |
-| --------------------------------------------------------------------------- | ------------------------- |
-| [mcm-orbit-n34.pages.dev](https://mcm-orbit.site/)                 | 본 배포                   |
-| [develop.mcm-orbit-n34.pages.dev](https://develop.mcm-orbit.pages.dev/) | `develop` 브랜치 미리보기 |
+| 주소                                                                | 무엇                      |
+| ------------------------------------------------------------------- | ------------------------- |
+| [mcm-orbit.site](https://mcm-orbit.site/)                           | 본 배포                   |
+| [develop.mcm-orbit.pages.dev](https://develop.mcm-orbit.pages.dev/) | `develop` 브랜치 미리보기 |
 
 ```bash
 npm run build:web              # dist/ 생성
