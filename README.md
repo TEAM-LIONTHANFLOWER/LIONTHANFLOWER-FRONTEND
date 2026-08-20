@@ -18,7 +18,7 @@
 <br />
 <br />
 
-**[본 배포 열기](https://mcm-orbit.site/)** · [develop 미리보기](https://develop.mcm-orbit-n34.pages.dev/) · [작업 규칙](./AGENTS.md) · [API 연동](./docs/api-integration.md)
+**[본 배포 열기](https://mcm-orbit.site/)** · [develop 미리보기](https://develop.mcm-orbit.pages.dev/) · [작업 규칙](./AGENTS.md) · [API 연동](./docs/api-integration.md)
 
 </div>
 
@@ -124,8 +124,8 @@ npm run web
 
 | 주소                                                                        | 무엇                      |
 | --------------------------------------------------------------------------- | ------------------------- |
-| [mcm-orbit-n34.pages.dev](https://mcm-orbit-n34.pages.dev/)                 | 본 배포                   |
-| [develop.mcm-orbit-n34.pages.dev](https://develop.mcm-orbit-n34.pages.dev/) | `develop` 브랜치 미리보기 |
+| [mcm-orbit-n34.pages.dev](https://mcm-orbit.site/)                 | 본 배포                   |
+| [develop.mcm-orbit-n34.pages.dev](https://develop.mcm-orbit.pages.dev/) | `develop` 브랜치 미리보기 |
 
 ```bash
 npm run build:web              # dist/ 생성
