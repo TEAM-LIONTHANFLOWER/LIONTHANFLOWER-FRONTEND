@@ -51,7 +51,7 @@ export default function CustomerHomeScreen() {
               ))}
             </View>
 
-            <Text style={styles.galleryTitle}>MCM Myself</Text>
+            <Text style={styles.galleryTitle}>MCM Studio</Text>
           </View>
 
           <MyselfGallery frames={MYSELF_FRAMES} />
