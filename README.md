@@ -18,7 +18,7 @@
 <br />
 <br />
 
-**[본 배포 열기](https://mcm-orbit-n34.pages.dev/)** · [develop 미리보기](https://develop.mcm-orbit-n34.pages.dev/) · [작업 규칙](./AGENTS.md) · [API 연동](./docs/api-integration.md)
+**[본 배포 열기](https://mcm-orbit.site/)** · [develop 미리보기](https://develop.mcm-orbit-n34.pages.dev/) · [작업 규칙](./AGENTS.md) · [API 연동](./docs/api-integration.md)
 
 </div>
 
