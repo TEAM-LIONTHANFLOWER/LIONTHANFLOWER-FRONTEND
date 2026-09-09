@@ -13,8 +13,10 @@ import { INTERACTION_STYLE_BY_SERVICE_STYLE, SERVICE_STYLES } from '@constants/o
 import { FixedColors, Spacing } from '@constants/theme';
 import { useStartVisit } from '@hooks/use-customer-visit';
 import { useReportActiveTab } from '@hooks/use-report-active-tab';
+import { useStoreByCode } from '@hooks/use-stores';
 import { useTranslation } from '@hooks/use-translation';
 import { useLocaleStore } from '@stores/locale-store';
+import { useStoreTagCode } from '@stores/store-tag-store';
 import { useVisitStore } from '@stores/visit-store';
 import type { ServiceStyleCode } from '@/types/onboarding';
 
@@ -27,10 +29,10 @@ const LOGO_TOP = 40;
 const SECTION_GAP = 48;
 
 /**
- * 고객이 방문한 매장.
- * 지금은 고정값이고, 매장 식별(QR·비콘)이 붙으면 서버에서 받아옵니다.
+ * 매장 NFC 태그를 거치지 않고 들어온 고객에게 보여 줄 매장.
+ * 태그가 붙기 전까지 쓰던 고정값이라, 매장을 알 수 없을 때 돌아갈 자리로 그대로 둡니다.
  */
-const VISITED_STORE = 'MCM HAUS';
+const FALLBACK_STORE = 'MCM HAUS';
 
 /** 고객 정보 입력 화면 — `/login` */
 export default function CustomerLoginScreen() {
@@ -47,6 +49,10 @@ export default function CustomerLoginScreen() {
   const startVisit = useVisitStore((state) => state.startVisit);
   const { mutate: startJourney, isPending, isError } = useStartVisit();
 
+  // 매장에 붙은 NFC 태그가 알려 준 매장 코드. 태그를 찍지 않고 들어왔으면 `null` 입니다.
+  const storeCode = useStoreTagCode();
+  const { data: taggedStore } = useStoreByCode(storeCode);
+
   const [name, setName] = useState('');
   const [serviceStyle, setServiceStyle] = useState<ServiceStyleCode>('recommendation');
   const [request, setRequest] = useState('');
@@ -60,6 +66,13 @@ export default function CustomerLoginScreen() {
     label: t(option.labelKey),
   }));
   const canStart = name.trim().length > 0;
+  /*
+    이름을 얻기 전까지는 태그에 적힌 코드(`MCM-SEOUL`)를 그대로 보여 주고, 조회가 끝나면
+    사람이 읽는 이름으로 바뀝니다. 안내 한 줄 때문에 로그인 폼 전체를 로딩으로 가릴 이유가
+    없고, 코드를 띄워 두면 태그를 잘못 구웠을 때 매장에서 바로 알아볼 수 있습니다.
+    조회에 실패하거나 코드에 맞는 매장이 없을 때도 같은 이유로 코드에 머무릅니다.
+  */
+  const visitedStore = taggedStore?.name ?? storeCode ?? FALLBACK_STORE;
 
   const handleStart = useCallback(() => {
     const additionalRequest = request.trim();
@@ -93,7 +106,7 @@ export default function CustomerLoginScreen() {
         <OrbitLogo style={styles.logo} />
 
         <View style={styles.form}>
-          <Text style={styles.notice}>{t('login.storeNotice', { store: VISITED_STORE })}</Text>
+          <Text style={styles.notice}>{t('login.storeNotice', { store: visitedStore })}</Text>
 
           <ChoiceChips
             label="Language"
