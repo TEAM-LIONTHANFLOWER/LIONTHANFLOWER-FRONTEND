@@ -238,9 +238,18 @@ paths:
       tags:
         - customer-visit-controller
       summary: 고객 서비스 진입
-      description: 익명 고객을 식별하거나 생성하고 새로운 ONBOARDING 방문을 생성합니다.
+      description: >-
+        익명 고객을 식별하거나 생성하고 새로운 ONBOARDING 방문을 생성합니다. `storeCode` 를 생략하면
+        기본 매장(`MCM-SEOUL`)에 연결되어 하위 호환을 유지합니다. 존재하지 않는 코드를 보내면
+        `COMMON-404` 오류가 옵니다.
       operationId: enter
       parameters:
+        - name: storeCode
+          in: query
+          required: false
+          description: 방문을 연결할 매장 코드(`MCM-PARIS`, `MCM-MUNICH` 등). 생략하면 `MCM-SEOUL`.
+          schema:
+            type: string
         - name: customer_token
           in: cookie
           required: false
@@ -957,6 +966,8 @@ components:
             - ZH
             - JA
             - RU
+            - DE
+            - FR
         interactionStyle:
           type: string
           enum:
@@ -1084,6 +1095,8 @@ components:
             - ZH
             - JA
             - RU
+            - DE
+            - FR
         interactionStyle:
           type: string
           enum:
@@ -1198,6 +1211,8 @@ components:
               - ZH
               - JA
               - RU
+              - DE
+              - FR
           uniqueItems: true
         createdAt:
           type: string
@@ -1310,6 +1325,9 @@ components:
           format: int32
         storeName:
           type: string
+        cityCode:
+          type: string
+          nullable: true
         momentSummary:
           type: string
         momentToRemember:
@@ -1382,6 +1400,9 @@ components:
           type: string
         countryCode:
           type: string
+        cityCode:
+          type: string
+          nullable: true
         status:
           type: string
           enum:
