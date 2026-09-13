@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BrandSplash } from '@components/common/brand-splash';
+import { useCaptureStoreTag } from '@hooks/use-capture-store-tag';
 import { useReportActiveTab } from '@hooks/use-report-active-tab';
 import { useOnboardingStore } from '@stores/onboarding-store';
 import { useStoreCodeStore } from '@stores/store-code-store';
@@ -16,12 +17,18 @@ import { useStoreCodeStore } from '@stores/store-code-store';
  * 여기서 받아 `@stores/store-code-store` 에 담아 둡니다 — `useStartVisit()` 이 방문을 열 때
  * 이 값으로 `POST /api/customers/visits?storeCode=...` 를 불러 이 기기가 속한 매장에
  * 방문을 연결합니다. 쿼리가 없으면 서버가 알아서 기본 매장(`MCM-SEOUL`)으로 엽니다.
+ *
+ * 매장 NFC 태그로 들어온 경우에는 주소에 `?store=MCM-SEOUL` 처럼 별도의 매장 코드가 실려
+ * 있습니다. 여기서 화면을 떠나면 쿼리가 사라지므로, 스플래시가 도는 동안 `useCaptureStoreTag`
+ * 로 코드를 전역 상태(`@stores/store-tag-store`)에 옮겨 둡니다 — 이 코드는 `/login` 화면에
+ * 표시하는 용도로만 쓰이고, 위 `storeCode` 와 달리 아직 방문 생성 요청에는 실리지 않습니다.
  */
 export default function CustomerEntryScreen() {
   const router = useRouter();
   const { storeCode } = useLocalSearchParams<{ storeCode?: string }>();
   const hasCompletedOnboarding = useOnboardingStore((state) => state.hasCompleted);
   useReportActiveTab(null);
+  useCaptureStoreTag();
 
   useEffect(() => {
     if (storeCode !== undefined) {
