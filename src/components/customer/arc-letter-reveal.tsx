@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
-import { Image } from 'expo-image';
 
 import { LetterSheet } from '@components/common/letter-sheet';
 import {
@@ -8,8 +7,8 @@ import {
   ENVELOPE_HEIGHT,
   ENVELOPE_POCKET_TOP,
 } from '@components/customer/arc-envelope';
+import { ArcLetterBack } from '@components/customer/arc-letter-back';
 import { FixedColors, Radius } from '@constants/theme';
-import letterEmboss from '@assets/images/arc/letter-emboss.jpg';
 import type { ArcEntry } from '@/types/arc';
 
 /**
@@ -195,18 +194,17 @@ export function ArcLetterReveal({ entry, onClose }: ArcLetterRevealProps) {
         </Animated.View>
 
         <Animated.View style={[styles.layer, letterStyle]}>
+          {/* 뒤집히는 동안만 잠깐 보이는 장식면이라, 뒤집기가 끝나도 계속 붙어 있는 캡션
+              글자가 스크린 리더에 실제 편지 내용과 섞여 읽히지 않도록 통째로 숨깁니다. */}
           <Animated.View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
             style={[
               styles.face,
               { transform: [{ perspective: PERSPECTIVE }, { rotateY: backRotation }] },
             ]}
           >
-            <Image
-              source={letterEmboss}
-              style={styles.emboss}
-              contentFit="cover"
-              accessible={false}
-            />
+            <ArcLetterBack countryCode={entry.countryCode} />
           </Animated.View>
 
           <Animated.View
@@ -248,11 +246,6 @@ const styles = StyleSheet.create({
   face: {
     ...StyleSheet.absoluteFillObject,
     backfaceVisibility: 'hidden',
-  },
-  emboss: {
-    flex: 1,
-    borderRadius: Radius.card,
-    backgroundColor: FixedColors.cardSurface,
   },
   // 주머니는 편지 위에 오지만 누르기는 그대로 아래로 내려가게 둡니다.
   pocket: {
