@@ -27,7 +27,7 @@ const PLACE = 'MCM HAUS · SEOUL(REPUBLIC OF KOREA)';
 
 /** 언어와 상관없이 그대로 두는 줄. 제품 이름과 영문 표기가 여기 들어갑니다. */
 function asIs(line: string): LocalizedText {
-  return { ko: line, en: line, zh: line, ja: line, ru: line };
+  return { ko: line, en: line, zh: line, ja: line, ru: line, de: line, fr: line };
 }
 
 /**
@@ -54,6 +54,8 @@ export const VISIT_MEMORY_LETTER: LetterContent = {
           zh: '实用的设计与沉静的色彩',
           ja: '実用的なデザインと落ち着いたカラー',
           ru: 'Практичный дизайн и спокойные цвета',
+          de: 'Praktisches Design und ruhige Farben',
+          fr: 'Un design pratique et des couleurs sobres',
         },
       ],
     },
@@ -67,6 +69,8 @@ export const VISIT_MEMORY_LETTER: LetterContent = {
           zh: '今天你看得最仔细的产品是 A Bag。',
           ja: '今日いちばん熱心にご覧になった商品は A Bag でした。',
           ru: 'Больше всего сегодня вас заинтересовала сумка A Bag.',
+          de: 'Das Stück, das Sie sich heute am genauesten angesehen haben, war die A Bag.',
+          fr: "L'article que vous avez regardé le plus attentivement aujourd'hui était le A Bag.",
         },
       ],
     },
