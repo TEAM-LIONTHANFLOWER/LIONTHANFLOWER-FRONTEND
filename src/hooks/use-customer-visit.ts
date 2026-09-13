@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { api } from '@services/api';
+import { useStoreCodeStore } from '@stores/store-code-store';
 import type {
   CustomerVisitSession,
   OnboardingSubmission,
@@ -34,11 +35,18 @@ const MATCHING_POLL_INTERVAL_MS = 2000;
  * 화면에서는 `Start to Journey` 한 번에 일어나는 일이라 훅 하나로 묶었습니다.
  * 진입을 화면 진입 시점에 미리 부르지 않는 이유는, 입력을 마치지 않고 나간 고객까지
  * 방문 기록이 생기기 때문입니다.
+ *
+ * 이 기기가 매장 QR 로 들어왔으면(`@stores/store-code-store`) 그 매장 코드를 `storeCode`
+ * 쿼리로 함께 보내 방문을 그 매장에 연결합니다. 값은 부를 때 한 번만 꺼내면 되어 구독하지
+ * 않습니다. 없으면 서버가 기본 매장(`MCM-SEOUL`)으로 엽니다.
  */
 export function useStartVisit() {
   return useMutation({
     mutationFn: async (submission: OnboardingSubmission): Promise<CustomerVisitSession> => {
-      const entry = await api.post<VisitEntry>('/api/customers/visits');
+      const storeCode = useStoreCodeStore.getState().storeCode;
+      const entry = await api.post<VisitEntry>('/api/customers/visits', {
+        query: { storeCode: storeCode ?? undefined },
+      });
       const result = await api.patch<VisitOnboardingResult>(
         `/api/customers/visits/${entry.visitId}/onboarding`,
         { body: submission }

@@ -48,6 +48,8 @@ docs/*
 #  아래 예외가 무시됩니다.)
 !docs/openapi.yaml
 !docs/api-integration.md
+# NFC 태그를 굽는 방법도 매장에서 팀이 함께 보는 절차라 추적합니다.
+!docs/nfc-tag.md
 
 # generated native folders
 /ios

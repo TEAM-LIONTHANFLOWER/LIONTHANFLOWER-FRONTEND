@@ -6,14 +6,14 @@
  */
 
 /** 앱이 지원하는 언어. 순서는 시안(213-164) 의 Language 칩과 같습니다. */
-export type LocaleCode = 'ko' | 'en' | 'zh' | 'ja' | 'ru';
+export type LocaleCode = 'ko' | 'en' | 'zh' | 'ja' | 'ru' | 'de' | 'fr';
 
 /** Language 칩 하나. */
 export interface LanguageOption {
   code: LocaleCode;
-  /** 영문 이름. 직원 화면에서 씁니다. */
+  /** 영문 이름. 지금은 칩에 쓰지 않고, 접근성 라벨 등 영문 표기가 필요할 때를 위해 남겨 둡니다. */
   label: string;
-  /** 해당 언어로 쓴 이름. 고객 화면에서 씁니다. */
+  /** 해당 언어로 쓴 이름. 고객·직원 화면의 Language 칩 모두 이 이름을 씁니다. */
   nativeLabel: string;
 }
 
@@ -29,8 +29,8 @@ export type LocalizedText = Record<LocaleCode, string>;
 /**
  * 번역 문구 키.
  *
- * `점(.)` 앞은 문구가 쓰이는 화면입니다. 여기에 키를 추가하면 다섯 언어 사전이
- * 모두 채워질 때까지 타입 검사가 통과하지 않습니다 — 번역 누락을 막는 장치입니다.
+ * `점(.)` 앞은 문구가 쓰이는 화면입니다. 여기에 키를 추가하면 모든 언어 사전이
+ * 채워질 때까지 타입 검사가 통과하지 않습니다 — 번역 누락을 막는 장치입니다.
  */
 export type MessageKey =
   | 'login.storeNotice'

@@ -63,6 +63,11 @@ export interface ArcEnvelopeInfo {
 /** Arc 한 건. 봉투 겉면 정보와 그 안에 든 편지를 함께 들고 있습니다. */
 export interface ArcEntry extends ArcEnvelopeInfo {
   letter: LetterContent;
+  /**
+   * 구매 국가. `ArcDetail.countryCode` 를 그대로 받습니다(`KR` `DE` `FR`).
+   * 편지를 꺼낼 때 잠깐 보이는 뒷면(`ArcLetterBack`)이 이 값으로 캡션과 도시 그림을 고릅니다.
+   */
+  countryCode: string;
 }
 
 /** 기본 설정 팝업의 한 줄. 영문 항목명과 그 아래 값으로 이루어집니다. */
@@ -143,6 +148,11 @@ export interface ArcDetail {
   arcNumber: number;
   customerName: string;
   storeName: string;
+  /**
+   * 구매 국가 — 직원이 방문을 기록할 때 고른 `purchaseCountry`(`KR` `DE` `FR`).
+   * `ArcEntry.countryCode` 로 그대로 넘어가 편지 뒷면(`ArcLetterBack`)의 캡션과
+   * 도시 그림을 고르는 데 씁니다.
+   */
   countryCode: string;
   status: ArcStatus;
   sharedAt?: string;

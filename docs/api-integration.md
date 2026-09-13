@@ -477,7 +477,17 @@ Arc / Visit Memory 를 나열하는 엔드포인트도 없습니다. 그래서 �
 - `GET /api/staff/visits/{visitId}/arcs` · `.../visit-memories` (그 방문의 목록)
 - 또는 `VisitSummaryResponse` 에 `arcId` `visitMemoryId` 를 실어 주기
 
-### 3. 편지를 고객 언어로 써서 내려주세요 <sup>(재현했습니다)</sup>
+### 3. 편지를 고객 언어로 써서 내려주세요 <sup>(운영 반영됨 — 실제 응답 확인 권장)</sup>
+
+> **업데이트** — 백엔드 답변: `OpenAiArcGenerationClient` / `OpenAiVisitMemoryGenerationClient` 가
+> 시스템 프롬프트에 `command.serviceLanguage()` 를 그대로 채워 "출력 언어는 방문의
+> `serviceLanguage` 인 %s 입니다" 를 LLM 에 전달하는 구조로 바뀌었습니다. `momentSummary`
+> `preferences` `momentToRemember` 는 한 응답 안에서 같은 시스템 프롬프트를 타므로 셋 다
+> 같은 언어로 나오도록 설계돼 있고, Arc 재생성(`POST /api/staff/arcs/{arcId}/revisions`)도
+> 같은 `context()` 헬퍼를 타 동일하게 적용됩니다. **다만 실제 응답 샘플은 코드 조사만으로
+> 확인되지 않았다고 합니다** — 직원 토큰으로 KO 가 아닌 언어(EN·DE·FR 등) 방문의 Arc/Visit
+> Memory 를 실제로 생성해 `generatedContent` 가 그 언어로 오는지 재현 확인이 아직 남아 있습니다.
+> `RU` 언어 추가 때와 같은 순서로, 확인되면 아래 재현 기록은 지난 것으로 남깁니다.
 
 `GET /api/customers/arcs/{arcId}` 의 `momentSummary` `preferences` `momentToRemember` 는 문자열 하나입니다.
 **이 모양이 맞습니다.** 필요한 것은 언어별 묶음이 아니라 **그 한 문장이 고객이 고른 언어로 오는 것** 입니다.
@@ -550,20 +560,58 @@ Arc 는 그 방문에 딸려 만들어집니다(`POST /api/staff/visits/{visitId
 > `public/mcm-studio/Frame_1~4.svg` 로 자산을 맞춰 뒀으니, 403 만 풀리면 경로 쪽은
 > 더 손댈 것 없이 그대로 맞습니다.
 
+### 6. `serviceLanguage` enum 에 `DE` `FR` 을 추가해 주세요 <sup>(풀렸습니다 — 운영 반영됨)</sup>
+
+> **업데이트 2** — "서비스 언어에 독일어(DE)·프랑스어(FR)를 추가"가 `develop` → `main` 으로
+> 운영 반영됐습니다. 이제 실제 서비스에서 `DE`/`FR` 온보딩·직원 언어 등록이 됩니다.
+>
+> **업데이트** — 백엔드 답변: `LanguageCode` enum(`domain/common/entity/LanguageCode.java`)에
+> `KO, EN, ZH, JA, RU, DE, FR` 순서로 추가됐고, `OnboardingRequest.serviceLanguage` ·
+> `VisitSummaryResponse.serviceLanguage` 는 이 enum 을 직접 써서 자동 반영됩니다.
+> 직원 프로필의 `languages[]` 만 스펙상 `Set<String>` 이라 서비스단에서
+> `LanguageCode.valueOf(upperCase(...))` 로 수동 검사합니다 — 소문자로 보내도 대문자로
+> 바꿔 통과시키고, 없는 값이면 `INVALID_LANGUAGE_CODE` 400 입니다. 기존 `KO/EN/ZH/JA/RU` 는
+> `DE`/`FR` 뒤에 이어붙였을 뿐이고 `.ordinal()` 을 쓰는 곳이 없어 영향 없습니다.
+> `docs/openapi.yaml` 세 곳(`OnboardingRequest` · `VisitSummaryResponse` ·
+> `StaffProfileResponse.languages`) enum 에 `DE` `FR` 반영, 프런트도
+> `ServiceLanguage` · `SERVICE_LANGUAGE_BY_LOCALE` · `LANGUAGE_LABEL_BY_SERVICE_LANGUAGE`
+> 를 실제 값으로 맞췄습니다. 아래는 요청 당시 기록입니다.
+
+원래 문제: 고객 화면의 `Language` 칩에 독일어·프랑스어를 추가했는데, 온보딩이 보내는
+`serviceLanguage` enum 이 다섯뿐이라(`KO` `EN` `ZH` `JA` `RU`) 독일어·프랑스어를 고른 고객이
+`EN` 으로 잘못 전송되고 있었습니다.
+
+### 7. Arc 편지 뒷면 배경 — 도시별로 다르게 보여주기 <sup>(구현됨)</sup>
+
+구매 매장에 따라 Arc 편지지 뒷면(`ArcLetterBack`)을 도시별로 다르게 보여줍니다 (서울·뮌헨·파리).
+
+- V9 마이그레이션으로 뮌헨(`MCM-MUNICH` · `DE` · `MUNICH`)·파리(`MCM-PARIS` · `FR` · `PARIS`)
+  매장이 실제 등록됨.
+- `POST /api/customers/visits` 가 선택적 `storeCode` 쿼리를 받음 — 생략 시 `MCM-SEOUL`,
+  없는 코드면 `COMMON-404`. 고객 진입 URL 의 `?storeCode=MCM-PARIS` 쿼리를
+  `@stores/store-code-store` 가 받아 뒀다가 `useStartVisit()` 이 방문을 열 때 그대로 전달.
+- 프런트는 편지 뒷면 그림을 `cityCode` 가 아니라 `ArcDetail.countryCode`(`KR`/`DE`/`FR`)
+  기준으로 고릅니다(`@constants/arc` 의 `toLetterBackArt()`) — `city_code` 는 매장 등록 시
+  누락될 수 있는 값이라, 항상 채워지는 `countryCode` 를 그대로 씁니다.
+
 ### 풀린 것 (지난 기록)
 
-| 지난 문제                              | 지금                                                                        |
-| -------------------------------------- | --------------------------------------------------------------------------- |
-| `GET /api/staff/visits` 가 500         | **200 으로 목록을 돌려줍니다.** 직원 홈이 다시 삽니다.                      |
-| CORS 에 미리보기·로컬이 빠져 있음      | **셋 다 허용됐습니다.** 로컬 `npm run web` 으로 개발할 수 있습니다.         |
-| 방문 목록에 응대 시작 시각이 없음      | `matchedAt` 이 왔습니다. 카드에 `응대중・08:24` 로 붙였습니다.              |
-| 방문 목록에 날짜가 없음                | `visitedAt` 이 왔습니다. 날짜 머리글을 실제 방문 날짜로 그립니다.           |
-| Arc 목록에 매장 이름이 없음            | `storeName` 이 왔습니다. 편지 본문은 아직이라 상세 호출은 남습니다(위 4번). |
-| `POST /api/customers/visits` 가 500    | 201 로 쿠키를 심어 줍니다. 고객 로그인이 정상 동작합니다.                   |
-| 쿠키에 `SameSite=None; Secure` 가 없음 | 붙어서 옵니다.                                                              |
-| `serviceLanguage` 에 `KO` 가 없음      | 추가됐습니다. 다섯 언어가 하나씩 짝을 이룹니다.                             |
-| 매장을 찾을 방법이 없음                | `GET /api/stores` 로 검색합니다. 임시 환경 변수는 지웠습니다.               |
-| 고객이 배정을 확인할 방법이 없음       | `GET /api/customers/visits/{visitId}/matching` 을 되물어 확인합니다.        |
+| 지난 문제                              | 지금                                                                             |
+| -------------------------------------- | -------------------------------------------------------------------------------- |
+| `GET /api/staff/visits` 가 500         | **200 으로 목록을 돌려줍니다.** 직원 홈이 다시 삽니다.                           |
+| CORS 에 미리보기·로컬이 빠져 있음      | **셋 다 허용됐습니다.** 로컬 `npm run web` 으로 개발할 수 있습니다.              |
+| 방문 목록에 응대 시작 시각이 없음      | `matchedAt` 이 왔습니다. 카드에 `응대중・08:24` 로 붙였습니다.                   |
+| 방문 목록에 날짜가 없음                | `visitedAt` 이 왔습니다. 날짜 머리글을 실제 방문 날짜로 그립니다.                |
+| Arc 목록에 매장 이름이 없음            | `storeName` 이 왔습니다. 편지 본문은 아직이라 상세 호출은 남습니다(위 4번).      |
+| `POST /api/customers/visits` 가 500    | 201 로 쿠키를 심어 줍니다. 고객 로그인이 정상 동작합니다.                        |
+| 쿠키에 `SameSite=None; Secure` 가 없음 | 붙어서 옵니다.                                                                   |
+| `serviceLanguage` 에 `KO` 가 없음      | 추가됐습니다. 다섯 언어가 하나씩 짝을 이룹니다.                                  |
+| `serviceLanguage` 에 `DE` `FR` 이 없음 | 추가됐습니다. 일곱 언어가 하나씩 짝을 이룹니다. `main` 운영 반영됨("막힌 것" 6). |
+| 생성된 글이 늘 한국어임                | 방문의 `serviceLanguage` 로 쓰도록 고쳐 `main` 운영 반영됨("막힌 것" 3).         |
+| Arc 응답에 도시 정보가 없음            | `cityCode` 추가되고 뮌헨·파리 매장도 등록됨("막힌 것" 7).                        |
+| 고객 방문이 항상 서울 매장으로만 열림  | `POST /api/customers/visits` 가 `storeCode` 쿼리를 받습니다("막힌 것" 7).        |
+| 매장을 찾을 방법이 없음                | `GET /api/stores` 로 검색합니다. 임시 환경 변수는 지웠습니다.                    |
+| 고객이 배정을 확인할 방법이 없음       | `GET /api/customers/visits/{visitId}/matching` 을 되물어 확인합니다.             |
 
 ---
 

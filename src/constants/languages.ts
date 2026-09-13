@@ -15,6 +15,8 @@ export const SUPPORTED_LANGUAGES: readonly LanguageOption[] = [
   { code: 'zh', label: 'Chinese', nativeLabel: '中文' },
   { code: 'ja', label: 'Japanese', nativeLabel: '日本語' },
   { code: 'ru', label: 'Russian', nativeLabel: 'Русский' },
+  { code: 'fr', label: 'French', nativeLabel: 'Français' },
+  { code: 'de', label: 'German', nativeLabel: 'Deutsch' },
 ] as const;
 
 /** 아무것도 고르지 않았을 때의 표시 언어. */
@@ -23,8 +25,9 @@ export const DEFAULT_LOCALE: LocaleCode = 'ko';
 /**
  * 표시 언어 → 서버가 받는 응대 언어(`serviceLanguage`).
  *
- * 서버 enum 에 `KO` 가 추가되어 다섯 언어가 하나씩 그대로 짝을 이룹니다.
- * 예전에는 한국어를 고른 고객을 `EN` 으로 보내 직원에게 응대 언어를 잘못 알렸습니다.
+ * 서버 `LanguageCode` enum 이 `KO`·`EN`·`ZH`·`JA`·`RU`·`DE`·`FR` 일곱을 가져 표시 언어와
+ * 하나씩 그대로 짝을 이룹니다. 예전에는 한국어를 고른 고객을 `EN` 으로 보내 직원에게
+ * 응대 언어를 잘못 알렸습니다.
  */
 export const SERVICE_LANGUAGE_BY_LOCALE: Record<LocaleCode, ServiceLanguage> = {
   ko: 'KO',
@@ -32,6 +35,8 @@ export const SERVICE_LANGUAGE_BY_LOCALE: Record<LocaleCode, ServiceLanguage> = {
   zh: 'ZH',
   ja: 'JA',
   ru: 'RU',
+  de: 'DE',
+  fr: 'FR',
 };
 
 /**
@@ -46,6 +51,8 @@ export const LANGUAGE_LABEL_BY_SERVICE_LANGUAGE: Record<ServiceLanguage, string>
   ZH: '中文',
   JA: '日本語',
   RU: 'Русский',
+  DE: 'Deutsch',
+  FR: 'Français',
 };
 
 /**

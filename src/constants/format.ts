@@ -109,7 +109,7 @@ export function toClockTime(isoDate: string | undefined): string {
  * 문장 그대로** 나옵니다. 서버가 부족해서 둔 우회가 아니라 넓은 타입에 맞추는 어댑터입니다.
  */
 export function toSameText(line: string): LocalizedText {
-  return { ko: line, en: line, zh: line, ja: line, ru: line };
+  return { ko: line, en: line, zh: line, ja: line, ru: line, de: line, fr: line };
 }
 
 /**
@@ -126,5 +126,7 @@ export function toLocalizedMessage(key: MessageKey): LocalizedText {
     zh: MESSAGES.zh[key],
     ja: MESSAGES.ja[key],
     ru: MESSAGES.ru[key],
+    de: MESSAGES.de[key],
+    fr: MESSAGES.fr[key],
   };
 }
