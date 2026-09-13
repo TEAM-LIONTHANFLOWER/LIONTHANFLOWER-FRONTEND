@@ -83,6 +83,7 @@ function toArcEntry(detail: ArcDetail): ArcEntry {
     envelopeTitle: `Your ${ordinal} Arc`,
     store: detail.storeName,
     date: toDotDate(issuedAt),
+    countryCode: detail.countryCode,
     letter: {
       title: `${detail.customerName}\u2019s ${ordinal} Arc`,
       place: `${detail.storeName} \u00b7 ${detail.countryCode}`,

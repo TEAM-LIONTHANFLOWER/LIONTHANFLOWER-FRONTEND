@@ -42,7 +42,7 @@ export default function StaffLoginScreen() {
 
   const languageOptions = SUPPORTED_LANGUAGES.map((option) => ({
     value: option.code,
-    label: option.label,
+    label: option.nativeLabel,
   }));
   const canStart = store !== null && languages.length > 0 && name.trim().length > 0;
 

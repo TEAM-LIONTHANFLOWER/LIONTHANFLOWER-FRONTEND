@@ -88,10 +88,10 @@ export type VisitStatus =
 
 /**
  * 직원이 고객을 응대할 언어.
- * 앱이 보여주는 다섯 언어와 하나씩 짝이 맞습니다 — 옮기는 규칙은
+ * 앱이 보여주는 일곱 언어와 하나씩 짝이 맞습니다 — 옮기는 규칙은
  * `@constants/languages` 의 `SERVICE_LANGUAGE_BY_LOCALE` 에 있습니다.
  */
-export type ServiceLanguage = 'KO' | 'EN' | 'ZH' | 'JA' | 'RU';
+export type ServiceLanguage = 'KO' | 'EN' | 'ZH' | 'JA' | 'RU' | 'DE' | 'FR';
 
 /** 고객이 고른 접객 방식. 화면 쪽 `ServiceStyleCode` 에 대응합니다. */
 export type InteractionStyle = 'STAFF_RECOMMENDATION' | 'SELF_GUIDED';
