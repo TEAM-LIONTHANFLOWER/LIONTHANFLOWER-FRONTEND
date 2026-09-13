@@ -148,6 +148,7 @@ Cloudflare 대시보드에서 Git 연동으로 자동 배포할 경우:
 | [AGENTS.md](./AGENTS.md)                                     | 작업 규칙 · 코드 컨벤션 |
 | [docs/api-integration.md](./docs/api-integration.md)         | 백엔드 연동 · 쿠키 인증 |
 | [docs/openapi.yaml](./docs/openapi.yaml)                     | API 명세                |
+| [docs/nfc-tag.md](./docs/nfc-tag.md)                         | NFC 태그 · 굽는 법      |
 | [docs/secure-store-impact.md](./docs/secure-store-impact.md) | 토큰 영구 저장 검토     |
 | [docs/testing-adoption.md](./docs/testing-adoption.md)       | 테스트 도입 검토        |
 
